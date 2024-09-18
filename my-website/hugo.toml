@@ -1,6 +1,7 @@
 languageCode = 'en-us'
 title = 'AI Meanderings'
 theme='paper'
+publishDir='docs'
 
 [params]
     # header social icons
