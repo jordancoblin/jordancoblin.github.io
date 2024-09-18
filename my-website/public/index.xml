@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>AI Meanderings</title>
+    <link>//localhost:1313/</link>
+    <description>Recent content on AI Meanderings</description>
+    <generator>Hugo</generator>
+    <language>en-us</language>
+    <lastBuildDate>Wed, 18 Sep 2024 15:51:45 -0600</lastBuildDate>
+    <atom:link href="//localhost:1313/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Example</title>
+      <link>//localhost:1313/posts/example/</link>
+      <pubDate>Wed, 18 Sep 2024 15:51:45 -0600</pubDate>
+      <guid>//localhost:1313/posts/example/</guid>
+      <description>&lt;p&gt;Here&amp;rsquo;s some stuff&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title></title>
+      <link>//localhost:1313/archives/</link>
+      <pubDate>Tue, 28 May 2019 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/archives/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>About</title>
+      <link>//localhost:1313/about/</link>
+      <pubDate>Thu, 28 Feb 2019 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/about/</guid>
+      <description>&lt;p&gt;Hey there 👋 Welcome to my experimental blog! My name is Jordan and I am a machine learning engineer with an M.Sc. from the &lt;a href=&#34;http://rlai.ualberta.ca/&#34;&gt;RLAI Lab&lt;/a&gt; at the University of Alberta. Previously, I&amp;rsquo;ve worked on computer vision for agricultural robots at &lt;a href=&#34;https://upsiderobotics.com/&#34;&gt;Upside Robotics&lt;/a&gt;, blockchain collectibles at &lt;a href=&#34;https://www.dapperlabs.com/&#34;&gt;Dapper Labs&lt;/a&gt;, and conversational analytics at &lt;a href=&#34;https://www.tableau.com/&#34;&gt;Tableau&lt;/a&gt;. In my spare time, I enjoy training the art of folding clothes with people in them, also known colloquially as Brazilian Jiu Jitsu.&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>Contact</title>
+      <link>//localhost:1313/contact/</link>
+      <pubDate>Thu, 28 Feb 2019 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/contact/</guid>
+      <description>&lt;ul&gt;&#xA;&lt;li&gt;&lt;a href=&#34;https://github.com/nanxiaobei&#34;&gt;github.com/nanxiaobei&lt;/a&gt;&lt;/li&gt;&#xA;&lt;li&gt;&lt;a href=&#34;https://lee.so&#34;&gt;lee.so&lt;/a&gt;&lt;/li&gt;&#xA;&lt;/ul&gt;</description>
+    </item>
+    <item>
+      <title></title>
+      <link>//localhost:1313/homepage/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/homepage/</guid>
+      <description></description>
+    </item>
+  </channel>
+</rss>

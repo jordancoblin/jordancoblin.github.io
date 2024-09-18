@@ -1,0 +1,31 @@
+languageCode = 'en-us'
+title = 'AI Meanderings'
+theme='paper'
+
+[params]
+    # header social icons
+    # twitter = 'YOUR_TWITTER_ID'               # twitter.com/YOUR_TWITTER_ID
+    github = 'jordancoblin'                 # github.com/YOUR_GITHUB_ID
+    # instagram = 'YOUR_INSTAGRAM_ID'           # instagram.com/YOUR_INSTAGRAM_ID
+    linkedin = 'jordan-coblin-59237597'             # linkedin.com/in/YOUR_LINKEDIN_ID
+    # mastodon = 'YOUR_MASTODON_LINK'           # e.g. 'https://mastodon.instance/@xxx'
+    # threads = '@YOUR_THREADS_ID'              # threads.net/@YOUR_THREADS_ID
+    # rss = true                                # show rss icon
+
+    # home page profile
+    # avatar = 'jordanfcoblin@gmail.com'                 # gravatar email or image url
+    # name = 'Jordan Coblin'
+    # bio = ''
+
+[menu]
+
+  [[menu.main]]
+    identifier = "about"
+    name = "About"
+    url = "/about/"
+    weight = 10
+  [[menu.main]]
+    identifier = "contact"
+    name = "Contact"
+    url = "/contact/"
+    weight = 10
