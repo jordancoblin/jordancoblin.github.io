@@ -2,17 +2,17 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Posts on AI Meanderings</title>
-    <link>//localhost:1313/posts/</link>
+    <link>/posts/</link>
     <description>Recent content in Posts on AI Meanderings</description>
     <generator>Hugo</generator>
     <language>en-us</language>
     <lastBuildDate>Wed, 18 Sep 2024 15:51:45 -0600</lastBuildDate>
-    <atom:link href="//localhost:1313/posts/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="/posts/index.xml" rel="self" type="application/rss+xml" />
     <item>
-      <title>Back to Basics: Recognizing Digits with Neural Networks</title>
-      <link>//localhost:1313/posts/example/</link>
+      <title>Back to Basics: Recognizing Digits with a Neural Network</title>
+      <link>/posts/example/</link>
       <pubDate>Wed, 18 Sep 2024 15:51:45 -0600</pubDate>
-      <guid>//localhost:1313/posts/example/</guid>
+      <guid>/posts/example/</guid>
       <description>&lt;p&gt;Here&amp;rsquo;s some stuff&lt;/p&gt;</description>
     </item>
   </channel>
