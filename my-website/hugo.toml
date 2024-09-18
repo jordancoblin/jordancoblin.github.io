@@ -3,6 +3,10 @@ title = 'AI Meanderings'
 theme='paper'
 publishDir='../docs'
 
+[services]
+  [services.disqus]
+    shortname = 'https-jordancoblin-github-io'     # use disqus comments
+
 [params]
     # header social icons
     # twitter = 'YOUR_TWITTER_ID'               # twitter.com/YOUR_TWITTER_ID
