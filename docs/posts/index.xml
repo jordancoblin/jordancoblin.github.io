@@ -10,10 +10,10 @@
     <atom:link href="/posts/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Back to Basics: Recognizing Digits with a Neural Network</title>
-      <link>/posts/example/</link>
+      <link>/posts/mnist_nn/</link>
       <pubDate>Wed, 18 Sep 2024 15:51:45 -0600</pubDate>
-      <guid>/posts/example/</guid>
-      <description>&lt;p&gt;Here&amp;rsquo;s some stuff&lt;/p&gt;</description>
+      <guid>/posts/mnist_nn/</guid>
+      <description>&lt;p&gt;This will be my first installment in a short series that I&amp;rsquo;m calling &lt;strong&gt;Back to Basics&lt;/strong&gt;, where I will revisit fundamental topics or problems in machine learning and share what I learned along the way. Typically I will include code samples or links to a repository for those interested in playing around with their own implementations. The purpose of this series is&lt;/p&gt;&#xA;&lt;p&gt;This is an inline equation: $E = mc^2$.&lt;/p&gt;</description>
     </item>
   </channel>
 </rss>
