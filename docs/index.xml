@@ -2,38 +2,38 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>AI Meanderings</title>
-    <link>/</link>
+    <link>//localhost:1313/</link>
     <description>Recent content on AI Meanderings</description>
     <generator>Hugo</generator>
     <language>en-us</language>
     <lastBuildDate>Wed, 18 Sep 2024 15:51:45 -0600</lastBuildDate>
-    <atom:link href="/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="//localhost:1313/index.xml" rel="self" type="application/rss+xml" />
     <item>
-      <title>Back to Basics: Recognizing Digits with a Neural Network</title>
-      <link>/posts/mnist_nn/</link>
+      <title>From Zero to Predicting Digits: Coding a Neural Network by Hand</title>
+      <link>//localhost:1313/posts/mnist_nn/</link>
       <pubDate>Wed, 18 Sep 2024 15:51:45 -0600</pubDate>
-      <guid>/posts/mnist_nn/</guid>
-      <description>&lt;p&gt;This will be my first installment in a short series that I&amp;rsquo;m calling &lt;strong&gt;Back to Basics&lt;/strong&gt;, where I will revisit fundamental topics or problems in machine learning and share what I learned along the way. Typically I will include code samples or links to a repository for those interested in playing around with their own implementations. The purpose of this series is&lt;/p&gt;&#xA;&lt;p&gt;This is an inline equation: $E = mc^2$.&lt;/p&gt;</description>
+      <guid>//localhost:1313/posts/mnist_nn/</guid>
+      <description>&lt;p&gt;Welcome to my very first post of the blog! I wanted to take some time to brush up on my ML foundations and implement several algorithms from scratch. This post is meant primarily as a means of collecting my thoughts and learnings from the implementation process, but hopefully some of you might also find these thoughts useful. I will be taking a holistic approach, where I will give high-level mathematical explanations, coupled with code implementations in Python.&lt;/p&gt;</description>
     </item>
     <item>
       <title>About</title>
-      <link>/about/</link>
+      <link>//localhost:1313/about/</link>
       <pubDate>Wed, 18 Sep 2024 00:00:00 +0000</pubDate>
-      <guid>/about/</guid>
-      <description>&lt;p&gt;Hey there 👋 Welcome to my experimental blog! My name is Jordan and I am a machine learning engineer with an M.Sc. from the &lt;a href=&#34;http://rlai.ualberta.ca/&#34;&gt;RLAI Lab&lt;/a&gt; at the University of Alberta. Previously, I&amp;rsquo;ve worked on computer vision for agricultural robots at &lt;a href=&#34;https://upsiderobotics.com/&#34;&gt;Upside Robotics&lt;/a&gt;, blockchain collectibles at &lt;a href=&#34;https://www.dapperlabs.com/&#34;&gt;Dapper Labs&lt;/a&gt;, and conversational analytics at &lt;a href=&#34;https://www.tableau.com/&#34;&gt;Tableau&lt;/a&gt;. In my spare time, I enjoy training the art of folding clothes with humans in them, also referred to colloquially as Brazilian Jiu Jitsu.&lt;/p&gt;</description>
+      <guid>//localhost:1313/about/</guid>
+      <description>&lt;p&gt;Hey there 👋 Welcome to my experimental blog! My name is Jordan and I am a machine learning engineer with an M.Sc. from the &lt;a href=&#34;http://rlai.ualberta.ca/&#34;&gt;RLAI Lab&lt;/a&gt; at the University of Alberta. Previously, I&amp;rsquo;ve worked on computer vision for agricultural robots at &lt;a href=&#34;https://upsiderobotics.com/&#34;&gt;Upside Robotics&lt;/a&gt;, blockchain collectibles at &lt;a href=&#34;https://www.dapperlabs.com/&#34;&gt;Dapper Labs&lt;/a&gt;, and conversational analytics at &lt;a href=&#34;https://www.tableau.com/&#34;&gt;Tableau&lt;/a&gt;. In my spare time, I enjoy training the art of folding clothes with humans in them, also commonly referred to as Brazilian Jiu Jitsu.&lt;/p&gt;</description>
     </item>
     <item>
       <title></title>
-      <link>/archives/</link>
+      <link>//localhost:1313/archives/</link>
       <pubDate>Tue, 28 May 2019 00:00:00 +0000</pubDate>
-      <guid>/archives/</guid>
+      <guid>//localhost:1313/archives/</guid>
       <description></description>
     </item>
     <item>
       <title></title>
-      <link>/homepage/</link>
+      <link>//localhost:1313/homepage/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      <guid>/homepage/</guid>
+      <guid>//localhost:1313/homepage/</guid>
       <description></description>
     </item>
   </channel>

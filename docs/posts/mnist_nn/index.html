@@ -40,7 +40,7 @@
   lang="en-us"
   dir="ltr"
 >
-  <head>
+  <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <meta
@@ -49,7 +49,7 @@
   />
 
   
-  <title>Back to Basics: Recognizing Digits with a Neural Network - AI Meanderings</title>
+  <title>From Zero to Predicting Digits: Coding a Neural Network by Hand - AI Meanderings</title>
 
   
   <meta name="theme-color" />
@@ -58,8 +58,7 @@
   
   
   
-  <meta name="description" content="This will be my first installment in a short series that I&rsquo;m calling Back to Basics, where I will revisit fundamental topics or problems in machine learning and share what I learned along the way. Typically I will include code samples or links to a repository for those interested in playing around with their own implementations. The purpose of this series is
-This is an inline equation: $E = mc^2$." />
+  <meta name="description" content="Welcome to my very first post of the blog! I wanted to take some time to brush up on my ML foundations and implement several algorithms from scratch. This post is meant primarily as a means of collecting my thoughts and learnings from the implementation process, but hopefully some of you might also find these thoughts useful. I will be taking a holistic approach, where I will give high-level mathematical explanations, coupled with code implementations in Python." />
   <meta name="author" content="AI Meanderings" />
   
 
@@ -69,14 +68,14 @@ This is an inline equation: $E = mc^2$." />
   
   
   
-  <link rel="preload stylesheet" as="style" href="/main.min.css" />
+  <link rel="preload stylesheet" as="style" href="//localhost:1313/main.min.css" />
 
   
   
   
   
   
-  <link rel="preload" as="image" href="/theme.png" />
+  <link rel="preload" as="image" href="//localhost:1313/theme.png" />
 
   
   
@@ -86,9 +85,9 @@ This is an inline equation: $E = mc^2$." />
 
   
   
-  <link rel="preload" as="image" href="/github.svg" />
+  <link rel="preload" as="image" href="//localhost:1313/github.svg" />
   
-  <link rel="preload" as="image" href="/linkedin.svg" />
+  <link rel="preload" as="image" href="//localhost:1313/linkedin.svg" />
   
   
 
@@ -96,7 +95,7 @@ This is an inline equation: $E = mc^2$." />
   
   <script
     defer
-    src="/highlight.min.js"
+    src="//localhost:1313/highlight.min.js"
     onload="hljs.initHighlightingOnLoad();"
   ></script>
   
@@ -108,52 +107,17 @@ This is an inline equation: $E = mc^2$." />
   
   <link
     rel="icon"
-    href="/favicon.ico"
+    href="//localhost:1313/favicon.ico"
   />
   <link
     rel="apple-touch-icon"
-    href="/apple-touch-icon.png"
+    href="//localhost:1313/apple-touch-icon.png"
   />
 
   
   <meta name="generator" content="Hugo 0.134.2">
 
   
-  
-  
-  
-  
-  
-  <meta itemprop="name" content="Back to Basics: Recognizing Digits with a Neural Network">
-  <meta itemprop="description" content="This will be my first installment in a short series that I’m calling Back to Basics, where I will revisit fundamental topics or problems in machine learning and share what I learned along the way. Typically I will include code samples or links to a repository for those interested in playing around with their own implementations. The purpose of this series is
-This is an inline equation: $E = mc^2$.">
-  <meta itemprop="datePublished" content="2024-09-18T15:51:45-06:00">
-  <meta itemprop="dateModified" content="2024-09-18T15:51:45-06:00">
-  <meta itemprop="wordCount" content="80">
-  
-  <meta property="og:url" content="/posts/mnist_nn/">
-  <meta property="og:site_name" content="AI Meanderings">
-  <meta property="og:title" content="Back to Basics: Recognizing Digits with a Neural Network">
-  <meta property="og:description" content="This will be my first installment in a short series that I’m calling Back to Basics, where I will revisit fundamental topics or problems in machine learning and share what I learned along the way. Typically I will include code samples or links to a repository for those interested in playing around with their own implementations. The purpose of this series is
-This is an inline equation: $E = mc^2$.">
-  <meta property="og:locale" content="en_us">
-  <meta property="og:type" content="article">
-    <meta property="article:section" content="posts">
-    <meta property="article:published_time" content="2024-09-18T15:51:45-06:00">
-    <meta property="article:modified_time" content="2024-09-18T15:51:45-06:00">
-
-  
-  
-  <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="Back to Basics: Recognizing Digits with a Neural Network">
-  <meta name="twitter:description" content="This will be my first installment in a short series that I’m calling Back to Basics, where I will revisit fundamental topics or problems in machine learning and share what I learned along the way. Typically I will include code samples or links to a repository for those interested in playing around with their own implementations. The purpose of this series is
-This is an inline equation: $E = mc^2$.">
-
-  
-  
-
-  
-  <link rel="canonical" href="/posts/mnist_nn/" />
   
   
 
@@ -177,7 +141,7 @@ This is an inline equation: $E = mc^2$.">
   <body class="text-black duration-200 ease-out dark:text-white">
     <header class="mx-auto flex h-[4.5rem] max-w-[--w] px-8 lg:justify-center">
   <div class="relative z-50 ltr:mr-auto rtl:ml-auto flex items-center">
-    <a class="-translate-y-[1px] text-2xl font-medium" href="/"
+    <a class="-translate-y-[1px] text-2xl font-medium" href="//localhost:1313/"
       >AI Meanderings</a
     >
     <div
@@ -292,7 +256,7 @@ This is an inline equation: $E = mc^2$.">
 
 <article>
   <header class="mb-14">
-    <h1 class="!my-0 pb-2.5">Back to Basics: Recognizing Digits with a Neural Network</h1>
+    <h1 class="!my-0 pb-2.5">From Zero to Predicting Digits: Coding a Neural Network by Hand</h1>
 
     
     <div class="text-xs antialiased opacity-60">
@@ -306,12 +270,131 @@ This is an inline equation: $E = mc^2$.">
     
   </header>
 
-  <section><p>This will be my first installment in a short series that I&rsquo;m calling <strong>Back to Basics</strong>, where I will revisit fundamental topics or problems in machine learning and share what I learned along the way. Typically I will include code samples or links to a repository for those interested in playing around with their own implementations. The purpose of this series is</p>
-<p>This is an inline equation: $E = mc^2$.</p>
-<p>This is a block equation:</p>
-<p>$$
-\frac{a}{b} = c
-$$</p>
+  <section><p>Welcome to my very first post of the blog! I wanted to take some time to brush up on my ML foundations and implement several algorithms from scratch. This post is meant primarily as a means of collecting my thoughts and learnings from the implementation process, but hopefully some of you might also find these thoughts useful. I will be taking a holistic approach, where I will give high-level mathematical explanations, coupled with code implementations in Python.</p>
+<p>First up is an algorithm that I would expect most readers to be familiar with, which is stochastic gradient descent (SGD) on a neural network using backpropagation. Note that we&rsquo;re considering the neural network to be our <em>model</em> here, meaning that we can think of it as a trainable function that learns patterns in data. The SGD and backpropagation <em>algorithms</em> on the other hand, describe the processes we use to train the model. Things get a bit murky however, as some parts of our model can also be considered to be <em>algorithmic</em> in nature, for example the choice of weight initializations or activation functions in each layer. But that is a topic for another time and place.</p>
+<p>As a simple baseline problem, I will be aiming to do classification on the <a href="https://www.kaggle.com/datasets/hojjatk/mnist-dataset">MNIST dataset</a>, which contains 70,000 28x28 pixel images of handwritten digits. Naturally, the goal of this classification task is to determine which digit each image corresponds to.</p>
+<h2 id="loading-the-dataset">Loading the Dataset</h2>
+<p>Let&rsquo;s start off by loading the train and test datasets from the <code>torchvision</code> python package. While we won&rsquo;t be using <code>pytorch</code> for training, we will make use of the <code>DataLoader</code> class for sampling minibatches from the training dataset.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">from</span> torch.utils.data <span style="color:#f92672">import</span> DataLoader
+</span></span><span style="display:flex;"><span><span style="color:#f92672">from</span> torchvision <span style="color:#f92672">import</span> datasets, transforms
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>transform <span style="color:#f92672">=</span> transforms<span style="color:#f92672">.</span>Compose([
+</span></span><span style="display:flex;"><span>    transforms<span style="color:#f92672">.</span>Resize((<span style="color:#ae81ff">28</span>, <span style="color:#ae81ff">28</span>)),
+</span></span><span style="display:flex;"><span>    transforms<span style="color:#f92672">.</span>ToTensor(),  <span style="color:#75715e"># Ensure fast so no action is needed</span>
+</span></span><span style="display:flex;"><span>])
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># Fetch the dataset</span>
+</span></span><span style="display:flex;"><span>train_dataset <span style="color:#f92672">=</span> datasets<span style="color:#f92672">.</span>MNIST(root<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;./data&#39;</span>, train<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>, transform<span style="color:#f92672">=</span>transform, download<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>)
+</span></span><span style="display:flex;"><span>test_dataset <span style="color:#f92672">=</span> datasets<span style="color:#f92672">.</span>MNIST(root<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;./data&#39;</span>, train<span style="color:#f92672">=</span><span style="color:#66d9ef">False</span>, transform<span style="color:#f92672">=</span>transform, download<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>train_loader <span style="color:#f92672">=</span> DataLoader(train_dataset, batch_size<span style="color:#f92672">=</span><span style="color:#ae81ff">64</span>, shuffle<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>)
+</span></span><span style="display:flex;"><span>test_loader <span style="color:#f92672">=</span> DataLoader(test_dataset, batch_size<span style="color:#f92672">=</span><span style="color:#ae81ff">1000</span>, shuffle<span style="color:#f92672">=</span><span style="color:#66d9ef">False</span>)
+</span></span></code></pre></div><h2 id="defining-the-neural-network">Defining the Neural Network</h2>
+<p>Our neural network will consist of a single hidden layer, where each node in the hidden layer applies an activation function to a weighted sum of the inputs. The choice of activation function is crucial, as it introduces non-linearity to the model, enabling it to learn complex patterns.</p>
+<p>TODO: define mathematically.</p>
+<p>In this example, we’ll implement a fully connected (FC) network using Python and NumPy. We initialize random weights for each layer and choose the sigmoid function as the activation function. Feel free to swap it out with others like ReLU or tanh, depending on the task.</p>
+<h3 id="python-code-for-the-neural-network">Python Code for the Neural Network:</h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">import</span> numpy <span style="color:#66d9ef">as</span> np
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">sigmoid</span>(x):
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">1</span> <span style="color:#f92672">/</span> (<span style="color:#ae81ff">1</span> <span style="color:#f92672">+</span> np<span style="color:#f92672">.</span>exp(<span style="color:#f92672">-</span>x))
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">sigmoid_derivative</span>(x):
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> sigmoid(x) <span style="color:#f92672">*</span> (<span style="color:#ae81ff">1</span> <span style="color:#f92672">-</span> sigmoid(x))
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">FCNetwork</span>():
+</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">&#34;&#34;&#34;Single hidden layer network&#34;&#34;&#34;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> __init__(self, input_dim, hidden_dim, output_dim, activation<span style="color:#f92672">=</span>sigmoid):
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>w1 <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>random<span style="color:#f92672">.</span>randn(input_dim, hidden_dim) <span style="color:#f92672">*</span> <span style="color:#ae81ff">0.01</span> <span style="color:#75715e"># d x h</span>
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>w2 <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>random<span style="color:#f92672">.</span>randn(hidden_dim, output_dim) <span style="color:#f92672">*</span> <span style="color:#ae81ff">0.01</span> <span style="color:#75715e"># h x 10</span>
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>b1 <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>zeros((<span style="color:#ae81ff">1</span>, hidden_dim)) <span style="color:#75715e"># 1 x h</span>
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>b2 <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>zeros((<span style="color:#ae81ff">1</span>, output_dim)) <span style="color:#75715e"># 1 x 10</span>
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>activation <span style="color:#f92672">=</span> activation
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">forward</span>(self, X):
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>z1 <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>dot(X, self<span style="color:#f92672">.</span>w1) <span style="color:#f92672">+</span> self<span style="color:#f92672">.</span>b1
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>a1 <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>activation(self<span style="color:#f92672">.</span>z1)
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>z2 <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>dot(self<span style="color:#f92672">.</span>a1, self<span style="color:#f92672">.</span>w2) <span style="color:#f92672">+</span> self<span style="color:#f92672">.</span>b2
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>a2 <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>softmax(self<span style="color:#f92672">.</span>z2)
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> self<span style="color:#f92672">.</span>a2
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">softmax</span>(self, z):
+</span></span><span style="display:flex;"><span>        exp_z <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>exp(z <span style="color:#f92672">-</span> np<span style="color:#f92672">.</span>max(z, axis<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>, keepdims<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>))
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> exp_z <span style="color:#f92672">/</span> np<span style="color:#f92672">.</span>sum(exp_z, axis<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>, keepdims<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>)
+</span></span></code></pre></div><p>Here, our network&rsquo;s forward propagation step computes the output probabilities using the softmax function. We’ll use a sigmoid function in the hidden layer for non-linearity, and softmax at the output to compute probabilities for each class (since this is a classification problem).</p>
+<h2 id="defining-the-loss-function">Defining the Loss Function</h2>
+<p>For our classification task, we’ll use the <strong>cross-entropy loss</strong>, which is a common choice for multi-class classification problems. It measures the difference between the predicted probability distribution and the true distribution (one-hot encoded labels for MNIST).</p>
+<h3 id="python-code-for-cross-entropy-loss">Python Code for Cross-Entropy Loss:</h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">cross_entropy_loss</span>(y, y_hat):
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Small epsilon added to avoid log(0)</span>
+</span></span><span style="display:flex;"><span>    epsilon <span style="color:#f92672">=</span> <span style="color:#ae81ff">1e-12</span>
+</span></span><span style="display:flex;"><span>    y_hat <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>clip(y_hat, epsilon, <span style="color:#ae81ff">1.</span> <span style="color:#f92672">-</span> epsilon)  <span style="color:#75715e"># Ensure y_hat is within (0, 1) to prevent log(0)</span>
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Average over the batch</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#f92672">-</span>np<span style="color:#f92672">.</span>sum(y <span style="color:#f92672">*</span> np<span style="color:#f92672">.</span>log(y_hat)) <span style="color:#f92672">/</span> y<span style="color:#f92672">.</span>shape[<span style="color:#ae81ff">0</span>]
+</span></span></code></pre></div><p>In this function, we first clip the predicted values y_hat to avoid undefined values from log(0) and then compute the average loss over the batch of examples.</p>
+<h2 id="implementing-backpropagation">Implementing Backpropagation</h2>
+<p>Next up, we implement <strong>backpropagation</strong>, which is the algorithm that allows the model to update its weights based on the gradient of the loss function with respect to each parameter. This is done using the chain rule of calculus to propagate the error from the output layer back to the input layer.</p>
+<p>TODO: derive update rules</p>
+<h3 id="python-code-for-backpropagation">Python Code for Backpropagation:</h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">backprop</span>(X, y, model, learning_rate<span style="color:#f92672">=</span><span style="color:#ae81ff">0.01</span>):
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Forward pass</span>
+</span></span><span style="display:flex;"><span>    y_hat <span style="color:#f92672">=</span> model<span style="color:#f92672">.</span>forward(X)
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Compute the error at the output layer</span>
+</span></span><span style="display:flex;"><span>    dz2 <span style="color:#f92672">=</span> y_hat <span style="color:#f92672">-</span> y  <span style="color:#75715e"># (batch_size, 10)</span>
+</span></span><span style="display:flex;"><span>    dw2 <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>dot(model<span style="color:#f92672">.</span>a1<span style="color:#f92672">.</span>T, dz2) <span style="color:#f92672">/</span> X<span style="color:#f92672">.</span>shape[<span style="color:#ae81ff">0</span>]
+</span></span><span style="display:flex;"><span>    db2 <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>sum(dz2, axis<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>, keepdims<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>) <span style="color:#f92672">/</span> X<span style="color:#f92672">.</span>shape[<span style="color:#ae81ff">0</span>]
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Compute the error at the hidden layer</span>
+</span></span><span style="display:flex;"><span>    dz1 <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>dot(dz2, model<span style="color:#f92672">.</span>w2<span style="color:#f92672">.</span>T) <span style="color:#f92672">*</span> sigmoid_derivative(model<span style="color:#f92672">.</span>z1)
+</span></span><span style="display:flex;"><span>    dw1 <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>dot(X<span style="color:#f92672">.</span>T, dz1) <span style="color:#f92672">/</span> X<span style="color:#f92672">.</span>shape[<span style="color:#ae81ff">0</span>]
+</span></span><span style="display:flex;"><span>    db1 <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>sum(dz1, axis<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>, keepdims<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>) <span style="color:#f92672">/</span> X<span style="color:#f92672">.</span>shape[<span style="color:#ae81ff">0</span>]
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Update weights and biases</span>
+</span></span><span style="display:flex;"><span>    model<span style="color:#f92672">.</span>w2 <span style="color:#f92672">-=</span> learning_rate <span style="color:#f92672">*</span> dw2
+</span></span><span style="display:flex;"><span>    model<span style="color:#f92672">.</span>b2 <span style="color:#f92672">-=</span> learning_rate <span style="color:#f92672">*</span> db2
+</span></span><span style="display:flex;"><span>    model<span style="color:#f92672">.</span>w1 <span style="color:#f92672">-=</span> learning_rate <span style="color:#f92672">*</span> dw1
+</span></span><span style="display:flex;"><span>    model<span style="color:#f92672">.</span>b1 <span style="color:#f92672">-=</span> learning_rate <span style="color:#f92672">*</span> db1
+</span></span></code></pre></div><p>The backpropagation algorithm updates the weights (w1 and w2) and biases (b1 and b2) by computing the gradients of the loss with respect to each parameter. These gradients are used to adjust the parameters in the direction that reduces the loss, as governed by the learning rate.</p>
+<h2 id="evaluating-performance">Evaluating Performance</h2>
+<p>After training the model, we want to evaluate how well it generalizes to unseen data (our test set). The accuracy metric is a simple yet effective measure, especially for classification tasks like MNIST.</p>
+<h3 id="python-code-for-accuracy">Python Code for Accuracy:</h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">accuracy</span>(y_true, y_pred):
+</span></span><span style="display:flex;"><span>    y_true_labels <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>argmax(y_true, axis<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>)
+</span></span><span style="display:flex;"><span>    y_pred_labels <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>argmax(y_pred, axis<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>)
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> np<span style="color:#f92672">.</span>mean(y_true_labels <span style="color:#f92672">==</span> y_pred_labels)
+</span></span></code></pre></div><p>Here, we convert the one-hot encoded labels and predictions into their respective class indices using argmax, and then compute the percentage of correctly predicted examples.</p>
+<h2 id="training-the-model">Training the Model</h2>
+<p>We can now tie everything together in a training loop. The model will iterate over the training data, compute the loss, backpropagate the errors, and update its parameters.</p>
+<h3 id="python-code-for-training-loop">Python Code for Training Loop:</h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>epochs <span style="color:#f92672">=</span> <span style="color:#ae81ff">10</span>
+</span></span><span style="display:flex;"><span>learning_rate <span style="color:#f92672">=</span> <span style="color:#ae81ff">0.01</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">for</span> epoch <span style="color:#f92672">in</span> range(epochs):
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">for</span> batch_idx, (X_batch, y_batch) <span style="color:#f92672">in</span> enumerate(train_loader):
+</span></span><span style="display:flex;"><span>        X_batch <span style="color:#f92672">=</span> X_batch<span style="color:#f92672">.</span>view(X_batch<span style="color:#f92672">.</span>size(<span style="color:#ae81ff">0</span>), <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>)<span style="color:#f92672">.</span>numpy()  <span style="color:#75715e"># Flatten the input images</span>
+</span></span><span style="display:flex;"><span>        y_batch_onehot <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>eye(<span style="color:#ae81ff">10</span>)[y_batch<span style="color:#f92672">.</span>numpy()]  <span style="color:#75715e"># Convert labels to one-hot encoding</span>
+</span></span><span style="display:flex;"><span>        
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># Forward and Backpropagation</span>
+</span></span><span style="display:flex;"><span>        backprop(X_batch, y_batch_onehot, model, learning_rate)
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Test performance on test set</span>
+</span></span><span style="display:flex;"><span>    test_X <span style="color:#f92672">=</span> test_loader<span style="color:#f92672">.</span>dataset<span style="color:#f92672">.</span>data<span style="color:#f92672">.</span>view(<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">28</span><span style="color:#f92672">*</span><span style="color:#ae81ff">28</span>)<span style="color:#f92672">.</span>numpy()
+</span></span><span style="display:flex;"><span>    test_y <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>eye(<span style="color:#ae81ff">10</span>)[test_loader<span style="color:#f92672">.</span>dataset<span style="color:#f92672">.</span>targets<span style="color:#f92672">.</span>numpy()]
+</span></span><span style="display:flex;"><span>    test_predictions <span style="color:#f92672">=</span> model<span style="color:#f92672">.</span>forward(test_X)
+</span></span><span style="display:flex;"><span>    test_accuracy <span style="color:#f92672">=</span> accuracy(test_y, test_predictions)
+</span></span><span style="display:flex;"><span>    print(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;Epoch </span><span style="color:#e6db74">{</span>epoch<span style="color:#f92672">+</span><span style="color:#ae81ff">1</span><span style="color:#e6db74">}</span><span style="color:#e6db74">/</span><span style="color:#e6db74">{</span>epochs<span style="color:#e6db74">}</span><span style="color:#e6db74"> - Test Accuracy: </span><span style="color:#e6db74">{</span>test_accuracy<span style="color:#e6db74">:</span><span style="color:#e6db74">.4f</span><span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>)
+</span></span></code></pre></div><p>This loop trains the model for a set number of epochs, where each epoch processes the entire dataset. After each epoch, we compute the accuracy on the test dataset.</p>
+<h2 id="debugging">Debugging</h2>
+<p>Training a neural network from scratch can often result in a few hiccups along the way, including issues like vanishing gradients, slow convergence, or poor generalization. A few debugging tips:</p>
+<p>Check the learning rate: If the model is not improving, the learning rate may be too high or too low.
+Inspect gradients: If the weights are not updating properly, inspect the gradients and make sure they are neither too large nor vanishingly small.
+Try different activations: Sigmoid can suffer from saturation in deep networks. Experiment with ReLU or Leaky ReLU if needed.</p>
+<h2 id="conclusion">Conclusion</h2>
+<p>In this post, we’ve implemented a fully connected neural network from scratch using NumPy, trained it using stochastic gradient descent and backpropagation, and tested it on the MNIST dataset. This foundational understanding will be useful as we move to more advanced architectures.</p>
+<p>Next, we’ll take on the challenge of implementing a <strong>convolutional neural network (CNN)</strong> to tackle a more complex dataset, the CIFAR-10, where image recognition becomes more nuanced.</p>
+<p>Stay tuned!</p>
 </section>
 
   
@@ -353,7 +436,7 @@ $$</p>
   <div class="mr-auto">
   
     &copy; 2024
-    <a class="link" href="/">AI Meanderings</a>
+    <a class="link" href="//localhost:1313/">AI Meanderings</a>
   
   </div>
   <a class="link mx-6" href="https://gohugo.io/" rel="noopener" target="_blank"
