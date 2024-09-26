@@ -6,7 +6,7 @@ draft = false
 
 Welcome to my very first post of the blog! I wanted to take some time to brush up on ML foundations now that I'm in between jobs, and what better place to start than popular computer vision tasks? Knowing myself, I have a habit of not always completing projects that I begin, so my hope is that treating blog posts as completion artifacts for these projects will be a useful forcing function for seeing things through.
 
-Into the meaty content. In this post, I will walk through the implementation of a simple fully-connected neural network to tackle image classification on the [MNIST dataset](https://www.kaggle.com/datasets/hojjatk/mnist-dataset), which contains 70,000 28x28 pixel images of handwritten digits. I will implement backpropagation and stochastic gradient descent from scratch using `numpy` and provide high-level derivations and intuition for computing weight updates of each of the neurons, but I'll try not to get overly academic with it. This was a fun and surprisingly challenge exercise, and it made me even more thankful that mature automatic differentiation libraries like `pytorch` exist - I imagine that manually computing gradients for a 30+ layer ResNet would entail a special kind of masochism.
+Into the meaty content. In this post, I will walk through the implementation of a simple fully-connected neural network to tackle image classification on the [MNIST dataset](https://www.kaggle.com/datasets/hojjatk/mnist-dataset), which contains 70,000 28x28 pixel images of handwritten digits. I will implement backpropagation and stochastic gradient descent from scratch using `numpy` and provide high-level derivations and intuition for computing weight updates of each of the neurons, but I'll try not to get overly academic with it. This was a fun and surprisingly challenging exercise, and it made me even more thankful that mature automatic differentiation libraries like `pytorch` exist - I imagine that manually computing gradients for a 30+ layer ResNet would entail a special kind of masochism.
 
 <!-- ## Loading the Dataset
 
@@ -34,21 +34,36 @@ test_loader = DataLoader(test_dataset, batch_size=1000, shuffle=False)
 
 Let's begin by giving a brief overview of the MNIST dataset and image classification task. As mentioned, MNIST is comprised of 28x28 pixel images of handwritten digits, and is divided into 60,000 training images and 10,000 test images.
 
-Each image has a corresponding label which is a real number in the range $[0, 9]$. Naturally, the task will be to design an algorithm which is able to correctly classify as many images in our dataset (or more precisely, our test set) correctly.
+Each image has a corresponding label which is a real number in the range $[0, 9]$. Naturally, the task will be to design an algorithm which is able to correctly classify as many images in our dataset (or more precisely, our test set) correctly. This can be considered a **multi-class classification** problem.
 
 #### Sample images with corresponding labels:
 
 ![MNIST sample](images/mnist_sample_with_labels.png)
 
-## Neural Network Overview
+## Neural Network Definition
 
-Let's first begin by sa
+Most of you are probably familiar enough with neural networks that I can skip a conceptual introduction. Instead, I will move into defining the neural network as a mathematical function, so that we can work with each part for our backprop derivations.
 
-Our neural network will consist of a single hidden layer, where each node in the hidden layer applies an activation function to a weighted sum of the inputs. The choice of activation function is crucial, as it introduces non-linearity to the model, enabling it to learn complex patterns.
+A neural network can be modeled as a function:
 
-TODO: define mathematically.
+$$f: \mathbb{R}^{n_x} \rightarrow \mathbb{R}^{n_o},$$ where $n_x$ is the size of our input space and $n_o$ is the size of our output space. In our case, $n_x=28 \times 28$ for the flattened pixel image, and $n_o=10$ to encompass the digit output classes. That is, our input can be expressed as the column vector:
 
-In this example, we’ll implement a fully connected (FC) network using Python and NumPy. We initialize random weights for each layer and choose the sigmoid function as the activation function. Feel free to swap it out with others like ReLU or tanh, depending on the task.
+$$\boldsymbol{x} = [x_1, x_2, ..., x_n]^T.$$
+
+We will use a neural network with a single hidden layer of size 128 and the sigmoid activation function. The output of this hidden layer is:
+
+$$\boldsymbol{h} = \sigma_h (\boldsymbol{W_h} \boldsymbol{x} + \boldsymbol{b_h}),$$
+
+where $\boldsymbol{W_h} \in \mathbb{R}^{n_h \times n_x}$ is the hidden layer's weight matrix, $\boldsymbol{b_h} \in \mathbb{R}^{n_x}$ is the bias vector, $n_h = 128$ is the hidden layer size, and $\sigma$ is our activation function. I'm including the dimensions of each matrix and vector because these become very important during implementation - shape errors tend to be where I spend much of my debugging time in the early stages of a project.
+
+The output of the network is then:
+
+$$\boldsymbol{\hat{y}} = \sigma_o (\boldsymbol{W_o} \boldsymbol{h} + \boldsymbol{b_o}),$$
+
+
+Pictorally, our network looks something like this... TODO
+
+<!-- Our neural network will consist of a single hidden layer, where each node in the hidden layer applies an activation function to a weighted sum of the inputs. The choice of activation function is crucial, as it introduces non-linearity to the model, enabling it to learn complex patterns. -->
 
 ```python
 import numpy as np
