@@ -1,0 +1,3 @@
+[submodule "my-website/themes/paper"]
+	path = my-website/themes/paper
+	url = https://github.com/jordancoblin/hugo-paper.git
