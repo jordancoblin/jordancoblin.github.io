@@ -9,11 +9,11 @@
     <lastBuildDate>Wed, 18 Sep 2024 15:51:45 -0600</lastBuildDate>
     <atom:link href="//localhost:1313/posts/index.xml" rel="self" type="application/rss+xml" />
     <item>
-      <title>Back to Basics: Recognizing Digits with a Neural Network</title>
+      <title>From Zero to Predicting Digits: Coding a Neural Network by Hand</title>
       <link>//localhost:1313/posts/mnist_nn/</link>
       <pubDate>Wed, 18 Sep 2024 15:51:45 -0600</pubDate>
       <guid>//localhost:1313/posts/mnist_nn/</guid>
-      <description>&lt;p&gt;This will be my first installment in a short series that I&amp;rsquo;m calling &lt;strong&gt;Back to Basics&lt;/strong&gt;, where I will revisit fundamental topics or problems in machine learning and share what I learned along the way. Typically I will include code samples or links to a repository for those interested in playing around with their own implementations. The purpose of this series is&lt;/p&gt;&#xA;&lt;p&gt;This is an inline equation: $E = mc^2$.&lt;/p&gt;</description>
+      <description>&lt;p&gt;Welcome to my very first post of the blog! I wanted to take some time to brush up on ML foundations now that I&amp;rsquo;m in between jobs, and what better place to start than popular computer vision tasks? Knowing myself, I have a habit of not always completing projects that I begin, so my hope is that treating blog posts as completion artifacts for these projects will be a useful forcing function for seeing things through.&lt;/p&gt;</description>
     </item>
   </channel>
 </rss>

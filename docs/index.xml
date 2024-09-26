@@ -13,7 +13,7 @@
       <link>//localhost:1313/posts/mnist_nn/</link>
       <pubDate>Wed, 18 Sep 2024 15:51:45 -0600</pubDate>
       <guid>//localhost:1313/posts/mnist_nn/</guid>
-      <description>&lt;p&gt;Welcome to my very first post of the blog! I wanted to take some time to brush up on my ML foundations and implement several algorithms from scratch. This post is meant primarily as a means of collecting my thoughts and learnings from the implementation process, but hopefully some of you might also find these thoughts useful. I will be taking a holistic approach, where I will give high-level mathematical explanations, coupled with code implementations in Python.&lt;/p&gt;</description>
+      <description>&lt;p&gt;Welcome to my very first post of the blog! I wanted to take some time to brush up on ML foundations now that I&amp;rsquo;m in between jobs, and what better place to start than popular computer vision tasks? Knowing myself, I have a habit of not always completing projects that I begin, so my hope is that treating blog posts as completion artifacts for these projects will be a useful forcing function for seeing things through.&lt;/p&gt;</description>
     </item>
     <item>
       <title>About</title>

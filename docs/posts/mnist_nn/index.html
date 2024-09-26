@@ -58,7 +58,7 @@
   
   
   
-  <meta name="description" content="Welcome to my very first post of the blog! I wanted to take some time to brush up on my ML foundations and implement several algorithms from scratch. This post is meant primarily as a means of collecting my thoughts and learnings from the implementation process, but hopefully some of you might also find these thoughts useful. I will be taking a holistic approach, where I will give high-level mathematical explanations, coupled with code implementations in Python." />
+  <meta name="description" content="Welcome to my very first post of the blog! I wanted to take some time to brush up on ML foundations now that I&rsquo;m in between jobs, and what better place to start than popular computer vision tasks? Knowing myself, I have a habit of not always completing projects that I begin, so my hope is that treating blog posts as completion artifacts for these projects will be a useful forcing function for seeing things through." />
   <meta name="author" content="AI Meanderings" />
   
 
@@ -270,30 +270,20 @@
     
   </header>
 
-  <section><p>Welcome to my very first post of the blog! I wanted to take some time to brush up on my ML foundations and implement several algorithms from scratch. This post is meant primarily as a means of collecting my thoughts and learnings from the implementation process, but hopefully some of you might also find these thoughts useful. I will be taking a holistic approach, where I will give high-level mathematical explanations, coupled with code implementations in Python.</p>
-<p>First up is an algorithm that I would expect most readers to be familiar with, which is stochastic gradient descent (SGD) on a neural network using backpropagation. Note that we&rsquo;re considering the neural network to be our <em>model</em> here, meaning that we can think of it as a trainable function that learns patterns in data. The SGD and backpropagation <em>algorithms</em> on the other hand, describe the processes we use to train the model. Things get a bit murky however, as some parts of our model can also be considered to be <em>algorithmic</em> in nature, for example the choice of weight initializations or activation functions in each layer. But that is a topic for another time and place.</p>
-<p>As a simple baseline problem, I will be aiming to do classification on the <a href="https://www.kaggle.com/datasets/hojjatk/mnist-dataset">MNIST dataset</a>, which contains 70,000 28x28 pixel images of handwritten digits. Naturally, the goal of this classification task is to determine which digit each image corresponds to.</p>
-<h2 id="loading-the-dataset">Loading the Dataset</h2>
-<p>Let&rsquo;s start off by loading the train and test datasets from the <code>torchvision</code> python package. While we won&rsquo;t be using <code>pytorch</code> for training, we will make use of the <code>DataLoader</code> class for sampling minibatches from the training dataset.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">from</span> torch.utils.data <span style="color:#f92672">import</span> DataLoader
-</span></span><span style="display:flex;"><span><span style="color:#f92672">from</span> torchvision <span style="color:#f92672">import</span> datasets, transforms
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>transform <span style="color:#f92672">=</span> transforms<span style="color:#f92672">.</span>Compose([
-</span></span><span style="display:flex;"><span>    transforms<span style="color:#f92672">.</span>Resize((<span style="color:#ae81ff">28</span>, <span style="color:#ae81ff">28</span>)),
-</span></span><span style="display:flex;"><span>    transforms<span style="color:#f92672">.</span>ToTensor(),  <span style="color:#75715e"># Ensure fast so no action is needed</span>
-</span></span><span style="display:flex;"><span>])
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#75715e"># Fetch the dataset</span>
-</span></span><span style="display:flex;"><span>train_dataset <span style="color:#f92672">=</span> datasets<span style="color:#f92672">.</span>MNIST(root<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;./data&#39;</span>, train<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>, transform<span style="color:#f92672">=</span>transform, download<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>)
-</span></span><span style="display:flex;"><span>test_dataset <span style="color:#f92672">=</span> datasets<span style="color:#f92672">.</span>MNIST(root<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;./data&#39;</span>, train<span style="color:#f92672">=</span><span style="color:#66d9ef">False</span>, transform<span style="color:#f92672">=</span>transform, download<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>)
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>train_loader <span style="color:#f92672">=</span> DataLoader(train_dataset, batch_size<span style="color:#f92672">=</span><span style="color:#ae81ff">64</span>, shuffle<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>)
-</span></span><span style="display:flex;"><span>test_loader <span style="color:#f92672">=</span> DataLoader(test_dataset, batch_size<span style="color:#f92672">=</span><span style="color:#ae81ff">1000</span>, shuffle<span style="color:#f92672">=</span><span style="color:#66d9ef">False</span>)
-</span></span></code></pre></div><h2 id="defining-the-neural-network">Defining the Neural Network</h2>
+  <section><p>Welcome to my very first post of the blog! I wanted to take some time to brush up on ML foundations now that I&rsquo;m in between jobs, and what better place to start than popular computer vision tasks? Knowing myself, I have a habit of not always completing projects that I begin, so my hope is that treating blog posts as completion artifacts for these projects will be a useful forcing function for seeing things through.</p>
+<p>Into the meaty content. In this post, I will walk through the implementation of a simple fully-connected neural network to tackle image classification on the <a href="https://www.kaggle.com/datasets/hojjatk/mnist-dataset">MNIST dataset</a>, which contains 70,000 28x28 pixel images of handwritten digits. I will implement backpropagation and stochastic gradient descent from scratch using <code>numpy</code> and provide high-level derivations and intuition for computing weight updates of each of the neurons, but I&rsquo;ll try not to get overly academic with it. This was a fun and surprisingly challenge exercise, and it made me even more thankful that mature automatic differentiation libraries like <code>pytorch</code> exist - I imagine that manually computing gradients for a 30+ layer ResNet would entail a special kind of masochism.</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<h2 id="mnist-digit-classification">MNIST Digit Classification</h2>
+<p>Let&rsquo;s begin by giving a brief overview of the MNIST dataset and image classification task. As mentioned, MNIST is comprised of 28x28 pixel images of handwritten digits, and is divided into 60,000 training images and 10,000 test images.</p>
+<p>Each image has a corresponding label which is a real number in the range $[0, 9]$. Naturally, the task will be to design an algorithm which is able to correctly classify as many images in our dataset (or more precisely, our test set) correctly.</p>
+<h4 id="sample-images-with-corresponding-labels">Sample images with corresponding labels:</h4>
+<p><img src="images/mnist_sample_with_labels.png" alt="MNIST sample"></p>
+<h2 id="neural-network-overview">Neural Network Overview</h2>
+<p>Let&rsquo;s first begin by sa</p>
 <p>Our neural network will consist of a single hidden layer, where each node in the hidden layer applies an activation function to a weighted sum of the inputs. The choice of activation function is crucial, as it introduces non-linearity to the model, enabling it to learn complex patterns.</p>
 <p>TODO: define mathematically.</p>
 <p>In this example, we’ll implement a fully connected (FC) network using Python and NumPy. We initialize random weights for each layer and choose the sigmoid function as the activation function. Feel free to swap it out with others like ReLU or tanh, depending on the task.</p>
-<h3 id="python-code-for-the-neural-network">Python Code for the Neural Network:</h3>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">import</span> numpy <span style="color:#66d9ef">as</span> np
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">sigmoid</span>(x):

@@ -1,0 +1,8 @@
+/* code {
+    color: #C3302C;
+    background-color: #EEE;
+}
+
+code::before, code::after {
+    content: none;
+} */

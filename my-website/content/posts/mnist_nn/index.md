@@ -4,13 +4,11 @@ date = 2024-09-18T15:51:45-06:00
 draft = false
 +++
 
-Welcome to my very first post of the blog! I wanted to take some time to brush up on my ML foundations and implement several algorithms from scratch. This post is meant primarily as a means of collecting my thoughts and learnings from the implementation process, but hopefully some of you might also find these thoughts useful. I will be taking a holistic approach, where I will give high-level mathematical explanations, coupled with code implementations in Python.
+Welcome to my very first post of the blog! I wanted to take some time to brush up on ML foundations now that I'm in between jobs, and what better place to start than popular computer vision tasks? Knowing myself, I have a habit of not always completing projects that I begin, so my hope is that treating blog posts as completion artifacts for these projects will be a useful forcing function for seeing things through.
 
-First up is an algorithm that I would expect most readers to be familiar with, which is stochastic gradient descent (SGD) on a neural network using backpropagation. Note that we're considering the neural network to be our _model_ here, meaning that we can think of it as a trainable function that learns patterns in data. The SGD and backpropagation _algorithms_ on the other hand, describe the processes we use to train the model. Things get a bit murky however, as some parts of our model can also be considered to be _algorithmic_ in nature, for example the choice of weight initializations or activation functions in each layer. But that is a topic for another time and place.
+Into the meaty content. In this post, I will walk through the implementation of a simple fully-connected neural network to tackle image classification on the [MNIST dataset](https://www.kaggle.com/datasets/hojjatk/mnist-dataset), which contains 70,000 28x28 pixel images of handwritten digits. I will implement backpropagation and stochastic gradient descent from scratch using `numpy` and provide high-level derivations and intuition for computing weight updates of each of the neurons, but I'll try not to get overly academic with it. This was a fun and surprisingly challenge exercise, and it made me even more thankful that mature automatic differentiation libraries like `pytorch` exist - I imagine that manually computing gradients for a 30+ layer ResNet would entail a special kind of masochism.
 
-As a simple baseline problem, I will be aiming to do classification on the [MNIST dataset](https://www.kaggle.com/datasets/hojjatk/mnist-dataset), which contains 70,000 28x28 pixel images of handwritten digits. Naturally, the goal of this classification task is to determine which digit each image corresponds to.
-
-## Loading the Dataset
+<!-- ## Loading the Dataset
 
 Let's start off by loading the train and test datasets from the `torchvision` python package. While we won't be using `pytorch` for training, we will make use of the `DataLoader` class for sampling minibatches from the training dataset.
 
@@ -30,8 +28,21 @@ test_dataset = datasets.MNIST(root='./data', train=False, transform=transform, d
 train_loader = DataLoader(train_dataset, batch_size=64, shuffle=True)
 test_loader = DataLoader(test_dataset, batch_size=1000, shuffle=False)
 ```
+ -->
 
-## Defining the Neural Network
+## MNIST Digit Classification
+
+Let's begin by giving a brief overview of the MNIST dataset and image classification task. As mentioned, MNIST is comprised of 28x28 pixel images of handwritten digits, and is divided into 60,000 training images and 10,000 test images.
+
+Each image has a corresponding label which is a real number in the range $[0, 9]$. Naturally, the task will be to design an algorithm which is able to correctly classify as many images in our dataset (or more precisely, our test set) correctly.
+
+#### Sample images with corresponding labels:
+
+![MNIST sample](images/mnist_sample_with_labels.png)
+
+## Neural Network Overview
+
+Let's first begin by sa
 
 Our neural network will consist of a single hidden layer, where each node in the hidden layer applies an activation function to a weighted sum of the inputs. The choice of activation function is crucial, as it introduces non-linearity to the model, enabling it to learn complex patterns.
 
@@ -39,7 +50,6 @@ TODO: define mathematically.
 
 In this example, we’ll implement a fully connected (FC) network using Python and NumPy. We initialize random weights for each layer and choose the sigmoid function as the activation function. Feel free to swap it out with others like ReLU or tanh, depending on the task.
 
-### Python Code for the Neural Network:
 ```python
 import numpy as np
 
