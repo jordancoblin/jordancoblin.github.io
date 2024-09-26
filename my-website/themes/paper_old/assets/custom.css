@@ -1,0 +1,20 @@
+/* Place custom css here. */
+.prose :where(code):not(:where([class~="not-prose"],[class~="not-prose"] *)) {
+    color: #c01443;
+    background-color: #EEE;
+    font-weight: 600;
+    font-size: 0.875em;
+    padding-left:   3px;
+    padding-right:  3px;
+    padding-top:    0px;
+    padding-bottom: 0px;
+    border-radius: 3px;
+}
+
+.prose :where(code):not(:where([class~="not-prose"],[class~="not-prose"] *))::before {
+    content: none;
+}
+
+.prose :where(code):not(:where([class~="not-prose"],[class~="not-prose"] *))::after {
+    content: none;
+}
