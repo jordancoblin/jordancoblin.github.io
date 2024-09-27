@@ -32,33 +32,63 @@ test_loader = DataLoader(test_dataset, batch_size=1000, shuffle=False)
 
 ## MNIST Digit Classification
 
-Let's begin by giving a brief overview of the MNIST dataset and image classification task. As mentioned, MNIST is comprised of 28x28 pixel images of handwritten digits, and is divided into 60,000 training images and 10,000 test images.
+<!--  Following this for notation: https://cs230.stanford.edu/files/Notation.pdf -->
 
-Each image has a corresponding label which is a real number in the range $[0, 9]$. Naturally, the task will be to design an algorithm which is able to correctly classify as many images in our dataset (or more precisely, our test set) correctly. This can be considered a **multi-class classification** problem.
+Let's begin by laying some notational groundwork for the MNIST classification task. As usual for supervised learning problems, we consider the setting where we are provided a dataset $\mathcal{D}$ consisting of input vectors $\boldsymbol{x}$ and label vectors $\boldsymbol{y}$:
 
-#### Sample images with corresponding labels:
+$$\mathcal{D} = \bigl\lbrace (\boldsymbol{x}^{(i)}, \boldsymbol{y}^{(i)}) \bigr\rbrace_{i=1}^m, $$ 
+
+where $m$ is the number of samples in our dataset. The standard MNIST dataset consists of 60,000 training images and 10,000 test images, which we will call $\mathcal{D_{\text{train}}}$ and $\mathcal{D_{\text{test}}}$. An image can be represented as a column vector:
+
+$$\boldsymbol{x}^{(i)} = [x_1^{(i)}, x_2^{(i)}, ..., x_{n_x}^{(i)}]^T,$$
+
+where $n_x = 28 \times 28$ is the number of pixels in each image. Each image has a real-valued label $y^{(i)} \in [0, 9]$ that indicates which digit, or class, the image corresponds to. To help us perform classification, we will represent this as a one-hot encoded vector:
+
+<!--  TODO: switch to Mathjax here -->
+$$\boldsymbol{y}^{(i)} = [y_1^{(i)}, y_2^{(i)}, ..., y_{n_y}^{(i)}],$$ where $n_y = 10$ is the number of digits or classes to choose from. Below we can see some sample images from this dataset, along with their corresponding labels.
+
+<!-- $$ 
+\mathcal{D} = \mathcal{D_{\text{train}}} \cup \mathcal{D_{\text{test}}} = \lbrace (\boldsymbol{x}_i, \boldsymbol{y}_i) \mid i = 1, 2, ..., m \rbrace.
+$$ -->
 
 ![MNIST sample](images/mnist_sample_with_labels.png)
+
+Because we have multiple digits to choose from, we consider this a **multi-class classification** problem, where the goal is roughly to find some function $f(\boldsymbol{x})$ that is able to correctly determine the labels for as many images in our dataset (or more precisely, our test set) as possible.
 
 ## Neural Network Definition
 
 Most of you are probably familiar enough with neural networks that I can skip a conceptual introduction. Instead, I will move into defining the neural network as a mathematical function, so that we can work with each part for our backprop derivations.
 
-A neural network can be modeled as a function:
+Let $f(x; \theta)$ be the classification function (model) parameterized by $\theta$, which outputs the predicted label $\hat{y}^{(i)} = \argmax_c f_c(\boldsymbol{x}^{(i)}; \theta)$, where $f_c(\boldsymbol{x}^{(i)}; \theta)$ is the score or probability for class $c$.
 
-$$f: \mathbb{R}^{n_x} \rightarrow \mathbb{R}^{n_o},$$ where $n_x$ is the size of our input space and $n_o$ is the size of our output space. In our case, $n_x=28 \times 28$ for the flattened pixel image, and $n_o=10$ to encompass the digit output classes. That is, our input can be expressed as the column vector:
+A neural network can be modeled as a function mapping from inputs to targets:
 
-$$\boldsymbol{x} = [x_1, x_2, ..., x_n]^T.$$
+$$f: \mathbb{R}^{n_x} \rightarrow \mathbb{R}^{n_y}.$$
 
-We will use a neural network with a single hidden layer of size 128 and the sigmoid activation function. The output of this hidden layer is:
+The output of the function is a predicted label $\hat{y}$, which we want to match the true label $y$. While neural networks may have an abritrary number of layers (hence the name *deep* learning), we will use a network with a single hidden layer of size 128. The output of this hidden layer is:
 
 $$\boldsymbol{h} = \sigma_h (\boldsymbol{W_h} \boldsymbol{x} + \boldsymbol{b_h}),$$
 
-where $\boldsymbol{W_h} \in \mathbb{R}^{n_h \times n_x}$ is the hidden layer's weight matrix, $\boldsymbol{b_h} \in \mathbb{R}^{n_x}$ is the bias vector, $n_h = 128$ is the hidden layer size, and $\sigma$ is our activation function. I'm including the dimensions of each matrix and vector because these become very important during implementation - shape errors tend to be where I spend much of my debugging time in the early stages of a project.
+where $\boldsymbol{W_h} \in \mathbb{R}^{n_h \times n_x}$ is the hidden layer's weight matrix, $\boldsymbol{b_h} \in \mathbb{R}^{n_x}$ is the bias vector, $n_h = 128$ is the hidden layer size, and $\sigma$ is our activation function. The dimensions of each matrix and vector become quite important during implementation - shape errors tend to be where I spend much of my debugging time in the early stages of a project.
 
-The output of the network is then:
+For classification problems where a single label is predicted, it is typical to use the softmax function to convert the final layer outputs into a probability distribution. The final output of our neural network becomes:
+
+$$f() = \text{softmax} (\boldsymbol{W_o} \boldsymbol{h} + \boldsymbol{b_o}),$$
+
+where $\boldsymbol{W_o} \in \mathbb{R}^{n_y \times n_h}$ and $\boldsymbol{b_o} \in \mathbb{R}^{n_y}$ are the *output* layer's weight matrix and bias vector, respectively, and
+
+$$\text{softmax}(\mathbf{z}) = \frac{e^{\mathbf{z}}}{\sum_{j=1}^{C} e^{\mathbf{z}_{j}}}$$
+
+We can then take the class with the highest probability as our final prediction:
+
+$$\hat{y} = 
+
+
+The output of the network we can then :
 
 $$\boldsymbol{\hat{y}} = \sigma_o (\boldsymbol{W_o} \boldsymbol{h} + \boldsymbol{b_o}),$$
+
+
 
 
 Pictorally, our network looks something like this... TODO
