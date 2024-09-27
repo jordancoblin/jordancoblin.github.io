@@ -34,18 +34,18 @@ test_loader = DataLoader(test_dataset, batch_size=1000, shuffle=False)
 
 <!--  Following this for notation: https://cs230.stanford.edu/files/Notation.pdf -->
 
-Let's begin by laying some notational groundwork for the MNIST classification task. As usual for supervised learning problems, we consider the setting where we are provided a dataset $\mathcal{D}$ consisting of input vectors $\boldsymbol{x}$ and label vectors $\boldsymbol{y}$:
+Let's begin by laying some notational groundwork for the MNIST classification task. As usual for supervised learning problems, we consider the setting where we are provided a dataset $\mathcal{D}$ consisting of input vectors $x$ and label vectors $y$:
 
-$$\mathcal{D} = \bigl\lbrace (\boldsymbol{x}^{(i)}, \boldsymbol{y}^{(i)}) \bigr\rbrace_{i=1}^m, $$ 
+$$\mathcal{D} = \bigl\lbrace (x^{(i)}, y^{(i)}) \bigr\rbrace_{i=1}^m, $$ 
 
 where $m$ is the number of samples in our dataset. The standard MNIST dataset consists of 60,000 training images and 10,000 test images, which we will call $\mathcal{D_{\text{train}}}$ and $\mathcal{D_{\text{test}}}$. An image can be represented as a column vector:
 
-$$\boldsymbol{x}^{(i)} = [x_1^{(i)}, x_2^{(i)}, ..., x_{n_x}^{(i)}]^T,$$
+$$x^{(i)} = [x_1^{(i)}, x_2^{(i)}, ..., x_{n_x}^{(i)}]^T,$$
 
 where $n_x = 28 \times 28$ is the number of pixels in each image. Each image has a real-valued label $y^{(i)} \in [0, 9]$ that indicates which digit, or class, the image corresponds to. To help us perform classification, we will represent this as a one-hot encoded vector:
 
 <!--  TODO: switch to Mathjax here -->
-$$\boldsymbol{y}^{(i)} = [y_1^{(i)}, y_2^{(i)}, ..., y_{n_y}^{(i)}],$$ where $n_y = 10$ is the number of digits or classes to choose from. Below we can see some sample images from this dataset, along with their corresponding labels.
+$$y^{(i)} = [y_1^{(i)}, y_2^{(i)}, ..., y_{n_y}^{(i)}],$$ where $n_y = 10$ is the number of digits or classes to choose from. Below we can see some sample images from this dataset, along with their corresponding labels.
 
 <!-- $$ 
 \mathcal{D} = \mathcal{D_{\text{train}}} \cup \mathcal{D_{\text{test}}} = \lbrace (\boldsymbol{x}_i, \boldsymbol{y}_i) \mid i = 1, 2, ..., m \rbrace.
@@ -53,47 +53,37 @@ $$ -->
 
 ![MNIST sample](images/mnist_sample_with_labels.png)
 
-Because we have multiple digits to choose from, we consider this a **multi-class classification** problem, where the goal is roughly to find some function $f(\boldsymbol{x})$ that is able to correctly determine the labels for as many images in our dataset (or more precisely, our test set) as possible.
+Because we have multiple digits to choose from, we consider this a **multi-class classification** problem, where the goal is roughly to find some function $f(x)$ that is able to correctly determine the labels for as many images in our dataset (or more precisely, our test set) as possible.
 
 ## Neural Network Definition
 
 Most of you are probably familiar enough with neural networks that I can skip a conceptual introduction. Instead, I will move into defining the neural network as a mathematical function, so that we can work with each part for our backprop derivations.
 
-Let $f(x; \theta)$ be the classification function (model) parameterized by $\theta$, which outputs the predicted label $\hat{y}^{(i)} = \argmax_c f_c(\boldsymbol{x}^{(i)}; \theta)$, where $f_c(\boldsymbol{x}^{(i)}; \theta)$ is the score or probability for class $c$.
+Let $f(x; \theta)$ be the classification function (model) parameterized by $\theta$, which outputs the predicted label $\hat{y}^{(i)} = \argmax_c f_c(x^{(i)}; \theta)$, where $f_c(x^{(i)}; \theta)$ is the score or probability for class $c$. This function $f_c$ is what we will be modeling with our neural network.
 
-A neural network can be modeled as a function mapping from inputs to targets:
+<!-- $$f: \mathbb{R}^{n_x} \rightarrow \mathbb{R}^{n_y}.$$ -->
 
-$$f: \mathbb{R}^{n_x} \rightarrow \mathbb{R}^{n_y}.$$
+While neural networks may have an abritrary number of layers (hence the name *deep* learning), we will use a network with a single hidden layer of size 128. The output of this hidden layer is:
 
-The output of the function is a predicted label $\hat{y}$, which we want to match the true label $y$. While neural networks may have an abritrary number of layers (hence the name *deep* learning), we will use a network with a single hidden layer of size 128. The output of this hidden layer is:
+$$h = \sigma (W_h x + b_h),$$
 
-$$\boldsymbol{h} = \sigma_h (\boldsymbol{W_h} \boldsymbol{x} + \boldsymbol{b_h}),$$
+where $W_h \in \mathbb{R}^{n_h \times n_x}$ is the hidden layer's weight matrix, $b_h \in \mathbb{R}^{n_x}$ is the bias vector, $n_h = 128$ is the hidden layer size, and $\sigma$ is the sigmoid activation function. The dimensions of each matrix and vector become quite important during implementation - shape errors tend to be where I spend much of my debugging time in the early stages of a project.
 
-where $\boldsymbol{W_h} \in \mathbb{R}^{n_h \times n_x}$ is the hidden layer's weight matrix, $\boldsymbol{b_h} \in \mathbb{R}^{n_x}$ is the bias vector, $n_h = 128$ is the hidden layer size, and $\sigma$ is our activation function. The dimensions of each matrix and vector become quite important during implementation - shape errors tend to be where I spend much of my debugging time in the early stages of a project.
+For classification problems where a single label is predicted, it is typical to use the softmax function to convert the final layer outputs into a probability distribution:
 
-For classification problems where a single label is predicted, it is typical to use the softmax function to convert the final layer outputs into a probability distribution. The final output of our neural network becomes:
+$$\text{softmax}(z) = \frac{e^{z}}{\sum_{j=1}^{C} e^{z}_{j}}.$$
 
-$$f() = \text{softmax} (\boldsymbol{W_o} \boldsymbol{h} + \boldsymbol{b_o}),$$
+With this, the final output of our neural network becomes:
 
-where $\boldsymbol{W_o} \in \mathbb{R}^{n_y \times n_h}$ and $\boldsymbol{b_o} \in \mathbb{R}^{n_y}$ are the *output* layer's weight matrix and bias vector, respectively, and
+$$f_c(x^{(i)}; \theta) = \text{softmax} (W_o h + b_o),$$
 
-$$\text{softmax}(\mathbf{z}) = \frac{e^{\mathbf{z}}}{\sum_{j=1}^{C} e^{\mathbf{z}_{j}}}$$
-
-We can then take the class with the highest probability as our final prediction:
-
-$$\hat{y} = 
-
-
-The output of the network we can then :
-
-$$\boldsymbol{\hat{y}} = \sigma_o (\boldsymbol{W_o} \boldsymbol{h} + \boldsymbol{b_o}),$$
-
-
-
+where $W_o \in \mathbb{R}^{n_y \times n_h}$ and $b_o \in \mathbb{R}^{n_y}$ are the *output* layer's weight matrix and bias vector, respectively.
 
 Pictorally, our network looks something like this... TODO
 
 <!-- Our neural network will consist of a single hidden layer, where each node in the hidden layer applies an activation function to a weighted sum of the inputs. The choice of activation function is crucial, as it introduces non-linearity to the model, enabling it to learn complex patterns. -->
+
+And here is my implementation of a fully-connected neural network (i.e. FCNetwork) in python. Note that this implementation operates on **mini-batches** of samples `X`.
 
 ```python
 import numpy as np
@@ -101,31 +91,33 @@ import numpy as np
 def sigmoid(x):
     return 1 / (1 + np.exp(-x))
 
-def sigmoid_derivative(x):
-    return sigmoid(x) * (1 - sigmoid(x))
+def softmax(z):
+    exp_z = np.exp(z - np.max(z, axis=1, keepdims=True))  # Subtract max(z) for numerical stability
+    return exp_z / exp_z.sum(axis=1, keepdims=True)
 
 class FCNetwork():
     """Single hidden layer network"""
     def __init__(self, input_dim, hidden_dim, output_dim, activation=sigmoid):
-        self.w1 = np.random.randn(input_dim, hidden_dim) * 0.01 # d x h
-        self.w2 = np.random.randn(hidden_dim, output_dim) * 0.01 # h x 10
-        self.b1 = np.zeros((1, hidden_dim)) # 1 x h
-        self.b2 = np.zeros((1, output_dim)) # 1 x 10
+        self.w1 = np.random.randn(input_dim, hidden_dim) * np.sqrt(1. / input_dim) # d x h
+        self.w2 = np.random.randn(hidden_dim, output_dim) * np.sqrt(1. / hidden_dim) # h x 10
+        self.b1 = np.random.rand(1, hidden_dim) # 1 x h
+        self.b2 = np.random.rand(1, output_dim) # 1 x 10
         self.activation = activation
-    
-    def forward(self, X):
-        self.z1 = np.dot(X, self.w1) + self.b1
-        self.a1 = self.activation(self.z1)
-        self.z2 = np.dot(self.a1, self.w2) + self.b2
-        self.a2 = self.softmax(self.z2)
-        return self.a2
-    
-    def softmax(self, z):
-        exp_z = np.exp(z - np.max(z, axis=1, keepdims=True))
-        return exp_z / np.sum(exp_z, axis=1, keepdims=True)
-```
 
-Here, our network's forward propagation step computes the output probabilities using the softmax function. We’ll use a sigmoid function in the hidden layer for non-linearity, and softmax at the output to compute probabilities for each class (since this is a classification problem).
+    def forward(self, X):
+        batch_size = X.shape[0]
+        X = X.reshape((batch_size, -1))
+        z1 = np.dot(X, self.w1) + self.b1
+        h = self.activation(z1)
+        z2 = np.dot(h, self.w2) + self.b2
+        f_c = softmax(z2)
+        return z1, h, z2, f_c
+    
+    def predict(self, X):
+        _, _, _, f_c = self.forward(X)
+        y_hat = np.argmax(f_c, axis=1)
+        return y_hat
+```
 
 ## Defining the Loss Function
 

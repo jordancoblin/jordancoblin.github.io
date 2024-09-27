@@ -278,64 +278,64 @@
 <!-- raw HTML omitted -->
 <h2 id="mnist-digit-classification">MNIST Digit Classification</h2>
 <!-- raw HTML omitted -->
-<p>Let&rsquo;s begin by laying some notational groundwork for the MNIST classification task. As usual for supervised learning problems, we consider the setting where we are provided a dataset $\mathcal{D}$ consisting of input vectors $\boldsymbol{x}$ and label vectors $\boldsymbol{y}$:</p>
-<p>$$\mathcal{D} = \bigl\lbrace (\boldsymbol{x}^{(i)}, \boldsymbol{y}^{(i)}) \bigr\rbrace_{i=1}^m, $$</p>
+<p>Let&rsquo;s begin by laying some notational groundwork for the MNIST classification task. As usual for supervised learning problems, we consider the setting where we are provided a dataset $\mathcal{D}$ consisting of input vectors $x$ and label vectors $y$:</p>
+<p>$$\mathcal{D} = \bigl\lbrace (x^{(i)}, y^{(i)}) \bigr\rbrace_{i=1}^m, $$</p>
 <p>where $m$ is the number of samples in our dataset. The standard MNIST dataset consists of 60,000 training images and 10,000 test images, which we will call $\mathcal{D_{\text{train}}}$ and $\mathcal{D_{\text{test}}}$. An image can be represented as a column vector:</p>
-<p>$$\boldsymbol{x}^{(i)} = [x_1^{(i)}, x_2^{(i)}, &hellip;, x_{n_x}^{(i)}]^T,$$</p>
+<p>$$x^{(i)} = [x_1^{(i)}, x_2^{(i)}, &hellip;, x_{n_x}^{(i)}]^T,$$</p>
 <p>where $n_x = 28 \times 28$ is the number of pixels in each image. Each image has a real-valued label $y^{(i)} \in [0, 9]$ that indicates which digit, or class, the image corresponds to. To help us perform classification, we will represent this as a one-hot encoded vector:</p>
 <!-- raw HTML omitted -->
-<p>$$\boldsymbol{y}^{(i)} = [y_1^{(i)}, y_2^{(i)}, &hellip;, y_{n_y}^{(i)}],$$ where $n_y = 10$ is the number of digits or classes to choose from. Below we can see some sample images from this dataset, along with their corresponding labels.</p>
+<p>$$y^{(i)} = [y_1^{(i)}, y_2^{(i)}, &hellip;, y_{n_y}^{(i)}],$$ where $n_y = 10$ is the number of digits or classes to choose from. Below we can see some sample images from this dataset, along with their corresponding labels.</p>
 <!-- raw HTML omitted -->
 <!-- raw HTML omitted -->
 <p><img src="images/mnist_sample_with_labels.png" alt="MNIST sample"></p>
-<p>Because we have multiple digits to choose from, we consider this a <strong>multi-class classification</strong> problem, where the goal is roughly to find some function $f(\boldsymbol{x})$ that is able to correctly determine the labels for as many images in our dataset (or more precisely, our test set) as possible.</p>
+<p>Because we have multiple digits to choose from, we consider this a <strong>multi-class classification</strong> problem, where the goal is roughly to find some function $f(x)$ that is able to correctly determine the labels for as many images in our dataset (or more precisely, our test set) as possible.</p>
 <h2 id="neural-network-definition">Neural Network Definition</h2>
 <p>Most of you are probably familiar enough with neural networks that I can skip a conceptual introduction. Instead, I will move into defining the neural network as a mathematical function, so that we can work with each part for our backprop derivations.</p>
-<p>Let $f(x; \theta)$ be the classification function (model) parameterized by $\theta$, which outputs the predicted label $\hat{y}^{(i)} = \argmax_c f_c(\boldsymbol{x}^{(i)}; \theta)$, where $f_c(\boldsymbol{x}^{(i)}; \theta)$ is the score or probability for class $c$.</p>
-<p>A neural network can be modeled as a function mapping from inputs to targets:</p>
-<p>$$f: \mathbb{R}^{n_x} \rightarrow \mathbb{R}^{n_y}.$$</p>
-<p>The output of the function is a predicted label $\hat{y}$, which we want to match the true label $y$. While neural networks may have an abritrary number of layers (hence the name <em>deep</em> learning), we will use a network with a single hidden layer of size 128. The output of this hidden layer is:</p>
-<p>$$\boldsymbol{h} = \sigma_h (\boldsymbol{W_h} \boldsymbol{x} + \boldsymbol{b_h}),$$</p>
-<p>where $\boldsymbol{W_h} \in \mathbb{R}^{n_h \times n_x}$ is the hidden layer&rsquo;s weight matrix, $\boldsymbol{b_h} \in \mathbb{R}^{n_x}$ is the bias vector, $n_h = 128$ is the hidden layer size, and $\sigma$ is our activation function. The dimensions of each matrix and vector become quite important during implementation - shape errors tend to be where I spend much of my debugging time in the early stages of a project.</p>
-<p>For classification problems where a single label is predicted, it is typical to use the softmax function to convert the final layer outputs into a probability distribution. The final output of our neural network becomes:</p>
-<p>$$f() = \text{softmax} (\boldsymbol{W_o} \boldsymbol{h} + \boldsymbol{b_o}),$$</p>
-<p>where $\boldsymbol{W_o} \in \mathbb{R}^{n_y \times n_h}$ and $\boldsymbol{b_o} \in \mathbb{R}^{n_y}$ are the <em>output</em> layer&rsquo;s weight matrix and bias vector, respectively, and</p>
-<p>$$\text{softmax}(\mathbf{z}) = \frac{e^{\mathbf{z}}}{\sum_{j=1}^{C} e^{\mathbf{z}_{j}}}$$</p>
-<p>We can then take the class with the highest probability as our final prediction:</p>
-<p>$$\hat{y} =</p>
-<p>The output of the network we can then :</p>
-<p>$$\boldsymbol{\hat{y}} = \sigma_o (\boldsymbol{W_o} \boldsymbol{h} + \boldsymbol{b_o}),$$</p>
+<p>Let $f(x; \theta)$ be the classification function (model) parameterized by $\theta$, which outputs the predicted label $\hat{y}^{(i)} = \argmax_c f_c(x^{(i)}; \theta)$, where $f_c(x^{(i)}; \theta)$ is the score or probability for class $c$. This function $f_c$ is what we will be modeling with our neural network.</p>
+<!-- raw HTML omitted -->
+<p>While neural networks may have an abritrary number of layers (hence the name <em>deep</em> learning), we will use a network with a single hidden layer of size 128. The output of this hidden layer is:</p>
+<p>$$h = \sigma (W_h x + b_h),$$</p>
+<p>where $W_h \in \mathbb{R}^{n_h \times n_x}$ is the hidden layer&rsquo;s weight matrix, $b_h \in \mathbb{R}^{n_x}$ is the bias vector, $n_h = 128$ is the hidden layer size, and $\sigma$ is the sigmoid activation function. The dimensions of each matrix and vector become quite important during implementation - shape errors tend to be where I spend much of my debugging time in the early stages of a project.</p>
+<p>For classification problems where a single label is predicted, it is typical to use the softmax function to convert the final layer outputs into a probability distribution:</p>
+<p>$$\text{softmax}(z) = \frac{e^{z}}{\sum_{j=1}^{C} e^{z}_{j}}.$$</p>
+<p>With this, the final output of our neural network becomes:</p>
+<p>$$f_c(x^{(i)}; \theta) = \text{softmax} (W_o h + b_o),$$</p>
+<p>where $W_o \in \mathbb{R}^{n_y \times n_h}$ and $b_o \in \mathbb{R}^{n_y}$ are the <em>output</em> layer&rsquo;s weight matrix and bias vector, respectively.</p>
 <p>Pictorally, our network looks something like this&hellip; TODO</p>
 <!-- raw HTML omitted -->
+<p>And here is my implementation of a fully-connected neural network (i.e. FCNetwork) in python. Note that this implementation operates on <strong>mini-batches</strong> of samples <code>X</code>.</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">import</span> numpy <span style="color:#66d9ef">as</span> np
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">sigmoid</span>(x):
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">1</span> <span style="color:#f92672">/</span> (<span style="color:#ae81ff">1</span> <span style="color:#f92672">+</span> np<span style="color:#f92672">.</span>exp(<span style="color:#f92672">-</span>x))
 </span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">sigmoid_derivative</span>(x):
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> sigmoid(x) <span style="color:#f92672">*</span> (<span style="color:#ae81ff">1</span> <span style="color:#f92672">-</span> sigmoid(x))
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">softmax</span>(z):
+</span></span><span style="display:flex;"><span>    exp_z <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>exp(z <span style="color:#f92672">-</span> np<span style="color:#f92672">.</span>max(z, axis<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>, keepdims<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>))  <span style="color:#75715e"># Subtract max(z) for numerical stability</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> exp_z <span style="color:#f92672">/</span> exp_z<span style="color:#f92672">.</span>sum(axis<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>, keepdims<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>)
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">FCNetwork</span>():
 </span></span><span style="display:flex;"><span>    <span style="color:#e6db74">&#34;&#34;&#34;Single hidden layer network&#34;&#34;&#34;</span>
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> __init__(self, input_dim, hidden_dim, output_dim, activation<span style="color:#f92672">=</span>sigmoid):
-</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>w1 <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>random<span style="color:#f92672">.</span>randn(input_dim, hidden_dim) <span style="color:#f92672">*</span> <span style="color:#ae81ff">0.01</span> <span style="color:#75715e"># d x h</span>
-</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>w2 <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>random<span style="color:#f92672">.</span>randn(hidden_dim, output_dim) <span style="color:#f92672">*</span> <span style="color:#ae81ff">0.01</span> <span style="color:#75715e"># h x 10</span>
-</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>b1 <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>zeros((<span style="color:#ae81ff">1</span>, hidden_dim)) <span style="color:#75715e"># 1 x h</span>
-</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>b2 <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>zeros((<span style="color:#ae81ff">1</span>, output_dim)) <span style="color:#75715e"># 1 x 10</span>
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>w1 <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>random<span style="color:#f92672">.</span>randn(input_dim, hidden_dim) <span style="color:#f92672">*</span> np<span style="color:#f92672">.</span>sqrt(<span style="color:#ae81ff">1.</span> <span style="color:#f92672">/</span> input_dim) <span style="color:#75715e"># d x h</span>
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>w2 <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>random<span style="color:#f92672">.</span>randn(hidden_dim, output_dim) <span style="color:#f92672">*</span> np<span style="color:#f92672">.</span>sqrt(<span style="color:#ae81ff">1.</span> <span style="color:#f92672">/</span> hidden_dim) <span style="color:#75715e"># h x 10</span>
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>b1 <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>random<span style="color:#f92672">.</span>rand(<span style="color:#ae81ff">1</span>, hidden_dim) <span style="color:#75715e"># 1 x h</span>
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>b2 <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>random<span style="color:#f92672">.</span>rand(<span style="color:#ae81ff">1</span>, output_dim) <span style="color:#75715e"># 1 x 10</span>
 </span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>activation <span style="color:#f92672">=</span> activation
-</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">forward</span>(self, X):
-</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>z1 <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>dot(X, self<span style="color:#f92672">.</span>w1) <span style="color:#f92672">+</span> self<span style="color:#f92672">.</span>b1
-</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>a1 <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>activation(self<span style="color:#f92672">.</span>z1)
-</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>z2 <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>dot(self<span style="color:#f92672">.</span>a1, self<span style="color:#f92672">.</span>w2) <span style="color:#f92672">+</span> self<span style="color:#f92672">.</span>b2
-</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>a2 <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>softmax(self<span style="color:#f92672">.</span>z2)
-</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> self<span style="color:#f92672">.</span>a2
+</span></span><span style="display:flex;"><span>        batch_size <span style="color:#f92672">=</span> X<span style="color:#f92672">.</span>shape[<span style="color:#ae81ff">0</span>]
+</span></span><span style="display:flex;"><span>        X <span style="color:#f92672">=</span> X<span style="color:#f92672">.</span>reshape((batch_size, <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>))
+</span></span><span style="display:flex;"><span>        z1 <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>dot(X, self<span style="color:#f92672">.</span>w1) <span style="color:#f92672">+</span> self<span style="color:#f92672">.</span>b1
+</span></span><span style="display:flex;"><span>        h <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>activation(z1)
+</span></span><span style="display:flex;"><span>        z2 <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>dot(h, self<span style="color:#f92672">.</span>w2) <span style="color:#f92672">+</span> self<span style="color:#f92672">.</span>b2
+</span></span><span style="display:flex;"><span>        f_c <span style="color:#f92672">=</span> softmax(z2)
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> z1, h, z2, f_c
 </span></span><span style="display:flex;"><span>    
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">softmax</span>(self, z):
-</span></span><span style="display:flex;"><span>        exp_z <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>exp(z <span style="color:#f92672">-</span> np<span style="color:#f92672">.</span>max(z, axis<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>, keepdims<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>))
-</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> exp_z <span style="color:#f92672">/</span> np<span style="color:#f92672">.</span>sum(exp_z, axis<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>, keepdims<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>)
-</span></span></code></pre></div><p>Here, our network&rsquo;s forward propagation step computes the output probabilities using the softmax function. We’ll use a sigmoid function in the hidden layer for non-linearity, and softmax at the output to compute probabilities for each class (since this is a classification problem).</p>
-<h2 id="defining-the-loss-function">Defining the Loss Function</h2>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">predict</span>(self, X):
+</span></span><span style="display:flex;"><span>        _, _, _, f_c <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>forward(X)
+</span></span><span style="display:flex;"><span>        y_hat <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>argmax(f_c, axis<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>)
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> y_hat
+</span></span></code></pre></div><h2 id="defining-the-loss-function">Defining the Loss Function</h2>
 <p>For our classification task, we’ll use the <strong>cross-entropy loss</strong>, which is a common choice for multi-class classification problems. It measures the difference between the predicted probability distribution and the true distribution (one-hot encoded labels for MNIST).</p>
 <h3 id="python-code-for-cross-entropy-loss">Python Code for Cross-Entropy Loss:</h3>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">cross_entropy_loss</span>(y, y_hat):
