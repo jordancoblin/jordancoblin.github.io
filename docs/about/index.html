@@ -58,7 +58,10 @@
   
   
   
-  <meta name="description" content="Hey there 👋 Welcome to my experimental blog! My name is Jordan and I am a machine learning engineer with an M.Sc. from the RLAI Lab at the University of Alberta. Previously, I&rsquo;ve worked on computer vision for agricultural robots at Upside Robotics, blockchain collectibles at Dapper Labs, and conversational analytics at Tableau. In my spare time, I enjoy training the art of folding clothes with humans in them, also commonly referred to as Brazilian Jiu Jitsu." />
+  <meta name="description" content="
+
+
+Hey there 👋 Welcome to my experimental blog! My name is Jordan and I am a machine learning engineer with an M.Sc. from the RLAI Lab at the University of Alberta. Previously, I&rsquo;ve worked on computer vision for agricultural robots at Upside Robotics, blockchain collectibles at Dapper Labs, and conversational analytics at Tableau. In my spare time, I enjoy training the art of folding clothes with humans in them, also commonly referred to as Brazilian Jiu Jitsu." />
   <meta name="author" content="jordan.coblin" />
   
 
@@ -121,22 +124,15 @@
   
   
 
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.13.24/dist/katex.min.css">
-  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.13.24/dist/katex.min.js"></script>
-  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.13.24/dist/contrib/auto-render.min.js"
-      onload="renderMathInElement(document.body);"></script>
+  
 
   <script>
-    document.addEventListener("DOMContentLoaded", function() {
-        renderMathInElement(document.body, {
-            delimiters: [
-                {left: "$$", right: "$$", display: true},
-                {left: "\\[", right: "\\]", display: true},
-                {left: "$", right: "$", display: false}
-            ]
-        });
-    });
+    MathJax = {
+      tex: {inlineMath: [['$', '$'], ['\\(', '\\)']]}
+    };
   </script>
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 
 </head>
 
@@ -263,7 +259,10 @@
     
   </header>
 
-  <section><p>Hey there 👋 Welcome to my experimental blog! My name is Jordan and I am a machine learning engineer with an M.Sc. from the <a href="http://rlai.ualberta.ca/">RLAI Lab</a> at the University of Alberta. Previously, I&rsquo;ve worked on computer vision for agricultural robots at <a href="https://upsiderobotics.com/">Upside Robotics</a>, blockchain collectibles at <a href="https://www.dapperlabs.com/">Dapper Labs</a>, and conversational analytics at <a href="https://www.tableau.com/">Tableau</a>. In my spare time, I enjoy training the art of folding clothes with humans in them, also commonly referred to as Brazilian Jiu Jitsu.</p>
+  <section><figure class="img-avatar"><img src="/images/avatar.jpeg">
+</figure>
+
+<p>Hey there 👋 Welcome to my experimental blog! My name is Jordan and I am a machine learning engineer with an M.Sc. from the <a href="http://rlai.ualberta.ca/">RLAI Lab</a> at the University of Alberta. Previously, I&rsquo;ve worked on computer vision for agricultural robots at <a href="https://upsiderobotics.com/">Upside Robotics</a>, blockchain collectibles at <a href="https://www.dapperlabs.com/">Dapper Labs</a>, and conversational analytics at <a href="https://www.tableau.com/">Tableau</a>. In my spare time, I enjoy training the art of folding clothes with humans in them, also commonly referred to as Brazilian Jiu Jitsu.</p>
 <p>I am currently open to work and project opportunities. If you&rsquo;d like to work with me, please reach out via <a href="https://www.linkedin.com/in/jordan-coblin-59237597">LinkedIn</a>.</p>
 </section>
 

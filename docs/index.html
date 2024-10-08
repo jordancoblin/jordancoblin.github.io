@@ -119,22 +119,15 @@
   
   
 
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.13.24/dist/katex.min.css">
-  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.13.24/dist/katex.min.js"></script>
-  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.13.24/dist/contrib/auto-render.min.js"
-      onload="renderMathInElement(document.body);"></script>
+  
 
   <script>
-    document.addEventListener("DOMContentLoaded", function() {
-        renderMathInElement(document.body, {
-            delimiters: [
-                {left: "$$", right: "$$", display: true},
-                {left: "\\[", right: "\\]", display: true},
-                {left: "$", right: "$", display: false}
-            ]
-        });
-    });
+    MathJax = {
+      tex: {inlineMath: [['$', '$'], ['\\(', '\\)']]}
+    };
   </script>
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 
 </head>
 
@@ -276,11 +269,11 @@
 
 <section class="relative my-10 first-of-type:mt-0 last-of-type:mb-0">
   
-  <h2 class="!my-0">From Zero to Predicting Digits: Coding a Neural Network by Hand</h2>
+  <h2 class="!my-0">Backpropagation by Hand: Understanding and Implementing an MNIST Classifier</h2>
   <time class="text-xs antialiased opacity-60"
     >Sep 18, 2024</time
   >
-  <a class="absolute inset-0 text-[0]" href="//localhost:1313/posts/mnist_nn/">From Zero to Predicting Digits: Coding a Neural Network by Hand</a>
+  <a class="absolute inset-0 text-[0]" href="//localhost:1313/posts/mnist_nn/">Backpropagation by Hand: Understanding and Implementing an MNIST Classifier</a>
 </section>
 
 

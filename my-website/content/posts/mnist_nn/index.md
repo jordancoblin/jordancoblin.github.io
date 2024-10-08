@@ -1,10 +1,10 @@
 +++
-title = 'From Zero to Predicting Digits: Coding a Neural Network by Hand'
+title = 'Backpropagation by Hand: Understanding and Implementing an MNIST Classifier'
 date = 2024-09-18T15:51:45-06:00
 draft = false
 +++
 
-Welcome to my very first post of the blog! I wanted to take some time to brush up on ML foundations now that I'm in between jobs, and what better place to start than popular computer vision tasks? Knowing myself, I have a habit of not always completing projects that I begin, so my hope is that treating blog posts as completion artifacts for these projects will be a useful forcing function for seeing things through.
+Welcome to my very first post of the blog! I wanted to take some time to brush up on ML foundations and what better way to learn (or re-learn) technical topics than to write up one's findings? I'm also hoping that treating these blog posts as final artifacts will be a useful forcing function for actually completing the projects.
 
 Into the meaty content. In this post, I will walk through the implementation of a simple fully-connected neural network to tackle image classification on the [MNIST dataset](https://www.kaggle.com/datasets/hojjatk/mnist-dataset), which contains 70,000 28x28 pixel images of handwritten digits. I will implement backpropagation and stochastic gradient descent from scratch using `numpy` and provide high-level derivations and intuition for computing weight updates of each of the neurons, but I'll try not to get overly academic with it. This was a fun and surprisingly challenging exercise, and it made me even more thankful that mature automatic differentiation libraries like `pytorch` exist - I imagine that manually computing gradients for a 30+ layer ResNet would entail a special kind of masochism.
 
@@ -45,7 +45,16 @@ $$x^{(i)} = [x_1^{(i)}, x_2^{(i)}, ..., x_{n_x}^{(i)}]^T,$$
 where $n_x = 28 \times 28$ is the number of pixels in each image. Each image has a real-valued label $y^{(i)} \in [0, 9]$ that indicates which digit, or class, the image corresponds to. To help us perform classification, we will represent this as a one-hot encoded vector:
 
 <!--  TODO: switch to Mathjax here -->
-$$y^{(i)} = [y_1^{(i)}, y_2^{(i)}, ..., y_{n_y}^{(i)}],$$ where $n_y = 10$ is the number of digits or classes to choose from. Below we can see some sample images from this dataset, along with their corresponding labels.
+$$y^{(i)} = [y_1^{(i)}, y_2^{(i)}, ..., y_{n_y}^{(i)}]^T,$$ where $n_y = 10$ is the number of digits or classes to choose from and 
+
+$$
+y_j^{(i)} = \begin{cases}
+1 & \text{if class } j \text{ is the correct class}, \\\\\\
+0 & \text{otherwise}.
+\end{cases}
+$$
+
+Below we can see some sample images from this dataset, along with their corresponding labels.
 
 <!-- $$ 
 \mathcal{D} = \mathcal{D_{\text{train}}} \cup \mathcal{D_{\text{test}}} = \lbrace (\boldsymbol{x}_i, \boldsymbol{y}_i) \mid i = 1, 2, ..., m \rbrace.
@@ -59,7 +68,7 @@ Because we have multiple digits to choose from, we consider this a **multi-class
 
 Most of you are probably familiar enough with neural networks that I can skip a conceptual introduction. Instead, I will move into defining the neural network as a mathematical function, so that we can work with each part for our backprop derivations.
 
-Let $f(x; \theta)$ be the classification function (model) parameterized by $\theta$, which outputs the predicted label $\hat{y}^{(i)} = \argmax_c f_c(x^{(i)}; \theta)$, where $f_c(x^{(i)}; \theta)$ is the score or probability for class $c$. This function $f_c$ is what we will be modeling with our neural network.
+Let $f(x; \theta)$ be the classification function (model) parameterized by $\theta$, which outputs the predicted label $\hat{y}^{(i)} = \arg\max_c f_c(x^{(i)}; \theta)$, where $f_c(x^{(i)}; \theta)$ is the score or probability for class $c$. This function $f_c$ is what we will be modeling with our neural network.
 
 <!-- $$f: \mathbb{R}^{n_x} \rightarrow \mathbb{R}^{n_y}.$$ -->
 
@@ -83,7 +92,7 @@ Pictorally, our network looks something like this... TODO
 
 <!-- Our neural network will consist of a single hidden layer, where each node in the hidden layer applies an activation function to a weighted sum of the inputs. The choice of activation function is crucial, as it introduces non-linearity to the model, enabling it to learn complex patterns. -->
 
-And here is my implementation of a fully-connected neural network (i.e. FCNetwork) in python. Note that this implementation operates on **mini-batches** of samples `X`.
+And here is my implementation of a fully-connected neural network (i.e. FCNetwork) in python:
 
 ```python
 import numpy as np
@@ -119,9 +128,15 @@ class FCNetwork():
         return y_hat
 ```
 
-## Defining the Loss Function
+ The `forward` function returns a vector of softmax distributions $f_c$ for a batch of samples `X`, along with other variables that will be useful for backpropagation, while the `predict` function returns a vector of predicted classes $\hat{y}^{(i)}$.
 
-For our classification task, we’ll use the **cross-entropy loss**, which is a common choice for multi-class classification problems. It measures the difference between the predicted probability distribution and the true distribution (one-hot encoded labels for MNIST).
+<!-- ## Defining the Loss Function -->
+
+<!-- For our classification task, we’ll use the **cross-entropy loss**, which is a common choice for multi-class classification problems. It measures the difference between the predicted probability distribution and the true distribution (one-hot encoded labels for MNIST). The cross-entropy loss for a batch of samples is defined as:
+
+$$
+L = - \frac{1}{N} \sum_{n=1}^{N} \sum_{i=1}^{K} y_i^{(n)} \log(\hat{y}_i^{(n)})
+$$
 
 ### Python Code for Cross-Entropy Loss:
 ```python
@@ -134,9 +149,11 @@ def cross_entropy_loss(y, y_hat):
     return -np.sum(y * np.log(y_hat)) / y.shape[0]
 ```
 
-In this function, we first clip the predicted values y_hat to avoid undefined values from log(0) and then compute the average loss over the batch of examples.
+In this function, we first clip the predicted values y_hat to avoid undefined values from log(0) and then compute the average loss over the batch of examples. -->
 
-## Implementing Backpropagation
+## Gradient Descent with Backpropagation
+
+We now have a 
 
 Next up, we implement **backpropagation**, which is the algorithm that allows the model to update its weights based on the gradient of the loss function with respect to each parameter. This is done using the chain rule of calculus to propagate the error from the output layer back to the input layer.
 

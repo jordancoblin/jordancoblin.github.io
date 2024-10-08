@@ -49,7 +49,7 @@
   />
 
   
-  <title>From Zero to Predicting Digits: Coding a Neural Network by Hand - AI Meanderings</title>
+  <title>Backpropagation by Hand: Understanding and Implementing an MNIST Classifier - AI Meanderings</title>
 
   
   <meta name="theme-color" />
@@ -58,7 +58,8 @@
   
   
   
-  <meta name="description" content="Welcome to my very first post of the blog! I wanted to take some time to brush up on ML foundations now that I&rsquo;m in between jobs, and what better place to start than popular computer vision tasks? Knowing myself, I have a habit of not always completing projects that I begin, so my hope is that treating blog posts as completion artifacts for these projects will be a useful forcing function for seeing things through." />
+  <meta name="description" content="Welcome to my very first post of the blog! I wanted to take some time to brush up on ML foundations and what better way to learn (or re-learn) technical topics than to write up one&rsquo;s findings? I&rsquo;m also hoping that treating these blog posts as final artifacts will be a useful forcing function for actually completing the projects.
+Into the meaty content. In this post, I will walk through the implementation of a simple fully-connected neural network to tackle image classification on the MNIST dataset, which contains 70,000 28x28 pixel images of handwritten digits. I will implement backpropagation and stochastic gradient descent from scratch using numpy and provide high-level derivations and intuition for computing weight updates of each of the neurons, but I&rsquo;ll try not to get overly academic with it. This was a fun and surprisingly challenging exercise, and it made me even more thankful that mature automatic differentiation libraries like pytorch exist - I imagine that manually computing gradients for a 30&#43; layer ResNet would entail a special kind of masochism." />
   <meta name="author" content="AI Meanderings" />
   
 
@@ -121,22 +122,15 @@
   
   
 
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.13.24/dist/katex.min.css">
-  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.13.24/dist/katex.min.js"></script>
-  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.13.24/dist/contrib/auto-render.min.js"
-      onload="renderMathInElement(document.body);"></script>
+  
 
   <script>
-    document.addEventListener("DOMContentLoaded", function() {
-        renderMathInElement(document.body, {
-            delimiters: [
-                {left: "$$", right: "$$", display: true},
-                {left: "\\[", right: "\\]", display: true},
-                {left: "$", right: "$", display: false}
-            ]
-        });
-    });
+    MathJax = {
+      tex: {inlineMath: [['$', '$'], ['\\(', '\\)']]}
+    };
   </script>
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 
 </head>
 
@@ -258,7 +252,7 @@
 
 <article>
   <header class="mb-14">
-    <h1 class="!my-0 pb-2.5">From Zero to Predicting Digits: Coding a Neural Network by Hand</h1>
+    <h1 class="!my-0 pb-2.5">Backpropagation by Hand: Understanding and Implementing an MNIST Classifier</h1>
 
     
     <div class="text-xs antialiased opacity-60">
@@ -272,7 +266,7 @@
     
   </header>
 
-  <section><p>Welcome to my very first post of the blog! I wanted to take some time to brush up on ML foundations now that I&rsquo;m in between jobs, and what better place to start than popular computer vision tasks? Knowing myself, I have a habit of not always completing projects that I begin, so my hope is that treating blog posts as completion artifacts for these projects will be a useful forcing function for seeing things through.</p>
+  <section><p>Welcome to my very first post of the blog! I wanted to take some time to brush up on ML foundations and what better way to learn (or re-learn) technical topics than to write up one&rsquo;s findings? I&rsquo;m also hoping that treating these blog posts as final artifacts will be a useful forcing function for actually completing the projects.</p>
 <p>Into the meaty content. In this post, I will walk through the implementation of a simple fully-connected neural network to tackle image classification on the <a href="https://www.kaggle.com/datasets/hojjatk/mnist-dataset">MNIST dataset</a>, which contains 70,000 28x28 pixel images of handwritten digits. I will implement backpropagation and stochastic gradient descent from scratch using <code>numpy</code> and provide high-level derivations and intuition for computing weight updates of each of the neurons, but I&rsquo;ll try not to get overly academic with it. This was a fun and surprisingly challenging exercise, and it made me even more thankful that mature automatic differentiation libraries like <code>pytorch</code> exist - I imagine that manually computing gradients for a 30+ layer ResNet would entail a special kind of masochism.</p>
 <!-- raw HTML omitted -->
 <!-- raw HTML omitted -->
@@ -284,14 +278,21 @@
 <p>$$x^{(i)} = [x_1^{(i)}, x_2^{(i)}, &hellip;, x_{n_x}^{(i)}]^T,$$</p>
 <p>where $n_x = 28 \times 28$ is the number of pixels in each image. Each image has a real-valued label $y^{(i)} \in [0, 9]$ that indicates which digit, or class, the image corresponds to. To help us perform classification, we will represent this as a one-hot encoded vector:</p>
 <!-- raw HTML omitted -->
-<p>$$y^{(i)} = [y_1^{(i)}, y_2^{(i)}, &hellip;, y_{n_y}^{(i)}],$$ where $n_y = 10$ is the number of digits or classes to choose from. Below we can see some sample images from this dataset, along with their corresponding labels.</p>
+<p>$$y^{(i)} = [y_1^{(i)}, y_2^{(i)}, &hellip;, y_{n_y}^{(i)}]^T,$$ where $n_y = 10$ is the number of digits or classes to choose from and</p>
+<p>$$
+y_j^{(i)} = \begin{cases}
+1 &amp; \text{if class } j \text{ is the correct class}, \\\
+0 &amp; \text{otherwise}.
+\end{cases}
+$$</p>
+<p>Below we can see some sample images from this dataset, along with their corresponding labels.</p>
 <!-- raw HTML omitted -->
 <!-- raw HTML omitted -->
 <p><img src="images/mnist_sample_with_labels.png" alt="MNIST sample"></p>
 <p>Because we have multiple digits to choose from, we consider this a <strong>multi-class classification</strong> problem, where the goal is roughly to find some function $f(x)$ that is able to correctly determine the labels for as many images in our dataset (or more precisely, our test set) as possible.</p>
 <h2 id="neural-network-definition">Neural Network Definition</h2>
 <p>Most of you are probably familiar enough with neural networks that I can skip a conceptual introduction. Instead, I will move into defining the neural network as a mathematical function, so that we can work with each part for our backprop derivations.</p>
-<p>Let $f(x; \theta)$ be the classification function (model) parameterized by $\theta$, which outputs the predicted label $\hat{y}^{(i)} = \argmax_c f_c(x^{(i)}; \theta)$, where $f_c(x^{(i)}; \theta)$ is the score or probability for class $c$. This function $f_c$ is what we will be modeling with our neural network.</p>
+<p>Let $f(x; \theta)$ be the classification function (model) parameterized by $\theta$, which outputs the predicted label $\hat{y}^{(i)} = \arg\max_c f_c(x^{(i)}; \theta)$, where $f_c(x^{(i)}; \theta)$ is the score or probability for class $c$. This function $f_c$ is what we will be modeling with our neural network.</p>
 <!-- raw HTML omitted -->
 <p>While neural networks may have an abritrary number of layers (hence the name <em>deep</em> learning), we will use a network with a single hidden layer of size 128. The output of this hidden layer is:</p>
 <p>$$h = \sigma (W_h x + b_h),$$</p>
@@ -303,7 +304,7 @@
 <p>where $W_o \in \mathbb{R}^{n_y \times n_h}$ and $b_o \in \mathbb{R}^{n_y}$ are the <em>output</em> layer&rsquo;s weight matrix and bias vector, respectively.</p>
 <p>Pictorally, our network looks something like this&hellip; TODO</p>
 <!-- raw HTML omitted -->
-<p>And here is my implementation of a fully-connected neural network (i.e. FCNetwork) in python. Note that this implementation operates on <strong>mini-batches</strong> of samples <code>X</code>.</p>
+<p>And here is my implementation of a fully-connected neural network (i.e. FCNetwork) in python:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">import</span> numpy <span style="color:#66d9ef">as</span> np
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">sigmoid</span>(x):
@@ -335,18 +336,12 @@
 </span></span><span style="display:flex;"><span>        _, _, _, f_c <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>forward(X)
 </span></span><span style="display:flex;"><span>        y_hat <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>argmax(f_c, axis<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>)
 </span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> y_hat
-</span></span></code></pre></div><h2 id="defining-the-loss-function">Defining the Loss Function</h2>
-<p>For our classification task, we’ll use the <strong>cross-entropy loss</strong>, which is a common choice for multi-class classification problems. It measures the difference between the predicted probability distribution and the true distribution (one-hot encoded labels for MNIST).</p>
-<h3 id="python-code-for-cross-entropy-loss">Python Code for Cross-Entropy Loss:</h3>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">cross_entropy_loss</span>(y, y_hat):
-</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Small epsilon added to avoid log(0)</span>
-</span></span><span style="display:flex;"><span>    epsilon <span style="color:#f92672">=</span> <span style="color:#ae81ff">1e-12</span>
-</span></span><span style="display:flex;"><span>    y_hat <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>clip(y_hat, epsilon, <span style="color:#ae81ff">1.</span> <span style="color:#f92672">-</span> epsilon)  <span style="color:#75715e"># Ensure y_hat is within (0, 1) to prevent log(0)</span>
-</span></span><span style="display:flex;"><span>    
-</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Average over the batch</span>
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#f92672">-</span>np<span style="color:#f92672">.</span>sum(y <span style="color:#f92672">*</span> np<span style="color:#f92672">.</span>log(y_hat)) <span style="color:#f92672">/</span> y<span style="color:#f92672">.</span>shape[<span style="color:#ae81ff">0</span>]
-</span></span></code></pre></div><p>In this function, we first clip the predicted values y_hat to avoid undefined values from log(0) and then compute the average loss over the batch of examples.</p>
-<h2 id="implementing-backpropagation">Implementing Backpropagation</h2>
+</span></span></code></pre></div><p>The <code>forward</code> function returns a vector of softmax distributions $f_c$ for a batch of samples <code>X</code>, along with other variables that will be useful for backpropagation, while the <code>predict</code> function returns a vector of predicted classes $\hat{y}^{(i)}$.</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<h2 id="gradient-descent-with-backpropagation">Gradient Descent with Backpropagation</h2>
+<p>We now have a</p>
 <p>Next up, we implement <strong>backpropagation</strong>, which is the algorithm that allows the model to update its weights based on the gradient of the loss function with respect to each parameter. This is done using the chain rule of calculus to propagate the error from the output layer back to the input layer.</p>
 <p>TODO: derive update rules</p>
 <h3 id="python-code-for-backpropagation">Python Code for Backpropagation:</h3>
