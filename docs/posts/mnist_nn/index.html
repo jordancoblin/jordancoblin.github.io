@@ -341,7 +341,13 @@ $$</p>
 <!-- raw HTML omitted -->
 <!-- raw HTML omitted -->
 <h2 id="gradient-descent-with-backpropagation">Gradient Descent with Backpropagation</h2>
-<p>We now have a</p>
+<p>We now have a parameterized model that is capable of representing a set of functions $\mathcal{H}$, which is often called the <strong>hypothesis space</strong>. Our goal is to find a function $f \in \mathcal{H}$ which provides the best fit with respect to our dataset $\mathcal{D}$. To accomplish this, we will define a <strong>loss function</strong> $J(x, \theta)$ as a measure of fit, and then <em>minimize</em> this function to find the optimal parameters of the model:</p>
+<p>$$\theta_* = \arg\min_{\theta} J(x, \theta).$$</p>
+<p>For multi-class classification problems, cross-entropy is a common loss function which measures the distance between the predicted probability distribution $\hat{P}(y|x)$ and the true distribution $P(y|x)$. The cross-entropy loss for a batch of samples is defined as:</p>
+<p>$$
+J(x, \theta) = - \frac{1}{N} \sum_{i=1}^{N} \sum_{j=1}^{K} y_j^{(i)} \log(\hat{y}_j^{(i)}(x; \theta)),
+$$</p>
+<p>where $N$ is the batch size and $K = n_y$ is the number of classes.</p>
 <p>Next up, we implement <strong>backpropagation</strong>, which is the algorithm that allows the model to update its weights based on the gradient of the loss function with respect to each parameter. This is done using the chain rule of calculus to propagate the error from the output layer back to the input layer.</p>
 <p>TODO: derive update rules</p>
 <h3 id="python-code-for-backpropagation">Python Code for Backpropagation:</h3>

@@ -153,9 +153,21 @@ In this function, we first clip the predicted values y_hat to avoid undefined va
 
 ## Gradient Descent with Backpropagation
 
-We now have a 
+We now have a parameterized model that is capable of representing a set of functions $\mathcal{H}$, which is often called the **hypothesis space**. Our goal is to find a function $f \in \mathcal{H}$ which provides the best fit with respect to our dataset $\mathcal{D}$. To accomplish this, we will define a **loss function** $J(x, \theta)$ as a measure of fit, and then *minimize* this function to find the optimal parameters of the model:
+
+$$\theta_* = \arg\min_{\theta} J(x, \theta).$$
+
+For multi-class classification problems, cross-entropy is a common loss function which measures the distance between the predicted probability distribution $\hat{P}(y|x)$ and the true distribution $P(y|x)$. The cross-entropy loss for a batch of samples is defined as:
+
+$$
+J(x, \theta) = - \frac{1}{N} \sum_{i=1}^{N} \sum_{j=1}^{K} y_j^{(i)} \log(\hat{y}_j^{(i)}(x; \theta)),
+$$
+
+where $N$ is the batch size and $K = n_y$ is the number of classes.
+
 
 Next up, we implement **backpropagation**, which is the algorithm that allows the model to update its weights based on the gradient of the loss function with respect to each parameter. This is done using the chain rule of calculus to propagate the error from the output layer back to the input layer.
+
 
 TODO: derive update rules
 
