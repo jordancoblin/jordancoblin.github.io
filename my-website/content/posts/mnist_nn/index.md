@@ -6,7 +6,7 @@ draft = false
 
 Welcome to my very first post of the blog! I wanted to take some time to brush up on ML foundations and what better way to learn (or re-learn) technical topics than to write up one's findings? I'm also hoping that treating these blog posts as final artifacts will be a useful forcing function for actually completing the projects.
 
-Into the meaty content. In this post, I will walk through the implementation of a simple fully-connected neural network to tackle image classification on the [MNIST dataset](https://www.kaggle.com/datasets/hojjatk/mnist-dataset), which contains 70,000 28x28 pixel images of handwritten digits. I will implement backpropagation and stochastic gradient descent from scratch using `numpy` and provide high-level derivations and intuition for computing weight updates of each of the neurons, but I'll try not to get overly academic with it. This was a fun and surprisingly challenging exercise, and it made me even more thankful that mature automatic differentiation libraries like `pytorch` exist - I imagine that manually computing gradients for a 30+ layer ResNet would entail a special kind of masochism.
+Into the meaty content. In this post, I will walk through the implementation of a simple fully-connected neural network to tackle image classification on the [MNIST dataset](https://www.kaggle.com/datasets/hojjatk/mnist-dataset). I will implement backpropagation and stochastic gradient descent from scratch using `numpy` and provide high-level derivations and intuition for computing weight updates of each of the neurons, but I'll try not to get overly academic with it. This was a fun and surprisingly challenging exercise, and it made me even more thankful that mature automatic differentiation libraries like `pytorch` exist - I imagine that manually computing gradients for a 30+ layer ResNet would entail a special kind of masochism.
 
 <!-- ## Loading the Dataset
 
@@ -153,11 +153,11 @@ In this function, we first clip the predicted values y_hat to avoid undefined va
 
 ## Gradient Descent with Backpropagation
 
-We now have a parameterized model that is capable of representing a set of functions $\mathcal{H}$, which is often called the **hypothesis space**. Our goal is to find a function $f \in \mathcal{H}$ which provides the best fit with respect to our dataset $\mathcal{D}$. To accomplish this, we will define a **loss function** $J(x, \theta)$ as a measure of fit, and then *minimize* this function to find the optimal parameters of the model:
+We now have a parameterized model that is capable of representing a variety of functions. Our goal is to find the function which provides the best fit with respect to our dataset $\mathcal{D}$. To accomplish this, we will introduce a **loss function** $J(x, \theta)$ as a measure of fit, and then *minimize* this function to find the optimal parameters of the model:
 
 $$\theta_* = \arg\min_{\theta} J(x, \theta).$$
 
-For multi-class classification problems, cross-entropy is a common loss function which measures the distance between the predicted probability distribution $\hat{P}(y|x)$ and the true distribution $P(y|x)$. The cross-entropy loss for a batch of samples is defined as:
+For multi-class classification problems, cross-entropy is a common loss function which measures the distance between the predicted probability distribution $P(\hat{y}|x)$ and the true distribution $P(y|x)$. A smaller distance, or loss, indicates that our prediction function $f(x; \theta)$ yields a good approximation to the distribution in the dataset. The cross-entropy loss for a batch of samples is defined as:
 
 $$
 J(x, \theta) = - \frac{1}{N} \sum_{i=1}^{N} \sum_{j=1}^{K} y_j^{(i)} \log(\hat{y}_j^{(i)}(x; \theta)),
@@ -165,8 +165,16 @@ $$
 
 where $N$ is the batch size and $K = n_y$ is the number of classes.
 
+To solve this optimization problem, we will use **gradient descent** with the **backpropagation** algorithm, which I will assume the reader is roughly familiar with. At a high level, backpropagation allows us to efficiently compute the derivatives needed to perform gradient updates using the chain rule in calculus. During this process, derivatives from later layers in the network get passed back through previous layers, hence the name.
 
-Next up, we implement **backpropagation**, which is the algorithm that allows the model to update its weights based on the gradient of the loss function with respect to each parameter. This is done using the chain rule of calculus to propagate the error from the output layer back to the input layer.
+## Weight Update Derivations
+
+Now at this point, the fastest way forward would likely be to use an automatic differentiation library like `pytorch` to handle all the gradient computations and not get our hands too mathematically dirty. But where would be the fun in that? Let's go ahead and derive the gradient descent updates by hand.
+
+<!-- Because of several factors, namely the non-convexity of the loss function, the large number of parameters, and non-linear activations, it is typically infeasible to find the global minima of $J(x, \theta)$ by simply solving for $\nabla J = 0$. Instead, we can estimate the minima using **gradient descent**, which is an iterative algorithm that I'm sure you've heard of if you've reached this point in the article. How does **backpropagation** fit into this? -->
+
+
+Next up, we implement **backpropagation**, which is the algorithm that 
 
 
 TODO: derive update rules
