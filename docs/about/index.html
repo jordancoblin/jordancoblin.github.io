@@ -40,7 +40,7 @@
   lang="en-us"
   dir="ltr"
 >
-  <head>
+  <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <meta
@@ -71,14 +71,14 @@ Hey there 👋 Welcome to my experimental blog! My name is Jordan and I am a mac
   
   
   
-  <link rel="preload stylesheet" as="style" href="/main.min.css" />
+  <link rel="preload stylesheet" as="style" href="//localhost:1313/main.min.css" />
 
   
   
   
   
   
-  <link rel="preload" as="image" href="/theme.png" />
+  <link rel="preload" as="image" href="//localhost:1313/theme.png" />
 
   
   
@@ -88,9 +88,9 @@ Hey there 👋 Welcome to my experimental blog! My name is Jordan and I am a mac
 
   
   
-  <link rel="preload" as="image" href="/github.svg" />
+  <link rel="preload" as="image" href="//localhost:1313/github.svg" />
   
-  <link rel="preload" as="image" href="/linkedin.svg" />
+  <link rel="preload" as="image" href="//localhost:1313/linkedin.svg" />
   
   
 
@@ -98,7 +98,7 @@ Hey there 👋 Welcome to my experimental blog! My name is Jordan and I am a mac
   
   <script
     defer
-    src="/highlight.min.js"
+    src="//localhost:1313/highlight.min.js"
     onload="hljs.initHighlightingOnLoad();"
   ></script>
   
@@ -110,11 +110,11 @@ Hey there 👋 Welcome to my experimental blog! My name is Jordan and I am a mac
   
   <link
     rel="icon"
-    href="/favicon.ico"
+    href="//localhost:1313/favicon.ico"
   />
   <link
     rel="apple-touch-icon"
-    href="/apple-touch-icon.png"
+    href="//localhost:1313/apple-touch-icon.png"
   />
 
   
@@ -123,52 +123,23 @@ Hey there 👋 Welcome to my experimental blog! My name is Jordan and I am a mac
   
   
   
-  
-  
-  
-  <meta itemprop="name" content="About">
-  <meta itemprop="description" content=" Hey there 👋 Welcome to my experimental blog! My name is Jordan and I am a machine learning engineer with an M.Sc. from the RLAI Lab at the University of Alberta. Previously, I’ve worked on computer vision for agricultural robots at Upside Robotics, blockchain collectibles at Dapper Labs, and conversational analytics at Tableau. In my spare time, I enjoy training the art of folding clothes with humans in them, also commonly referred to as Brazilian Jiu Jitsu.">
-  <meta itemprop="datePublished" content="2024-09-18T00:00:00+00:00">
-  <meta itemprop="dateModified" content="2024-09-18T00:00:00+00:00">
-  <meta itemprop="wordCount" content="98">
-  
-  <meta property="og:url" content="/about/">
-  <meta property="og:site_name" content="AI Meanderings">
-  <meta property="og:title" content="About">
-  <meta property="og:description" content=" Hey there 👋 Welcome to my experimental blog! My name is Jordan and I am a machine learning engineer with an M.Sc. from the RLAI Lab at the University of Alberta. Previously, I’ve worked on computer vision for agricultural robots at Upside Robotics, blockchain collectibles at Dapper Labs, and conversational analytics at Tableau. In my spare time, I enjoy training the art of folding clothes with humans in them, also commonly referred to as Brazilian Jiu Jitsu.">
-  <meta property="og:locale" content="en_us">
-  <meta property="og:type" content="article">
-    <meta property="article:published_time" content="2024-09-18T00:00:00+00:00">
-    <meta property="article:modified_time" content="2024-09-18T00:00:00+00:00">
 
-  
-  
-  <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="About">
-  <meta name="twitter:description" content=" Hey there 👋 Welcome to my experimental blog! My name is Jordan and I am a machine learning engineer with an M.Sc. from the RLAI Lab at the University of Alberta. Previously, I’ve worked on computer vision for agricultural robots at Upside Robotics, blockchain collectibles at Dapper Labs, and conversational analytics at Tableau. In my spare time, I enjoy training the art of folding clothes with humans in them, also commonly referred to as Brazilian Jiu Jitsu.">
-
-  
   
 
   
-  <link rel="canonical" href="/about/" />
-  
-  
+  <script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.0/es5/tex-mml-chtml.js">
+  </script>
 
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.13.24/dist/katex.min.css">
-  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.13.24/dist/katex.min.js"></script>
-  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.13.24/dist/contrib/auto-render.min.js"
-      onload="renderMathInElement(document.body);"></script>
-
-  <script>
-    document.addEventListener("DOMContentLoaded", function() {
-        renderMathInElement(document.body, {
-            delimiters: [
-                {left: "$$", right: "$$", display: true},
-                {left: "$", right: "$", display: false}
-            ]
-        });
-    });
+  <script type="text/javascript">
+  MathJax = {
+  tex: {
+    inlineMath: [['$', '$'], ['\\(', '\\)']],  
+    displayMath: [['$$', '$$'], ['\\[', '\\]']],  
+    tags: 'ams',  
+    processEscapes: true
+  }
+  };
   </script>
 
 </head>
@@ -176,7 +147,7 @@ Hey there 👋 Welcome to my experimental blog! My name is Jordan and I am a mac
   <body class="text-black duration-200 ease-out dark:text-white">
     <header class="mx-auto flex h-[4.5rem] max-w-[--w] px-8 lg:justify-center">
   <div class="relative z-50 ltr:mr-auto rtl:ml-auto flex items-center">
-    <a class="-translate-y-[1px] text-2xl font-medium" href="/"
+    <a class="-translate-y-[1px] text-2xl font-medium" href="//localhost:1313/"
       >AI Meanderings</a
     >
     <div
@@ -333,7 +304,7 @@ Hey there 👋 Welcome to my experimental blog! My name is Jordan and I am a mac
   <div class="mr-auto">
   
     &copy; 2024
-    <a class="link" href="/">AI Meanderings</a>
+    <a class="link" href="//localhost:1313/">AI Meanderings</a>
   
   </div>
   <a class="link mx-6" href="https://gohugo.io/" rel="noopener" target="_blank"

@@ -40,7 +40,7 @@
   lang="en-us"
   dir="ltr"
 >
-  <head>
+  <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <meta
@@ -49,7 +49,7 @@
   />
 
   
-  <title>Backpropagation by Hand: Understanding and Implementing an MNIST Classifier - AI Meanderings</title>
+  <title>Backpropagation by Hand: Gradient Derivations for MNIST Classification - AI Meanderings</title>
 
   
   <meta name="theme-color" />
@@ -69,14 +69,14 @@ Into the meaty content. In this post, I will walk through the implementation of 
   
   
   
-  <link rel="preload stylesheet" as="style" href="/main.min.css" />
+  <link rel="preload stylesheet" as="style" href="//localhost:1313/main.min.css" />
 
   
   
   
   
   
-  <link rel="preload" as="image" href="/theme.png" />
+  <link rel="preload" as="image" href="//localhost:1313/theme.png" />
 
   
   
@@ -86,9 +86,9 @@ Into the meaty content. In this post, I will walk through the implementation of 
 
   
   
-  <link rel="preload" as="image" href="/github.svg" />
+  <link rel="preload" as="image" href="//localhost:1313/github.svg" />
   
-  <link rel="preload" as="image" href="/linkedin.svg" />
+  <link rel="preload" as="image" href="//localhost:1313/linkedin.svg" />
   
   
 
@@ -96,7 +96,7 @@ Into the meaty content. In this post, I will walk through the implementation of 
   
   <script
     defer
-    src="/highlight.min.js"
+    src="//localhost:1313/highlight.min.js"
     onload="hljs.initHighlightingOnLoad();"
   ></script>
   
@@ -108,11 +108,11 @@ Into the meaty content. In this post, I will walk through the implementation of 
   
   <link
     rel="icon"
-    href="/favicon.ico"
+    href="//localhost:1313/favicon.ico"
   />
   <link
     rel="apple-touch-icon"
-    href="/apple-touch-icon.png"
+    href="//localhost:1313/apple-touch-icon.png"
   />
 
   
@@ -121,56 +121,23 @@ Into the meaty content. In this post, I will walk through the implementation of 
   
   
   
-  
-  
-  
-  <meta itemprop="name" content="Backpropagation by Hand: Understanding and Implementing an MNIST Classifier">
-  <meta itemprop="description" content="Welcome to my very first post of the blog! I wanted to take some time to brush up on ML foundations and what better way to learn (or re-learn) technical topics than to write up one’s findings? I’m also hoping that treating these blog posts as final artifacts will be a useful forcing function for actually completing the projects.
-Into the meaty content. In this post, I will walk through the implementation of a simple fully-connected neural network to tackle image classification on the MNIST dataset. I will implement backpropagation and stochastic gradient descent from scratch using numpy and provide high-level derivations and intuition for computing weight updates of each of the neurons, but I’ll try not to get overly academic with it. This was a fun and surprisingly challenging exercise, and it made me even more thankful that mature automatic differentiation libraries like pytorch exist - I imagine that manually computing gradients for a 30&#43; layer ResNet would entail a special kind of masochism.">
-  <meta itemprop="datePublished" content="2024-09-18T15:51:45-06:00">
-  <meta itemprop="dateModified" content="2024-09-18T15:51:45-06:00">
-  <meta itemprop="wordCount" content="1684">
-  
-  <meta property="og:url" content="/posts/mnist_nn/">
-  <meta property="og:site_name" content="AI Meanderings">
-  <meta property="og:title" content="Backpropagation by Hand: Understanding and Implementing an MNIST Classifier">
-  <meta property="og:description" content="Welcome to my very first post of the blog! I wanted to take some time to brush up on ML foundations and what better way to learn (or re-learn) technical topics than to write up one’s findings? I’m also hoping that treating these blog posts as final artifacts will be a useful forcing function for actually completing the projects.
-Into the meaty content. In this post, I will walk through the implementation of a simple fully-connected neural network to tackle image classification on the MNIST dataset. I will implement backpropagation and stochastic gradient descent from scratch using numpy and provide high-level derivations and intuition for computing weight updates of each of the neurons, but I’ll try not to get overly academic with it. This was a fun and surprisingly challenging exercise, and it made me even more thankful that mature automatic differentiation libraries like pytorch exist - I imagine that manually computing gradients for a 30&#43; layer ResNet would entail a special kind of masochism.">
-  <meta property="og:locale" content="en_us">
-  <meta property="og:type" content="article">
-    <meta property="article:section" content="posts">
-    <meta property="article:published_time" content="2024-09-18T15:51:45-06:00">
-    <meta property="article:modified_time" content="2024-09-18T15:51:45-06:00">
 
-  
-  
-  <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="Backpropagation by Hand: Understanding and Implementing an MNIST Classifier">
-  <meta name="twitter:description" content="Welcome to my very first post of the blog! I wanted to take some time to brush up on ML foundations and what better way to learn (or re-learn) technical topics than to write up one’s findings? I’m also hoping that treating these blog posts as final artifacts will be a useful forcing function for actually completing the projects.
-Into the meaty content. In this post, I will walk through the implementation of a simple fully-connected neural network to tackle image classification on the MNIST dataset. I will implement backpropagation and stochastic gradient descent from scratch using numpy and provide high-level derivations and intuition for computing weight updates of each of the neurons, but I’ll try not to get overly academic with it. This was a fun and surprisingly challenging exercise, and it made me even more thankful that mature automatic differentiation libraries like pytorch exist - I imagine that manually computing gradients for a 30&#43; layer ResNet would entail a special kind of masochism.">
-
-  
   
 
   
-  <link rel="canonical" href="/posts/mnist_nn/" />
-  
-  
+  <script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.0/es5/tex-mml-chtml.js">
+  </script>
 
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.13.24/dist/katex.min.css">
-  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.13.24/dist/katex.min.js"></script>
-  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.13.24/dist/contrib/auto-render.min.js"
-      onload="renderMathInElement(document.body);"></script>
-
-  <script>
-    document.addEventListener("DOMContentLoaded", function() {
-        renderMathInElement(document.body, {
-            delimiters: [
-                {left: "$$", right: "$$", display: true},
-                {left: "$", right: "$", display: false}
-            ]
-        });
-    });
+  <script type="text/javascript">
+  MathJax = {
+  tex: {
+    inlineMath: [['$', '$'], ['\\(', '\\)']],  
+    displayMath: [['$$', '$$'], ['\\[', '\\]']],  
+    tags: 'ams',  
+    processEscapes: true
+  }
+  };
   </script>
 
 </head>
@@ -178,7 +145,7 @@ Into the meaty content. In this post, I will walk through the implementation of 
   <body class="text-black duration-200 ease-out dark:text-white">
     <header class="mx-auto flex h-[4.5rem] max-w-[--w] px-8 lg:justify-center">
   <div class="relative z-50 ltr:mr-auto rtl:ml-auto flex items-center">
-    <a class="-translate-y-[1px] text-2xl font-medium" href="/"
+    <a class="-translate-y-[1px] text-2xl font-medium" href="//localhost:1313/"
       >AI Meanderings</a
     >
     <div
@@ -293,7 +260,7 @@ Into the meaty content. In this post, I will walk through the implementation of 
 
 <article>
   <header class="mb-14">
-    <h1 class="!my-0 pb-2.5">Backpropagation by Hand: Understanding and Implementing an MNIST Classifier</h1>
+    <h1 class="!my-0 pb-2.5">Backpropagation by Hand: Gradient Derivations for MNIST Classification</h1>
 
     
     <div class="text-xs antialiased opacity-60">
@@ -321,8 +288,8 @@ Into the meaty content. In this post, I will walk through the implementation of 
 <!-- raw HTML omitted -->
 <p>$$y^{(i)} = [y_1^{(i)}, y_2^{(i)}, &hellip;, y_{n_y}^{(i)}]^T,$$ where $n_y = 10$ is the number of digits or classes to choose from and</p>
 <p>$$
-y_j^{(i)} = \begin{cases}
-1 &amp; \text{if class } j \text{ is the correct class}, \\\
+y_k^{(i)} = \begin{cases}
+1 &amp; \text{if class } k \text{ is the correct class}, \\\
 0 &amp; \text{otherwise}.
 \end{cases}
 $$</p>
@@ -332,17 +299,18 @@ $$</p>
 <p><img src="images/mnist_sample_with_labels.png" alt="MNIST sample"></p>
 <p>Because we have multiple digits to choose from, we consider this a <strong>multi-class classification</strong> problem, where the goal is roughly to find some function $f(x)$ that is able to correctly determine the labels for as many images in our dataset (or more precisely, our test set) as possible.</p>
 <h2 id="neural-network-definition">Neural Network Definition</h2>
+<p>TODO: introduce batch/vector notation here</p>
 <p>Most of you are probably familiar enough with neural networks that I can skip a conceptual introduction. Instead, I will move into defining the neural network as a mathematical function, so that we can work with each part for our backprop derivations.</p>
-<p>Let $f(x; \theta)$ be the classification function (model) parameterized by $\theta$, which outputs the predicted label $\hat{y}^{(i)} = \arg\max_c f_c(x^{(i)}; \theta)$, where $f_c(x^{(i)}; \theta)$ is the score or probability for class $c$. This function $f_c$ is what we will be modeling with our neural network.</p>
+<p>Let $f(x; W)$ be the classification function (model) parameterized by weights $W$ and biases $b$; for notation simplicity, we can absorb $b$ into $W$. This classification function outputs the predicted label $\hat{y}^{(i)} = f(x^{(i)}; W) = \arg\max_c f_c(x^{(i)}; W)$, where $f_c(x^{(i)}; W)$ is the score or probability for class $c$. This function $f_c$ is what we will be modeling with our neural network.</p>
 <!-- raw HTML omitted -->
-<p>While neural networks may have an abritrary number of layers (hence the name <em>deep</em> learning), we will use a network with a single hidden layer of size 128. The output of this hidden layer is:</p>
-<p>$$h = \sigma (W_h x + b_h),$$</p>
-<p>where $W_h \in \mathbb{R}^{n_h \times n_x}$ is the hidden layer&rsquo;s weight matrix, $b_h \in \mathbb{R}^{n_x}$ is the bias vector, $n_h = 128$ is the hidden layer size, and $\sigma$ is the sigmoid activation function. The dimensions of each matrix and vector become quite important during implementation - shape errors tend to be where I spend much of my debugging time in the early stages of a project.</p>
+<p>Neural networks may have an abritrary number of layers (hence the name <em>deep</em> learning), and we will use the notation $W^{[l]}$ and $b^{[l]}$ to denote the weights and biases for layer $l$. For our model, we will use a network with a single hidden layer of size 128. The output of this hidden layer is:</p>
+<p>$$h = \sigma (W^{[1]} x^{(i)} + b^{[1]}),$$</p>
+<p>where $W^{[1]} \in \mathbb{R}^{n_h \times n_x}$ is the hidden layer&rsquo;s weight matrix, $b^{[1]} \in \mathbb{R}^{n_x}$ is the bias vector, $n_h = 128$ is the hidden layer size, and $\sigma$ is the sigmoid activation function. The dimensions of each matrix and vector become quite important during implementation - shape errors tend to be where I spend much of my debugging time in the early stages of a project.</p>
 <p>For classification problems where a single label is predicted, it is typical to use the softmax function to convert the final layer outputs into a probability distribution:</p>
 <p>$$\text{softmax}(z) = \frac{e^{z}}{\sum_{j=1}^{C} e^{z}_{j}}.$$</p>
 <p>With this, the final output of our neural network becomes:</p>
-<p>$$f_c(x^{(i)}; \theta) = \text{softmax} (W_o h + b_o),$$</p>
-<p>where $W_o \in \mathbb{R}^{n_y \times n_h}$ and $b_o \in \mathbb{R}^{n_y}$ are the <em>output</em> layer&rsquo;s weight matrix and bias vector, respectively.</p>
+<p>$$f_c(x^{(i)}; \theta) = \text{softmax} (W^{[2]} h + b^{[2]}),$$</p>
+<p>where $W^{[2]} \in \mathbb{R}^{n_y \times n_h}$ and $b^{[2]} \in \mathbb{R}^{n_y}$ are the <em>output</em> layer&rsquo;s weight matrix and bias vector, respectively.</p>
 <p>Pictorally, our network looks something like this&hellip; TODO</p>
 <!-- raw HTML omitted -->
 <p>And here is my implementation of a fully-connected neural network (i.e. FCNetwork) in python:</p>
@@ -382,19 +350,83 @@ $$</p>
 <!-- raw HTML omitted -->
 <!-- raw HTML omitted -->
 <h2 id="gradient-descent-with-backpropagation">Gradient Descent with Backpropagation</h2>
-<p>We now have a parameterized model that is capable of representing a variety of functions. Our goal is to find the function which provides the best fit with respect to our dataset $\mathcal{D}$. To accomplish this, we will introduce a <strong>loss function</strong> $J(x, \theta)$ as a measure of fit, and then <em>minimize</em> this function to find the optimal parameters of the model:</p>
-<p>$$\theta_* = \arg\min_{\theta} J(x, \theta).$$</p>
-<p>For multi-class classification problems, cross-entropy is a common loss function which measures the distance between the predicted probability distribution $P(\hat{y}|x)$ and the true distribution $P(y|x)$. A smaller distance, or loss, indicates that our prediction function $f(x; \theta)$ yields a good approximation to the distribution in the dataset. The cross-entropy loss for a batch of samples is defined as:</p>
+<p>We now have a parameterized model that is capable of representing a variety of functions. Our goal is to find the function which provides the best fit with respect to our dataset $\mathcal{D}$. To accomplish this, we will introduce a <strong>loss function</strong> $J(W)$ as a measure of fit, and then <em>minimize</em> this function to find the optimal parameters of the model:</p>
+<p>$$W_* = \arg\min_{W} J(W).$$</p>
+<p>For multi-class classification problems, cross-entropy is a common loss function which measures the distance between the distribution produced by our model, and the true distribution $P(y|x)$. The cross-entropy loss for a single tuple $(x^{(i)}, y^{(i)})$ is defined as:</p>
 <p>$$
-J(x, \theta) = - \frac{1}{N} \sum_{i=1}^{N} \sum_{j=1}^{K} y_j^{(i)} \log(\hat{y}_j^{(i)}(x; \theta)),
+\begin{equation}
+\label{eq:loss}
+J(W) = - \sum_{k=1}^{K} y_k^{(i)} \log \hat{y}_k^{(i)}
+\end{equation}
 $$</p>
-<p>where $N$ is the batch size and $K = n_y$ is the number of classes.</p>
-<p>To solve this optimization problem, we will use <strong>gradient descent</strong> with the <strong>backpropagation</strong> algorithm, which I will assume the reader is roughly familiar with. At a high level, backpropagation allows us to efficiently compute the derivatives needed to perform gradient updates using the chain rule in calculus. During this process, derivatives from later layers in the network get passed back through previous layers, hence the name.</p>
-<h2 id="weight-update-derivations">Weight Update Derivations</h2>
-<p>Now at this point, the fastest way forward would likely be to use an automatic differentiation library like <code>pytorch</code> to handle all the gradient computations and not get our hands too mathematically dirty. But where would be the fun in that? Let&rsquo;s go ahead and derive the gradient descent updates by hand.</p>
+<p>where $K = n_y$ is the number of classes.</p>
+<p>To solve this optimization problem, we will use <strong>gradient descent</strong> with the <strong>backpropagation</strong> algorithm, which I will assume the reader has some familiarity with. At a high level, backpropagation allows us to efficiently compute the derivatives needed to perform gradient updates using the chain rule in calculus. During this process, derivatives from later layers in the network get passed back through previous layers, hence the name!</p>
+<h2 id="deriving-the-backprop-learning-updates">Deriving the Backprop Learning Updates</h2>
+<p>At this point, the fastest way forward would be to use an automatic differentiation library like <code>pytorch</code> to handle all the gradient computations and not muddle ourselves in all the mathematical details. But where would be the fun in that? Let&rsquo;s go ahead and derive the gradient descent updates ourselves.</p>
+<p>Updating parameters $\theta$ at each iteration of gradient descent is a matter of taking a step in the direction of steepest descent in the loss function, with step size $\alpha$:</p>
+<p>$$ \theta \leftarrow \theta - \alpha \nabla J(\theta).$$</p>
+<p>Breaking down the gradient by each set of weights and biases in our network, we arrive at the following four equations to be solved:</p>
+<p>$$
+\begin{align*}
+W^{[1]} &amp; \leftarrow W^{[1]} - \alpha \frac{\partial J}{\partial W^{[1]}} \\\
+b^{[1]} &amp; \leftarrow b^{[1]} - \alpha \frac{\partial J}{\partial b^{[1]}} \\\
+W^{[2]} &amp; \leftarrow W^{[2]} - \alpha \frac{\partial J}{\partial W^{[2]}} \\\
+b^{[2]} &amp; \leftarrow b^{[2]} - \alpha \frac{\partial J}{\partial b^{[2]}}. \\\
+\end{align*}
+$$</p>
+<p>It&rsquo;s important to remember that $W^{[l]}$ is a <em>matrix</em> and $b^{[l]}$ is a <em>vector</em>, so the result of each derivative here will be either a matrix or vector as well. The components of these derivative objects is the partial derivative with respect to <em>each individual weight</em>. That is,</p>
+<p>$$
+\begin{equation}
+\label{eq:jacobian}
+\frac{\partial J}{\partial W^{[l]}} =
+\begin{bmatrix}
+\frac{\partial J}{\partial W_{1,1}^{[l]}} &amp; \frac{\partial J}{\partial W_{1,2}^{[l]}} &amp; \cdots &amp; \frac{\partial J}{\partial W_{1,n_{l-1}}^{[l]}} \\\
+\frac{\partial J}{\partial W_{2,1}^{[l]}} &amp; \frac{\partial J}{\partial W_{2,2}^{[l]}} &amp; \cdots &amp; \frac{\partial J}{\partial W_{2,n_{l-1}}^{[l]}} \\\
+\vdots &amp; \vdots &amp; \ddots &amp; \vdots \\\
+\frac{\partial J}{\partial W_{n_l,1}^{[l]}} &amp; \frac{\partial J}{\partial W_{n_l,2}^{[l]}} &amp; \cdots &amp; \frac{\partial J}{\partial W_{n_l,n_{l-1}}^{[l]}} \\\
+\end{bmatrix},
+\end{equation}
+$$</p>
+<p>where $n_l$ and $n_{l-1}$ are the number of neurons in layers $l$ and $l-1$, respectively.</p>
 <!-- raw HTML omitted -->
-<p>Next up, we implement <strong>backpropagation</strong>, which is the algorithm that</p>
-<p>TODO: derive update rules</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<h3 id="forward-pass">Forward Pass</h3>
+<p>To begin with an iteration of backpropogation, we first do a <strong>forward pass</strong>, where we pass an input $x$ through the network. During the forward pass, we compute outputs at each stage of the network, and store some which will be used later during the backward pass. We introduce the variable $z^{[l]}$, to aid us during the backward pass as well:</p>
+<p>$$
+\begin{align*}
+z^{[1]} &amp;= W^{[1]} x + b^{[1]} \\\
+h &amp;= \sigma(z^{[1]}) \\\
+z^{[2]} &amp;= W^{[2]} h + b^{[2]} \\\
+\hat{y} &amp;= \text{softmax}(z^{[2]}).
+\end{align*}
+$$</p>
+<p>At this stage, it is helpful if we visualize how all of these outputs and parameters fit together. For simplicity, we&rsquo;ll consider a network with 3 neurons in the hidden layer, 2 dimensions in the output, and 2 in the input vector.</p>
+<p><strong>[Placeholder: diagram of full network]</strong></p>
+<h3 id="backward-pass">Backward Pass</h3>
+<p>For our <strong>backward pass</strong>, we will compute the partial derivatives needed for our learning update. To accomplish this, we use the <a href="https://en.wikipedia.org/wiki/Chain_rule">chain rule</a> to decompose the gradient into constituent parts. Let&rsquo;s start with the weights in the output layer:</p>
+<p>$$
+\begin{align}
+\frac{\partial J}{\partial W_{j,i}^{[2]}} = \frac{\partial J}{\partial \hat{y_j}} \frac{\partial \hat{y_j}}{\partial z_j^{[2]}} \frac{\partial z_j^{[2]}}{\partial W_{j,i}^{[2]}}
+\end{align}
+$$</p>
+<p>For the first term, we can solve simply:</p>
+<p>$$
+\frac{\partial J}{\partial \hat{y_j}} = \frac{\partial}{\partial \hat{y_j}} \bigl( - \sum_{k=1}^{K} y_k \log \hat{y}_k \bigr) = -\frac{y_j}{\hat{y}_j},
+$$</p>
+<p>by noting that the derivative is zero for each term in the sum, save for the case where $k=j$.</p>
+<p>For the third term, again we note that the derivative is zero for each term in $W^{[2]} h$, except for $W_{j,i}^{[2]} h$:</p>
+<p>$$
+\begin{align*}
+\frac{\partial z_j^{[2]}}{\partial W_{j,i}^{[2]}} &amp;= \frac{\partial }{\partial W_{j,i}^{[2]}} \bigl( W^{[2]} h + b^{[2]} \bigr) \\\
+&amp;= \frac{\partial }{\partial W_{j,i}^{[2]}} W_{j,i}^{[2]} h \\\
+&amp;= h
+\end{align*}
+$$</p>
+<p>For the second term, things are slightly trickier. Notice in diagram [TODO: reference],</p>
+<!-- raw HTML omitted -->
+<!-- raw HTML omitted -->
+<p>&hellip; For the first layer&hellip; Notice that the two terms were the same that we computed</p>
 <h3 id="python-code-for-backpropagation">Python Code for Backpropagation:</h3>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">backprop</span>(X, y, model, learning_rate<span style="color:#f92672">=</span><span style="color:#ae81ff">0.01</span>):
 </span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Forward pass</span>
@@ -495,7 +527,7 @@ Try different activations: Sigmoid can suffer from saturation in deep networks. 
   <div class="mr-auto">
   
     &copy; 2024
-    <a class="link" href="/">AI Meanderings</a>
+    <a class="link" href="//localhost:1313/">AI Meanderings</a>
   
   </div>
   <a class="link mx-6" href="https://gohugo.io/" rel="noopener" target="_blank"

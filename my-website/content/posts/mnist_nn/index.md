@@ -1,5 +1,5 @@
 +++
-title = 'Backpropagation by Hand: Understanding and Implementing an MNIST Classifier'
+title = 'Backpropagation by Hand: Gradient Derivations for MNIST Classification'
 date = 2024-09-18T15:51:45-06:00
 draft = false
 +++
@@ -48,8 +48,8 @@ where $n_x = 28 \times 28$ is the number of pixels in each image. Each image has
 $$y^{(i)} = [y_1^{(i)}, y_2^{(i)}, ..., y_{n_y}^{(i)}]^T,$$ where $n_y = 10$ is the number of digits or classes to choose from and 
 
 $$
-y_j^{(i)} = \begin{cases}
-1 & \text{if class } j \text{ is the correct class}, \\\\\\
+y_k^{(i)} = \begin{cases}
+1 & \text{if class } k \text{ is the correct class}, \\\\\\
 0 & \text{otherwise}.
 \end{cases}
 $$
@@ -66,17 +66,19 @@ Because we have multiple digits to choose from, we consider this a **multi-class
 
 ## Neural Network Definition
 
+TODO: introduce batch/vector notation here
+
 Most of you are probably familiar enough with neural networks that I can skip a conceptual introduction. Instead, I will move into defining the neural network as a mathematical function, so that we can work with each part for our backprop derivations.
 
-Let $f(x; \theta)$ be the classification function (model) parameterized by $\theta$, which outputs the predicted label $\hat{y}^{(i)} = \arg\max_c f_c(x^{(i)}; \theta)$, where $f_c(x^{(i)}; \theta)$ is the score or probability for class $c$. This function $f_c$ is what we will be modeling with our neural network.
+Let $f(x; W)$ be the classification function (model) parameterized by weights $W$ and biases $b$; for notation simplicity, we can absorb $b$ into $W$. This classification function outputs the predicted label $\hat{y}^{(i)} = f(x^{(i)}; W) = \arg\max_c f_c(x^{(i)}; W)$, where $f_c(x^{(i)}; W)$ is the score or probability for class $c$. This function $f_c$ is what we will be modeling with our neural network.
 
 <!-- $$f: \mathbb{R}^{n_x} \rightarrow \mathbb{R}^{n_y}.$$ -->
 
-While neural networks may have an abritrary number of layers (hence the name *deep* learning), we will use a network with a single hidden layer of size 128. The output of this hidden layer is:
+Neural networks may have an abritrary number of layers (hence the name *deep* learning), and we will use the notation $W^{[l]}$ and $b^{[l]}$ to denote the weights and biases for layer $l$. For our model, we will use a network with a single hidden layer of size 128. The output of this hidden layer is:
 
-$$h = \sigma (W_h x + b_h),$$
+$$h = \sigma (W^{[1]} x^{(i)} + b^{[1]}),$$
 
-where $W_h \in \mathbb{R}^{n_h \times n_x}$ is the hidden layer's weight matrix, $b_h \in \mathbb{R}^{n_x}$ is the bias vector, $n_h = 128$ is the hidden layer size, and $\sigma$ is the sigmoid activation function. The dimensions of each matrix and vector become quite important during implementation - shape errors tend to be where I spend much of my debugging time in the early stages of a project.
+where $W^{[1]} \in \mathbb{R}^{n_h \times n_x}$ is the hidden layer's weight matrix, $b^{[1]} \in \mathbb{R}^{n_x}$ is the bias vector, $n_h = 128$ is the hidden layer size, and $\sigma$ is the sigmoid activation function. The dimensions of each matrix and vector become quite important during implementation - shape errors tend to be where I spend much of my debugging time in the early stages of a project.
 
 For classification problems where a single label is predicted, it is typical to use the softmax function to convert the final layer outputs into a probability distribution:
 
@@ -84,9 +86,9 @@ $$\text{softmax}(z) = \frac{e^{z}}{\sum_{j=1}^{C} e^{z}_{j}}.$$
 
 With this, the final output of our neural network becomes:
 
-$$f_c(x^{(i)}; \theta) = \text{softmax} (W_o h + b_o),$$
+$$f_c(x^{(i)}; \theta) = \text{softmax} (W^{[2]} h + b^{[2]}),$$
 
-where $W_o \in \mathbb{R}^{n_y \times n_h}$ and $b_o \in \mathbb{R}^{n_y}$ are the *output* layer's weight matrix and bias vector, respectively.
+where $W^{[2]} \in \mathbb{R}^{n_y \times n_h}$ and $b^{[2]} \in \mathbb{R}^{n_y}$ are the *output* layer's weight matrix and bias vector, respectively.
 
 Pictorally, our network looks something like this... TODO
 
@@ -153,31 +155,120 @@ In this function, we first clip the predicted values y_hat to avoid undefined va
 
 ## Gradient Descent with Backpropagation
 
-We now have a parameterized model that is capable of representing a variety of functions. Our goal is to find the function which provides the best fit with respect to our dataset $\mathcal{D}$. To accomplish this, we will introduce a **loss function** $J(x, \theta)$ as a measure of fit, and then *minimize* this function to find the optimal parameters of the model:
+We now have a parameterized model that is capable of representing a variety of functions. Our goal is to find the function which provides the best fit with respect to our dataset $\mathcal{D}$. To accomplish this, we will introduce a **loss function** $J(W)$ as a measure of fit, and then *minimize* this function to find the optimal parameters of the model:
 
-$$\theta_* = \arg\min_{\theta} J(x, \theta).$$
+$$W_* = \arg\min_{W} J(W).$$
 
-For multi-class classification problems, cross-entropy is a common loss function which measures the distance between the predicted probability distribution $P(\hat{y}|x)$ and the true distribution $P(y|x)$. A smaller distance, or loss, indicates that our prediction function $f(x; \theta)$ yields a good approximation to the distribution in the dataset. The cross-entropy loss for a batch of samples is defined as:
+For multi-class classification problems, cross-entropy is a common loss function which measures the distance between the distribution produced by our model, and the true distribution $P(y|x)$. The cross-entropy loss for a single tuple $(x^{(i)}, y^{(i)})$ is defined as:
 
 $$
-J(x, \theta) = - \frac{1}{N} \sum_{i=1}^{N} \sum_{j=1}^{K} y_j^{(i)} \log(\hat{y}_j^{(i)}(x; \theta)),
+\begin{equation}
+\label{eq:loss}
+    J(W) = - \sum_{k=1}^{K} y_k^{(i)} \log \hat{y}_k^{(i)}
+\end{equation}
 $$
 
-where $N$ is the batch size and $K = n_y$ is the number of classes.
+where $K = n_y$ is the number of classes.
 
-To solve this optimization problem, we will use **gradient descent** with the **backpropagation** algorithm, which I will assume the reader is roughly familiar with. At a high level, backpropagation allows us to efficiently compute the derivatives needed to perform gradient updates using the chain rule in calculus. During this process, derivatives from later layers in the network get passed back through previous layers, hence the name.
+To solve this optimization problem, we will use **gradient descent** with the **backpropagation** algorithm, which I will assume the reader has some familiarity with. At a high level, backpropagation allows us to efficiently compute the derivatives needed to perform gradient updates using the chain rule in calculus. During this process, derivatives from later layers in the network get passed back through previous layers, hence the name!
 
-## Weight Update Derivations
+## Deriving the Backprop Learning Updates
 
-Now at this point, the fastest way forward would likely be to use an automatic differentiation library like `pytorch` to handle all the gradient computations and not get our hands too mathematically dirty. But where would be the fun in that? Let's go ahead and derive the gradient descent updates by hand.
+At this point, the fastest way forward would be to use an automatic differentiation library like `pytorch` to handle all the gradient computations and not muddle ourselves in all the mathematical details. But where would be the fun in that? Let's go ahead and derive the gradient descent updates ourselves.
+
+Updating parameters $\theta$ at each iteration of gradient descent is a matter of taking a step in the direction of steepest descent in the loss function, with step size $\alpha$:
+
+$$ \theta \leftarrow \theta - \alpha \nabla J(\theta).$$
+
+Breaking down the gradient by each set of weights and biases in our network, we arrive at the following four equations to be solved:
+
+$$
+\begin{align*}
+W^{[1]} & \leftarrow W^{[1]} - \alpha \frac{\partial J}{\partial W^{[1]}} \\\\\\
+b^{[1]} & \leftarrow b^{[1]} - \alpha \frac{\partial J}{\partial b^{[1]}} \\\\\\
+W^{[2]} & \leftarrow W^{[2]} - \alpha \frac{\partial J}{\partial W^{[2]}} \\\\\\
+b^{[2]} & \leftarrow b^{[2]} - \alpha \frac{\partial J}{\partial b^{[2]}}. \\\\\\
+\end{align*}
+$$
+
+It's important to remember that $W^{[l]}$ is a *matrix* and $b^{[l]}$ is a *vector*, so the result of each derivative here will be either a matrix or vector as well. The components of these derivative objects is the partial derivative with respect to _each individual weight_. That is,
+
+$$
+\begin{equation}
+\label{eq:jacobian}
+\frac{\partial J}{\partial W^{[l]}} = 
+\begin{bmatrix}
+    \frac{\partial J}{\partial W_{1,1}^{[l]}} & \frac{\partial J}{\partial W_{1,2}^{[l]}} & \cdots & \frac{\partial J}{\partial W_{1,n_{l-1}}^{[l]}} \\\\\\ 
+    \frac{\partial J}{\partial W_{2,1}^{[l]}} & \frac{\partial J}{\partial W_{2,2}^{[l]}} & \cdots & \frac{\partial J}{\partial W_{2,n_{l-1}}^{[l]}} \\\\\\ 
+    \vdots & \vdots & \ddots & \vdots \\\\\\
+    \frac{\partial J}{\partial W_{n_l,1}^{[l]}} & \frac{\partial J}{\partial W_{n_l,2}^{[l]}} & \cdots & \frac{\partial J}{\partial W_{n_l,n_{l-1}}^{[l]}} \\\\\\ 
+\end{bmatrix},
+\end{equation}
+$$
+
+where $n_l$ and $n_{l-1}$ are the number of neurons in layers $l$ and $l-1$, respectively.
+
+<!-- $$
+    W_{11}^{[1]} + W_{12}^{[1]}
+$$ -->
 
 <!-- Because of several factors, namely the non-convexity of the loss function, the large number of parameters, and non-linear activations, it is typically infeasible to find the global minima of $J(x, \theta)$ by simply solving for $\nabla J = 0$. Instead, we can estimate the minima using **gradient descent**, which is an iterative algorithm that I'm sure you've heard of if you've reached this point in the article. How does **backpropagation** fit into this? -->
 
+### Forward Pass
 
-Next up, we implement **backpropagation**, which is the algorithm that 
+To begin with an iteration of backpropogation, we first do a **forward pass**, where we pass an input $x$ through the network. During the forward pass, we compute outputs at each stage of the network, and store some which will be used later during the backward pass. We introduce the variable $z^{[l]}$, to aid us during the backward pass as well:
+
+$$
+\begin{align*}
+    z^{[1]} &= W^{[1]} x + b^{[1]} \\\\\\
+    h &= \sigma(z^{[1]}) \\\\\\
+    z^{[2]} &= W^{[2]} h + b^{[2]} \\\\\\
+    \hat{y} &= \text{softmax}(z^{[2]}).
+\end{align*}
+$$
+
+At this stage, it is helpful if we visualize how all of these outputs and parameters fit together. For simplicity, we'll consider a network with 3 neurons in the hidden layer, 2 dimensions in the output, and 2 in the input vector.
+
+**\[Placeholder: diagram of full network\]**
+
+### Backward Pass
+
+For our **backward pass**, we will compute the partial derivatives needed for our learning update. To accomplish this, we use the [chain rule](https://en.wikipedia.org/wiki/Chain_rule) to decompose the gradient into constituent parts. Let's start with the weights in the output layer:
+
+$$
+\begin{align}
+    \frac{\partial J}{\partial W_{j,i}^{[2]}} = \frac{\partial J}{\partial \hat{y_j}} \frac{\partial \hat{y_j}}{\partial z_j^{[2]}} \frac{\partial z_j^{[2]}}{\partial W_{j,i}^{[2]}}
+\end{align}
+$$
+
+For the first term, we can solve simply:
+
+$$
+\frac{\partial J}{\partial \hat{y_j}} = \frac{\partial}{\partial \hat{y_j}} \bigl( - \sum_{k=1}^{K} y_k \log \hat{y}_k \bigr) = -\frac{y_j}{\hat{y}_j},
+$$
+
+by noting that the derivative is zero for each term in the sum, save for the case where $k=j$.
+
+For the third term, again we note that the derivative is zero for each term in $W^{[2]} h$, except for $W_{j,i}^{[2]} h$:
+
+$$
+\begin{align*}
+    \frac{\partial z_j^{[2]}}{\partial W_{j,i}^{[2]}} &= \frac{\partial }{\partial W_{j,i}^{[2]}} \bigl( W^{[2]} h + b^{[2]} \bigr) \\\\\\
+    &= \frac{\partial }{\partial W_{j,i}^{[2]}} W_{j,i}^{[2]} h \\\\\\
+    &= h
+\end{align*}
+$$
+
+For the second term, things are slightly trickier. Notice in diagram [TODO: reference], 
 
 
-TODO: derive update rules
+<!-- $$
+\begin{align*}
+    \frac{\partial J}{\partial \hat{Y}} = \frac{\partial }
+\end{align*}
+$$ -->
+
+... For the first layer... Notice that the two terms were the same that we computed
 
 ### Python Code for Backpropagation:
 ```python
