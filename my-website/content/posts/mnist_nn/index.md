@@ -155,16 +155,16 @@ In this function, we first clip the predicted values y_hat to avoid undefined va
 
 ## Gradient Descent with Backpropagation
 
-We now have a parameterized model that is capable of representing a variety of functions. Our goal is to find the function which provides the best fit with respect to our dataset $\mathcal{D}$. To accomplish this, we will introduce a **loss function** $J(W)$ as a measure of fit, and then *minimize* this function to find the optimal parameters of the model:
+We now have a parameterized model that is capable of representing a variety of functions. Our goal is to find the function which provides the best fit with respect to our dataset $\mathcal{D}$. To accomplish this, we will introduce a **loss function** $\mathcal{L}(\hat{y}, y)$ as a measure of fit, and then *minimize* this function to find the optimal parameters of the model:
 
-$$W_* = \arg\min_{W} J(W).$$
+$$W_* = \arg\min_{W} \mathcal{L}(\hat{y}, y).$$
 
-For multi-class classification problems, cross-entropy is a common loss function which measures the distance between the distribution produced by our model, and the true distribution $P(y|x)$. The cross-entropy loss for a single tuple $(x^{(i)}, y^{(i)})$ is defined as:
+For multi-class classification problems, cross-entropy is a common loss function which measures the distance between the distribution produced by our model, and the true distribution $P(y|x)$. The cross-entropy loss for a tuple $(x, y)$ is defined as:
 
 $$
 \begin{equation}
 \label{eq:loss}
-    J(W) = - \sum_{k=1}^{K} y_k^{(i)} \log \hat{y}_k^{(i)}
+    \mathcal{L}(\hat{y}, y) = - \sum_{k=1}^{K} y_k \log \hat{y}_k
 \end{equation}
 $$
 
@@ -178,30 +178,30 @@ At this point, the fastest way forward would be to use an automatic differentiat
 
 Updating parameters $\theta$ at each iteration of gradient descent is a matter of taking a step in the direction of steepest descent in the loss function, with step size $\alpha$:
 
-$$ \theta \leftarrow \theta - \alpha \nabla J(\theta).$$
+$$ \theta \leftarrow \theta - \alpha \nabla \mathcal{L}(\theta).$$
 
-Breaking down the gradient by each set of weights and biases in our network, we arrive at the following four equations to be solved:
+Breaking down the gradient by each set of weights and biases in our network, we arrive at the following four update expressions:
 
 $$
 \begin{align*}
-W^{[1]} & \leftarrow W^{[1]} - \alpha \frac{\partial J}{\partial W^{[1]}} \\\\\\
-b^{[1]} & \leftarrow b^{[1]} - \alpha \frac{\partial J}{\partial b^{[1]}} \\\\\\
-W^{[2]} & \leftarrow W^{[2]} - \alpha \frac{\partial J}{\partial W^{[2]}} \\\\\\
-b^{[2]} & \leftarrow b^{[2]} - \alpha \frac{\partial J}{\partial b^{[2]}}. \\\\\\
+W^{[1]} & \leftarrow W^{[1]} - \alpha \frac{\partial \mathcal{L}}{\partial W^{[1]}} \\\\\\
+b^{[1]} & \leftarrow b^{[1]} - \alpha \frac{\partial \mathcal{L}}{\partial b^{[1]}} \\\\\\
+W^{[2]} & \leftarrow W^{[2]} - \alpha \frac{\partial \mathcal{L}}{\partial W^{[2]}} \\\\\\
+b^{[2]} & \leftarrow b^{[2]} - \alpha \frac{\partial \mathcal{L}}{\partial b^{[2]}}. \\\\\\
 \end{align*}
 $$
 
-It's important to remember that $W^{[l]}$ is a *matrix* and $b^{[l]}$ is a *vector*, so the result of each derivative here will be either a matrix or vector as well. The components of these derivative objects is the partial derivative with respect to _each individual weight_. That is,
+It's important to remember that $W^{[l]}$ is a *matrix* and $b^{[l]}$ is a *vector*, so the result of each derivative here will be either a matrix or vector as well. The components of these derivative objects is the partial derivative with respect to *each individual weight*. That is,
 
 $$
 \begin{equation}
 \label{eq:jacobian}
-\frac{\partial J}{\partial W^{[l]}} = 
+\frac{\partial \mathcal{L}}{\partial W^{[l]}} = 
 \begin{bmatrix}
-    \frac{\partial J}{\partial W_{1,1}^{[l]}} & \frac{\partial J}{\partial W_{1,2}^{[l]}} & \cdots & \frac{\partial J}{\partial W_{1,n_{l-1}}^{[l]}} \\\\\\ 
-    \frac{\partial J}{\partial W_{2,1}^{[l]}} & \frac{\partial J}{\partial W_{2,2}^{[l]}} & \cdots & \frac{\partial J}{\partial W_{2,n_{l-1}}^{[l]}} \\\\\\ 
+    \frac{\partial \mathcal{L}}{\partial W_{1,1}^{[l]}} & \frac{\partial \mathcal{L}}{\partial W_{1,2}^{[l]}} & \cdots & \frac{\partial \mathcal{L}}{\partial W_{1,n_{l-1}}^{[l]}} \\\\\\ 
+    \frac{\partial \mathcal{L}}{\partial W_{2,1}^{[l]}} & \frac{\partial \mathcal{L}}{\partial W_{2,2}^{[l]}} & \cdots & \frac{\partial \mathcal{L}}{\partial W_{2,n_{l-1}}^{[l]}} \\\\\\ 
     \vdots & \vdots & \ddots & \vdots \\\\\\
-    \frac{\partial J}{\partial W_{n_l,1}^{[l]}} & \frac{\partial J}{\partial W_{n_l,2}^{[l]}} & \cdots & \frac{\partial J}{\partial W_{n_l,n_{l-1}}^{[l]}} \\\\\\ 
+    \frac{\partial \mathcal{L}}{\partial W_{n_l,1}^{[l]}} & \frac{\partial \mathcal{L}}{\partial W_{n_l,2}^{[l]}} & \cdots & \frac{\partial \mathcal{L}}{\partial W_{n_l,n_{l-1}}^{[l]}} \\\\\\ 
 \end{bmatrix},
 \end{equation}
 $$
@@ -212,7 +212,7 @@ where $n_l$ and $n_{l-1}$ are the number of neurons in layers $l$ and $l-1$, res
     W_{11}^{[1]} + W_{12}^{[1]}
 $$ -->
 
-<!-- Because of several factors, namely the non-convexity of the loss function, the large number of parameters, and non-linear activations, it is typically infeasible to find the global minima of $J(x, \theta)$ by simply solving for $\nabla J = 0$. Instead, we can estimate the minima using **gradient descent**, which is an iterative algorithm that I'm sure you've heard of if you've reached this point in the article. How does **backpropagation** fit into this? -->
+<!-- Because of several factors, namely the non-convexity of the loss function, the large number of parameters, and non-linear activations, it is typically infeasible to find the global minima of $\mathcal{L}(x, \theta)$ by simply solving for $\nabla \mathcal{L} = 0$. Instead, we can estimate the minima using **gradient descent**, which is an iterative algorithm that I'm sure you've heard of if you've reached this point in the article. How does **backpropagation** fit into this? -->
 
 ### Forward Pass
 
@@ -227,27 +227,37 @@ $$
 \end{align*}
 $$
 
-At this stage, it is helpful if we visualize how all of these outputs and parameters fit together. For simplicity, we'll consider a network with 3 neurons in the hidden layer, 2 dimensions in the output, and 2 in the input vector.
+At this stage, it is helpful if we visualize how all of these outputs and parameters fit together. For simplicity, we'll consider a network with just a few neurons:
 
-**\[Placeholder: diagram of full network\]**
+<!-- ![Output Layer](images/output_layer_base.png#center) -->
+<!-- ![Output Layer](images/output_layer_base.png)
+{width=500 alt="Gravel Calls" class="center"} -->
+
+{{< figure src="/images/output_layer_base.png" caption="This is the caption for the image" class="center" >}}
 
 ### Backward Pass
 
-For our **backward pass**, we will compute the partial derivatives needed for our learning update. To accomplish this, we use the [chain rule](https://en.wikipedia.org/wiki/Chain_rule) to decompose the gradient into constituent parts. Let's start with the weights in the output layer:
+For our **backward pass**, we will compute the partial derivatives needed for our learning update. To accomplish this, we use the [chain rule](https://en.wikipedia.org/wiki/Chain_rule) to decompose the gradient into constituent parts which can be calculated independently.
+
+{{< figure src="/images/output_layer_highlighted.png" caption="This is the caption for the image" class="center" >}}
+
+Let's start with the weights in the output layer:
 
 $$
 \begin{align}
-    \frac{\partial J}{\partial W_{j,i}^{[2]}} = \frac{\partial J}{\partial \hat{y_j}} \frac{\partial \hat{y_j}}{\partial z_j^{[2]}} \frac{\partial z_j^{[2]}}{\partial W_{j,i}^{[2]}}
+    \frac{\partial \mathcal{L}}{\partial W_{j,i}^{[2]}} = \frac{\partial \mathcal{L}}{\partial \hat{y_j}} \frac{\partial \hat{y_j}}{\partial z_j^{[2]}} \frac{\partial z_j^{[2]}}{\partial W_{j,i}^{[2]}}
 \end{align}
 $$
 
-For the first term, we can solve simply:
+For the first term, we can take the derivative of the loss w.r.t. $\hat{y}_j$ by noting that the derivative is zero for each term in the sum, save for the case where $k=j$: 
 
 $$
-\frac{\partial J}{\partial \hat{y_j}} = \frac{\partial}{\partial \hat{y_j}} \bigl( - \sum_{k=1}^{K} y_k \log \hat{y}_k \bigr) = -\frac{y_j}{\hat{y}_j},
+\begin{align*}
+    \frac{\partial \mathcal{L}}{\partial \hat{y_j}} &= \frac{\partial}{\partial \hat{y_j}} \bigl( - \sum_{k=1}^{K} y_k \log \hat{y}_k \bigr) \\\\\\
+    &= -y_j \frac{\partial}{\partial \hat{y_j}} \log \hat{y_j} \\\\\\
+    &= -\frac{y_j}{\hat{y}_j}.
+\end{align*}
 $$
-
-by noting that the derivative is zero for each term in the sum, save for the case where $k=j$.
 
 For the third term, again we note that the derivative is zero for each term in $W^{[2]} h$, except for $W_{j,i}^{[2]} h$:
 
@@ -259,18 +269,19 @@ $$
 \end{align*}
 $$
 
-For the second term, things are slightly trickier. Notice in diagram [TODO: reference], 
+For the second term, things are slightly trickier. Notice in diagram (TODO: reference):
 
 
 <!-- $$
 \begin{align*}
-    \frac{\partial J}{\partial \hat{Y}} = \frac{\partial }
+    \frac{\partial \mathcal{L}}{\partial \hat{Y}} = \frac{\partial }
 \end{align*}
 $$ -->
 
 ... For the first layer... Notice that the two terms were the same that we computed
 
 ### Python Code for Backpropagation:
+
 ```python
 def backprop(X, y, model, learning_rate=0.01):
     # Forward pass
