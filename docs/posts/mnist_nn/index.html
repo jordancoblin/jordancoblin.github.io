@@ -333,7 +333,223 @@ $$ -->
 <p>where $W^{[2]} \in \mathbb{R}^{n_y \times n_h}$ and $b^{[2]} \in \mathbb{R}^{n_y}$ are the <em>output</em> layer&rsquo;s weight matrix and bias vector, respectively.</p>
 <p>Pictorally, our network looks something like this&hellip; TODO</p>
 <!-- Our neural network will consist of a single hidden layer, where each node in the hidden layer applies an activation function to a weighted sum of the inputs. The choice of activation function is crucial, as it introduces non-linearity to the model, enabling it to learn complex patterns. -->
-<p>And here is my implementation of a fully-connected neural network (i.e. FCNetwork) in python:</p>
+<!-- ## Defining the Loss Function -->
+<!-- For our classification task, we’ll use the **cross-entropy loss**, which is a common choice for multi-class classification problems. It measures the difference between the predicted probability distribution and the true distribution (one-hot encoded labels for MNIST). The cross-entropy loss for a batch of samples is defined as:
+
+$$
+L = - \frac{1}{N} \sum_{n=1}^{N} \sum_{i=1}^{K} y_i^{(n)} \log(\hat{y}_i^{(n)})
+$$
+
+### Python Code for Cross-Entropy Loss:
+```python
+def cross_entropy_loss(y, y_hat):
+    # Small epsilon added to avoid log(0)
+    epsilon = 1e-12
+    y_hat = np.clip(y_hat, epsilon, 1. - epsilon)  # Ensure y_hat is within (0, 1) to prevent log(0)
+    
+    # Average over the batch
+    return -np.sum(y * np.log(y_hat)) / y.shape[0]
+```
+
+In this function, we first clip the predicted values y_hat to avoid undefined values from log(0) and then compute the average loss over the batch of examples. -->
+<h2 id="gradient-descent-with-backpropagation">Gradient Descent with Backpropagation</h2>
+<p>We now have a parameterized model that is capable of representing a variety of functions. Our goal is to find the function which provides the best fit with respect to our dataset $\mathcal{D}$. To accomplish this, we will introduce a <strong>loss function</strong> $\mathcal{L}(\hat{y}, y)$ as a measure of fit, and then <em>minimize</em> this function to find the optimal parameters of the model:</p>
+<p>$$W_* = \arg\min_{W} \mathcal{L}(\hat{y}, y).$$</p>
+<p>For multi-class classification problems, cross-entropy is a common loss function which measures the distance between the distribution produced by our model, and the true distribution $P(y|x)$. The cross-entropy loss for a tuple $(x, y)$ is defined as:</p>
+<p>$$
+\begin{equation}
+\label{eq:loss}
+\mathcal{L}(\hat{y}, y) = - \sum_{k=1}^{K} y_k \log \hat{y}_k
+\end{equation}
+$$</p>
+<p>where $K = n_y$ is the number of classes.</p>
+<p>To solve this optimization problem, we will use <strong>gradient descent</strong> with the <strong>backpropagation</strong> algorithm. At a high level, backpropagation allows us to efficiently compute the derivatives needed to perform gradient updates using the chain rule in calculus. During this process, derivatives from later layers in the network get passed back through previous layers, hence the name!</p>
+<h2 id="deriving-the-backprop-learning-updates">Deriving the Backprop Learning Updates</h2>
+<p>At this point, the fastest way forward would be to use an automatic differentiation library like <code>pytorch</code> to handle all the gradient computations and not muddle ourselves in all the mathematical details. But where would be the fun in that? Let&rsquo;s go ahead and derive the gradient descent updates ourselves.</p>
+<p>Updating parameters $\theta$ at each iteration of gradient descent is a matter of taking a step in the direction of steepest descent in the loss function, with step size $\alpha$:</p>
+<p>$$ \theta \leftarrow \theta - \alpha \nabla \mathcal{L}(\theta).$$</p>
+<p>Breaking down the gradient by each set of weights and biases in our network, we arrive at the following four update expressions:</p>
+<p>$$
+\begin{align*}
+W^{[1]} &amp; \leftarrow W^{[1]} - \alpha \frac{\partial \mathcal{L}}{\partial W^{[1]}} \\\
+b^{[1]} &amp; \leftarrow b^{[1]} - \alpha \frac{\partial \mathcal{L}}{\partial b^{[1]}} \\\
+W^{[2]} &amp; \leftarrow W^{[2]} - \alpha \frac{\partial \mathcal{L}}{\partial W^{[2]}} \\\
+b^{[2]} &amp; \leftarrow b^{[2]} - \alpha \frac{\partial \mathcal{L}}{\partial b^{[2]}}. \\\
+\end{align*}
+$$</p>
+<p>It&rsquo;s important to remember that $W^{[l]}$ is a <em>matrix</em> and $b^{[l]}$ is a <em>vector</em>, so the result of each derivative here will be either a matrix or vector as well. The components of these derivative objects are the partial derivative with respect to <em>each individual weight</em>. That is,</p>
+<p>$$
+\begin{equation}
+\label{eq:jacobian}
+\frac{\partial \mathcal{L}}{\partial W^{[l]}} =
+\begin{bmatrix}
+\frac{\partial \mathcal{L}}{\partial W_{1,1}^{[l]}} &amp; \frac{\partial \mathcal{L}}{\partial W_{1,2}^{[l]}} &amp; \cdots &amp; \frac{\partial \mathcal{L}}{\partial W_{1,n_{l-1}}^{[l]}} \\\
+\frac{\partial \mathcal{L}}{\partial W_{2,1}^{[l]}} &amp; \frac{\partial \mathcal{L}}{\partial W_{2,2}^{[l]}} &amp; \cdots &amp; \frac{\partial \mathcal{L}}{\partial W_{2,n_{l-1}}^{[l]}} \\\
+\vdots &amp; \vdots &amp; \ddots &amp; \vdots \\\
+\frac{\partial \mathcal{L}}{\partial W_{n_l,1}^{[l]}} &amp; \frac{\partial \mathcal{L}}{\partial W_{n_l,2}^{[l]}} &amp; \cdots &amp; \frac{\partial \mathcal{L}}{\partial W_{n_l,n_{l-1}}^{[l]}} \\\
+\end{bmatrix},
+\end{equation}
+$$</p>
+<p>where $n_l$ and $n_{l-1}$ are the number of neurons in layers $l$ and $l-1$, respectively.</p>
+<!-- $$
+    W_{11}^{[1]} + W_{12}^{[1]}
+$$ -->
+<!-- Because of several factors, namely the non-convexity of the loss function, the large number of parameters, and non-linear activations, it is typically infeasible to find the global minima of $\mathcal{L}(x, \theta)$ by simply solving for $\nabla \mathcal{L} = 0$. Instead, we can estimate the minima using **gradient descent**, which is an iterative algorithm that I'm sure you've heard of if you've reached this point in the article. How does **backpropagation** fit into this? -->
+<h3 id="forward-pass">Forward Pass</h3>
+<p>To begin with an iteration of backpropogation, we first do a <strong>forward pass</strong>, where we pass an input $x$ through the network. During the forward pass, we compute outputs at each layer of the network, and store some which will be used later during the backward pass. We introduce the variable $z^{[l]}$ as well, to aid us during the backward pass:</p>
+<p>$$
+\begin{align*}
+z^{[1]} &amp;= W^{[1]} x + b^{[1]} \\\
+h &amp;= \sigma(z^{[1]}) \\\
+z^{[2]} &amp;= W^{[2]} h + b^{[2]} \\\
+\hat{y} &amp;= \text{softmax}(z^{[2]}).
+\end{align*}
+$$</p>
+<p>At this stage, it is helpful if we visualize how all of these outputs and parameters fit together. For simplicity, we&rsquo;ll consider a network with just a few neurons:</p>
+<!-- ![Output Layer](images/output_layer_base.png#center) -->
+<!-- ![Output Layer](images/output_layer_base.png)
+{width=500 alt="Gravel Calls" class="center"} -->
+<h3 id="backward-pass">Backward Pass</h3>
+<p>For our <strong>backward pass</strong>, we will compute the partial derivatives needed for our learning update. Conceptually, we can think of this as figuring out how much a change in each weight contributes to a change in the overall loss. Similarly, we can consider how much a change in each intermediate variable, such as $z^{[l]}$ contributes to the loss. To determine derivatives for weights in earlier layers in the network, we use the <a href="https://en.wikipedia.org/wiki/Chain_rule">chain rule</a> to decompose the derivatives into parts, which enables re-use of derivatives that were computed for later layers; this is essentially dynamic programming.</p>
+<p>Let&rsquo;s start by computing derivatives $\frac{\partial \mathcal{L}}{\partial W_{j,i}^{[l]}}$ for weights in the output layer, visualized below. Note that we will be using $j$ to index neurons in the output layer, and $i$ to index neurons in the input layer. So $W_{2,1}^{[2]}$ indicates the weight connecting neuron $1$ from the $h$ and neuron $2$ in $z^{[2]}$.</p>
+<figure class="center"><img src="/posts/mnist_nn/images/output_layer_base.png"
+    alt="Output layer of our simplified neural network."><figcaption>
+      <p>Output layer of our simplified neural network.</p>
+    </figcaption>
+</figure>
+
+<p>We first notice that $\mathcal{L}$ is a function of $z_j^{[l]}$ and use the chain rule to re-express our derivative:</p>
+<p>$$
+\frac{\partial \mathcal{L}}{\partial W_{j,i}^{[2]}} = \frac{\partial \mathcal{L}}{\partial z_j^{[2]}} \frac{\partial z_j^{[2]}}{\partial W_{j,i}^{[2]}}.
+$$</p>
+<p>You might think (as I did) that the same pattern could be applied for $\hat{y}$, but interestingly, this is not the case:</p>
+<p>$$
+\frac{\partial \mathcal{L}}{\partial W_{j,i}^{[2]}} \neq \frac{\partial \mathcal{L}}{\partial \hat{y_j}} \frac{\partial \hat{y_j}}{\partial z_j^{[2]}} \frac{\partial z_j^{[2]}}{\partial W_{j,i}^{[2]}}.
+$$</p>
+<p>The reason for this is related to our usage of the $\text{softmax}$ function over our outputs $z_j^{[l]}$. Because $\text{softmax}$ causes $z_j^{[l]}$ to have an effect on both $\hat{y}_1$ and $\hat{y}_2$, we need to take both of these &ldquo;paths&rdquo; into account when applying the chain rule.</p>
+<!-- <figure class="center"><img src="/posts/mnist_nn/images/output_layer_highlighted.png"
+    alt="The path that W_{1,1}^{[2]} takes through to $\mathcal{L}$."><figcaption>
+      <p>The path that W_{1,1}^{[2]} takes through to $\mathcal{L}$.</p>
+    </figcaption>
+</figure>
+ -->
+<figure class="center">
+  <img src="images/output_layer_highlighted.png" alt="" />
+  <figcaption>
+The path that $W_{1,1}^{[2]}$ takes to reach $\mathcal{L}$. Notice that the computation flows through all nodes in $\hat{y}$.
+</figcaption>
+</figure>
+<p>So in this case, we need to apply the <strong>multivariable chain rule</strong> by summing the derivatives of each path:</p>
+<p>$$
+\begin{equation}
+\frac{\partial \mathcal{L}}{\partial W_{j,i}^{[2]}} = \sum_{k=1}^{K} \frac{\partial \mathcal{L}}{\partial \hat{y_k}} \frac{\partial \hat{y_k}}{\partial z_j^{[2]}} \frac{\partial z_j^{[2]}}{\partial W_{j,i}^{[2]}}\space.
+\end{equation}
+$$</p>
+<p>As we&rsquo;ll see, it is also useful to split this expression into cases where $j=k$ and $j \neq k$:</p>
+<p>$$
+\begin{equation}
+\label{eq:dldw2_expanded}
+\frac{\partial \mathcal{L}}{\partial W_{j,i}^{[2]}} = \frac{\partial \mathcal{L}}{\partial \hat{y_k}} \frac{\partial \hat{y_k}}{\partial z_k^{[2]}} \frac{\partial z_k^{[2]}}{\partial W_{j,i}^{[2]}} + \sum_{k \neq j} \frac{\partial \mathcal{L}}{\partial \hat{y_k}} \frac{\partial \hat{y_k}}{\partial z_j^{[2]}} \frac{\partial z_j^{[2]}}{\partial W_{j,i}^{[2]}}\space.
+\end{equation}
+$$</p>
+<p>Let&rsquo;s go ahead and solve this expression, one term at a time.</p>
+<h4 id="first-term">First Term</h4>
+<p>For the first term, we can take the derivative of the loss with respect to $\hat{y}_k$ by noting that the derivative is zero for each term in the sum, save for the case where $u=k$:</p>
+<p>$$
+\begin{align}
+\frac{\partial \mathcal{L}}{\partial \hat{y_k}} &amp;= \frac{\partial}{\partial \hat{y_k}} \bigl( - \sum_{u=1}^{K} y_u \log \hat{y}_u \bigr) \nonumber \\\
+&amp;= -y_k \frac{\partial}{\partial \hat{y_k}} \log \hat{y_k} \nonumber \\\
+&amp;= -\frac{y_k}{\hat{y}_k}\space.
+\end{align}
+$$</p>
+<h4 id="second-term">Second Term</h4>
+<p>TODO: probably move most of this derivation to a footnote.</p>
+<p>For the second term, we need to consider both cases where $j=k$ and where $j \neq k$.</p>
+<!-- When $j=k$:
+
+$$
+\begin{align*}
+\frac{\partial \hat{y_j}}{\partial z_j^{[2]}} &= \frac{\partial }{\partial z_j^{[2]}} \Biggl( \frac{e^{z_j^{[2]}}}{\sum_{u=1}^{K} e^{z_u^{[2]}}} \Biggr) \\\\\\
+\end{align*}
+$$ -->
+<p>For the case when $j = k$:</p>
+<p>$$
+\frac{\partial \hat{y_k}}{\partial z_j^{[2]}} = \frac{\partial}{\partial z_j^{[2]}} \biggl( \frac{e^{z_k^{[2]}}}{\sum_{t=1}^{K} e^{z_t^{[2]}}} \biggr)
+$$</p>
+<p>Using the <a href="https://en.wikipedia.org/wiki/Quotient_rule">quotient rule</a>, where $u = e^{z_k^{[2]}}$ and $v = \sum_{t=1}^{K} e^{z_t^{[2]}}$:</p>
+<p>$$
+\frac{\partial \hat{y}_k}{\partial z_j^{[2]}} = \frac{(v \cdot \frac{\partial u}{\partial z_j^{[2]}} - u \cdot \frac{\partial v}{\partial z_j^{[2]}})}{v^2}
+$$</p>
+<p>Since $u = e^{z_k^{[2]}}$, we have:</p>
+<p>$$
+\frac{\partial u}{\partial z_j^{[2]}} = \frac{\partial e^{z_k^{[2]}}}{\partial z_j^{[2]}} =
+\begin{cases}
+e^{z_k^{[2]}}, &amp; \text{if } j = k \\\
+0, &amp; \text{if } j \neq k
+\end{cases}
+$$</p>
+<p>Also, since $v = \sum_{t=1}^{K} e^{z_t^{[2]}}$, we have:</p>
+<p>$$
+\frac{\partial v}{\partial z_j^{[2]}} = \frac{\partial}{\partial z_j^{[2]}} \sum_{t=1}^{n} e^{z_t^{[2]}} = e^{z_j^{[2]}}
+$$</p>
+<p>Substituting these into the quotient rule:</p>
+<!-- $$
+\frac{\partial \hat{y_k}}{\partial z_j^{[2]}} = \frac{(\sum_{j=1}^{n} e^{z_j} \cdot e^{z_i} ) - e^{z_i} \cdot e^{z_j^{[2]}}}{(\sum_{j=1}^{n} e^{z_j})^2}
+$$ -->
+<p>$$
+\frac{\partial \hat{y_k}}{\partial z_j^{[2]}} = \frac{\Bigl(\sum_{t=1}^{n} e^{z_t^{[2]}}  \cdot e^{z_k^{[2]}} \Bigr) - e^{z_k^{[2]}} \cdot e^{z_j^{[2]}}} {\Bigl(\sum_{t=1}^{n} e^{z_t^{[2]}} \Bigr)^2},
+$$</p>
+<p>which simplifies to</p>
+<p>$$
+\begin{equation}
+\frac{\partial \hat{y_k}}{\partial z_j^{[2]}} = \hat{y}_k \left( 1 - \hat{y}_k \right)
+\end{equation}
+$$</p>
+<p>When $j \neq k$, the derivation is similar, but in this case, the term $ \frac{\partial u}{\partial z_j^{[2]}} = 0 $, because $u = e^{z_k^{[2]}}$ and $j \neq k$. We still have</p>
+<p>$$
+\frac{\partial \hat{y_k}}{\partial z_j^{[2]}} = \frac{- e^{z_k^{[2]}} \cdot e^{z_j^{[2]}}} {\Bigl(\sum_{t=1}^{n} e^{z_t^{[2]}} \Bigr)^2},
+$$</p>
+<p>which simplifies to</p>
+<p>$$
+\begin{equation}
+\frac{\partial \hat{y}_k}{\partial z_j^{[2]}} = -\hat{y}_j \hat{y}_k
+\end{equation}
+$$</p>
+<p>Thus, we can express the derivative of the softmax output $\hat{y}_k$ with respect to $z_j^{[2]}$ with</p>
+<p>$$
+\begin{equation}
+\frac{\partial \hat{y}_k}{\partial z_j^{[2]}} =
+\begin{cases}
+\hat{y}_k \left( 1 - \hat{y}_k \right), &amp; \text{if } j = k \\\
+-\hat{y}_j \hat{y}_k, &amp; \text{if } j \neq k
+\end{cases}
+\end{equation}
+$$</p>
+<h4 id="third-term">Third Term</h4>
+<p>For the third term, again we note that the derivative is zero for each term in $W^{[2]} h$, except for $W_{j,i}^{[2]} h$:</p>
+<p>$$
+\begin{align}
+\frac{\partial z_j^{[2]}}{\partial W_{j,i}^{[2]}} &amp;= \frac{\partial }{\partial W_{j,i}^{[2]}} \bigl( W^{[2]} h + b^{[2]} \bigr) \nonumber \\\
+&amp;= \frac{\partial }{\partial W_{j,i}^{[2]}} W_{j,i}^{[2]} h_i \nonumber \\\
+&amp;= h_i.
+\end{align}
+$$</p>
+<h4 id="putting-it-together">Putting it Together</h4>
+<p>Plugging each of these results back into Equation \ref{eq:dldw2_expanded} we get:</p>
+<p>$$
+\begin{align}
+\frac{\partial \mathcal{L}}{\partial W_{j,i}^{[2]}} &amp;= \biggl(-\frac{y_j}{\hat{y_j}} \biggr) \biggl( \hat{y_j} (1 - \hat{y_j}) \biggr) h_i + \sum_{k \neq j} \biggl(-\frac{y_k}{\hat{y_k}} \biggr) \biggl( -\hat{y_j} \hat{y_k} \biggr) h_i \nonumber \\\
+&amp;= h_i \Biggl[ -y_j + y_j \hat{y_j} + \hat{y_j} \sum_{k \neq j} y_k \Biggr] \nonumber \\\
+&amp;= h_i \Biggl[ -y_j + \hat{y_j} \underbrace{\biggl(y_j + \sum_{k \neq j} y_k \biggr)}_{=1} \Biggr] \nonumber \\\
+&amp;= h_i \bigl(\hat{y_j} - y_j \bigr)
+\end{align}
+$$</p>
+<!-- $$
+\begin{align*}
+    \frac{\partial \mathcal{L}}{\partial \hat{Y}} = \frac{\partial }
+\end{align*}
+$$ -->
+<h2 id="python-implementation">Python Implementation</h2>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">import</span> numpy <span style="color:#66d9ef">as</span> np
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">sigmoid</span>(x):
@@ -366,126 +582,6 @@ $$ -->
 </span></span><span style="display:flex;"><span>        y_hat <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>argmax(f_c, axis<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>)
 </span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> y_hat
 </span></span></code></pre></div><p>The <code>forward</code> function returns a vector of softmax distributions $f_c$ for a batch of samples <code>X</code>, along with other variables that will be useful for backpropagation, while the <code>predict</code> function returns a vector of predicted classes $\hat{y}^{(i)}$.</p>
-<!-- ## Defining the Loss Function -->
-<!-- For our classification task, we’ll use the **cross-entropy loss**, which is a common choice for multi-class classification problems. It measures the difference between the predicted probability distribution and the true distribution (one-hot encoded labels for MNIST). The cross-entropy loss for a batch of samples is defined as:
-
-$$
-L = - \frac{1}{N} \sum_{n=1}^{N} \sum_{i=1}^{K} y_i^{(n)} \log(\hat{y}_i^{(n)})
-$$
-
-### Python Code for Cross-Entropy Loss:
-```python
-def cross_entropy_loss(y, y_hat):
-    # Small epsilon added to avoid log(0)
-    epsilon = 1e-12
-    y_hat = np.clip(y_hat, epsilon, 1. - epsilon)  # Ensure y_hat is within (0, 1) to prevent log(0)
-    
-    # Average over the batch
-    return -np.sum(y * np.log(y_hat)) / y.shape[0]
-```
-
-In this function, we first clip the predicted values y_hat to avoid undefined values from log(0) and then compute the average loss over the batch of examples. -->
-<h2 id="gradient-descent-with-backpropagation">Gradient Descent with Backpropagation</h2>
-<p>We now have a parameterized model that is capable of representing a variety of functions. Our goal is to find the function which provides the best fit with respect to our dataset $\mathcal{D}$. To accomplish this, we will introduce a <strong>loss function</strong> $\mathcal{L}(\hat{y}, y)$ as a measure of fit, and then <em>minimize</em> this function to find the optimal parameters of the model:</p>
-<p>$$W_* = \arg\min_{W} \mathcal{L}(\hat{y}, y).$$</p>
-<p>For multi-class classification problems, cross-entropy is a common loss function which measures the distance between the distribution produced by our model, and the true distribution $P(y|x)$. The cross-entropy loss for a tuple $(x, y)$ is defined as:</p>
-<p>$$
-\begin{equation}
-\label{eq:loss}
-\mathcal{L}(\hat{y}, y) = - \sum_{k=1}^{K} y_k \log \hat{y}_k
-\end{equation}
-$$</p>
-<p>where $K = n_y$ is the number of classes.</p>
-<p>To solve this optimization problem, we will use <strong>gradient descent</strong> with the <strong>backpropagation</strong> algorithm, which I will assume the reader has some familiarity with. At a high level, backpropagation allows us to efficiently compute the derivatives needed to perform gradient updates using the chain rule in calculus. During this process, derivatives from later layers in the network get passed back through previous layers, hence the name!</p>
-<h2 id="deriving-the-backprop-learning-updates">Deriving the Backprop Learning Updates</h2>
-<p>At this point, the fastest way forward would be to use an automatic differentiation library like <code>pytorch</code> to handle all the gradient computations and not muddle ourselves in all the mathematical details. But where would be the fun in that? Let&rsquo;s go ahead and derive the gradient descent updates ourselves.</p>
-<p>Updating parameters $\theta$ at each iteration of gradient descent is a matter of taking a step in the direction of steepest descent in the loss function, with step size $\alpha$:</p>
-<p>$$ \theta \leftarrow \theta - \alpha \nabla \mathcal{L}(\theta).$$</p>
-<p>Breaking down the gradient by each set of weights and biases in our network, we arrive at the following four update expressions:</p>
-<p>$$
-\begin{align*}
-W^{[1]} &amp; \leftarrow W^{[1]} - \alpha \frac{\partial \mathcal{L}}{\partial W^{[1]}} \\\
-b^{[1]} &amp; \leftarrow b^{[1]} - \alpha \frac{\partial \mathcal{L}}{\partial b^{[1]}} \\\
-W^{[2]} &amp; \leftarrow W^{[2]} - \alpha \frac{\partial \mathcal{L}}{\partial W^{[2]}} \\\
-b^{[2]} &amp; \leftarrow b^{[2]} - \alpha \frac{\partial \mathcal{L}}{\partial b^{[2]}}. \\\
-\end{align*}
-$$</p>
-<p>It&rsquo;s important to remember that $W^{[l]}$ is a <em>matrix</em> and $b^{[l]}$ is a <em>vector</em>, so the result of each derivative here will be either a matrix or vector as well. The components of these derivative objects is the partial derivative with respect to <em>each individual weight</em>. That is,</p>
-<p>$$
-\begin{equation}
-\label{eq:jacobian}
-\frac{\partial \mathcal{L}}{\partial W^{[l]}} =
-\begin{bmatrix}
-\frac{\partial \mathcal{L}}{\partial W_{1,1}^{[l]}} &amp; \frac{\partial \mathcal{L}}{\partial W_{1,2}^{[l]}} &amp; \cdots &amp; \frac{\partial \mathcal{L}}{\partial W_{1,n_{l-1}}^{[l]}} \\\
-\frac{\partial \mathcal{L}}{\partial W_{2,1}^{[l]}} &amp; \frac{\partial \mathcal{L}}{\partial W_{2,2}^{[l]}} &amp; \cdots &amp; \frac{\partial \mathcal{L}}{\partial W_{2,n_{l-1}}^{[l]}} \\\
-\vdots &amp; \vdots &amp; \ddots &amp; \vdots \\\
-\frac{\partial \mathcal{L}}{\partial W_{n_l,1}^{[l]}} &amp; \frac{\partial \mathcal{L}}{\partial W_{n_l,2}^{[l]}} &amp; \cdots &amp; \frac{\partial \mathcal{L}}{\partial W_{n_l,n_{l-1}}^{[l]}} \\\
-\end{bmatrix},
-\end{equation}
-$$</p>
-<p>where $n_l$ and $n_{l-1}$ are the number of neurons in layers $l$ and $l-1$, respectively.</p>
-<!-- $$
-    W_{11}^{[1]} + W_{12}^{[1]}
-$$ -->
-<!-- Because of several factors, namely the non-convexity of the loss function, the large number of parameters, and non-linear activations, it is typically infeasible to find the global minima of $\mathcal{L}(x, \theta)$ by simply solving for $\nabla \mathcal{L} = 0$. Instead, we can estimate the minima using **gradient descent**, which is an iterative algorithm that I'm sure you've heard of if you've reached this point in the article. How does **backpropagation** fit into this? -->
-<h3 id="forward-pass">Forward Pass</h3>
-<p>To begin with an iteration of backpropogation, we first do a <strong>forward pass</strong>, where we pass an input $x$ through the network. During the forward pass, we compute outputs at each stage of the network, and store some which will be used later during the backward pass. We introduce the variable $z^{[l]}$, to aid us during the backward pass as well:</p>
-<p>$$
-\begin{align*}
-z^{[1]} &amp;= W^{[1]} x + b^{[1]} \\\
-h &amp;= \sigma(z^{[1]}) \\\
-z^{[2]} &amp;= W^{[2]} h + b^{[2]} \\\
-\hat{y} &amp;= \text{softmax}(z^{[2]}).
-\end{align*}
-$$</p>
-<p>At this stage, it is helpful if we visualize how all of these outputs and parameters fit together. For simplicity, we&rsquo;ll consider a network with just a few neurons:</p>
-<!-- ![Output Layer](images/output_layer_base.png#center) -->
-<!-- ![Output Layer](images/output_layer_base.png)
-{width=500 alt="Gravel Calls" class="center"} -->
-<figure class="center"><img src="/posts/mnist_nn/images/output_layer_base.png"
-    alt="This is the caption for the image"><figcaption>
-      <p>This is the caption for the image</p>
-    </figcaption>
-</figure>
-
-<h3 id="backward-pass">Backward Pass</h3>
-<p>For our <strong>backward pass</strong>, we will compute the partial derivatives needed for our learning update. To accomplish this, we use the <a href="https://en.wikipedia.org/wiki/Chain_rule">chain rule</a> to decompose the gradient into constituent parts which can be calculated independently.</p>
-<figure class="center"><img src="/posts/mnist_nn/images/output_layer_highlighted.png"
-    alt="This is the caption for the image"><figcaption>
-      <p>This is the caption for the image</p>
-    </figcaption>
-</figure>
-
-<p>Let&rsquo;s start with the weights in the output layer:</p>
-<p>$$
-\begin{align}
-\frac{\partial \mathcal{L}}{\partial W_{j,i}^{[2]}} = \frac{\partial \mathcal{L}}{\partial \hat{y_j}} \frac{\partial \hat{y_j}}{\partial z_j^{[2]}} \frac{\partial z_j^{[2]}}{\partial W_{j,i}^{[2]}}
-\end{align}
-$$</p>
-<p>For the first term, we can take the derivative of the loss w.r.t. $\hat{y}_j$ by noting that the derivative is zero for each term in the sum, save for the case where $k=j$:</p>
-<p>$$
-\begin{align*}
-\frac{\partial \mathcal{L}}{\partial \hat{y_j}} &amp;= \frac{\partial}{\partial \hat{y_j}} \bigl( - \sum_{k=1}^{K} y_k \log \hat{y}_k \bigr) \\\
-&amp;= -y_j \frac{\partial}{\partial \hat{y_j}} \log \hat{y_j} \\\
-&amp;= -\frac{y_j}{\hat{y}_j}.
-\end{align*}
-$$</p>
-<p>For the third term, again we note that the derivative is zero for each term in $W^{[2]} h$, except for $W_{j,i}^{[2]} h$:</p>
-<p>$$
-\begin{align*}
-\frac{\partial z_j^{[2]}}{\partial W_{j,i}^{[2]}} &amp;= \frac{\partial }{\partial W_{j,i}^{[2]}} \bigl( W^{[2]} h + b^{[2]} \bigr) \\\
-&amp;= \frac{\partial }{\partial W_{j,i}^{[2]}} W_{j,i}^{[2]} h \\\
-&amp;= h
-\end{align*}
-$$</p>
-<p>For the second term, things are slightly trickier. Notice in diagram (TODO: reference):</p>
-<!-- $$
-\begin{align*}
-    \frac{\partial \mathcal{L}}{\partial \hat{Y}} = \frac{\partial }
-\end{align*}
-$$ -->
-<p>&hellip; For the first layer&hellip; Notice that the two terms were the same that we computed</p>
-<h3 id="python-code-for-backpropagation">Python Code for Backpropagation:</h3>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">backprop</span>(X, y, model, learning_rate<span style="color:#f92672">=</span><span style="color:#ae81ff">0.01</span>):
 </span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Forward pass</span>
 </span></span><span style="display:flex;"><span>    y_hat <span style="color:#f92672">=</span> model<span style="color:#f92672">.</span>forward(X)

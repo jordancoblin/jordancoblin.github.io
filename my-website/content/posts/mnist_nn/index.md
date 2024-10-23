@@ -94,43 +94,6 @@ Pictorally, our network looks something like this... TODO
 
 <!-- Our neural network will consist of a single hidden layer, where each node in the hidden layer applies an activation function to a weighted sum of the inputs. The choice of activation function is crucial, as it introduces non-linearity to the model, enabling it to learn complex patterns. -->
 
-And here is my implementation of a fully-connected neural network (i.e. FCNetwork) in python:
-
-```python
-import numpy as np
-
-def sigmoid(x):
-    return 1 / (1 + np.exp(-x))
-
-def softmax(z):
-    exp_z = np.exp(z - np.max(z, axis=1, keepdims=True))  # Subtract max(z) for numerical stability
-    return exp_z / exp_z.sum(axis=1, keepdims=True)
-
-class FCNetwork():
-    """Single hidden layer network"""
-    def __init__(self, input_dim, hidden_dim, output_dim, activation=sigmoid):
-        self.w1 = np.random.randn(input_dim, hidden_dim) * np.sqrt(1. / input_dim) # d x h
-        self.w2 = np.random.randn(hidden_dim, output_dim) * np.sqrt(1. / hidden_dim) # h x 10
-        self.b1 = np.random.rand(1, hidden_dim) # 1 x h
-        self.b2 = np.random.rand(1, output_dim) # 1 x 10
-        self.activation = activation
-
-    def forward(self, X):
-        batch_size = X.shape[0]
-        X = X.reshape((batch_size, -1))
-        z1 = np.dot(X, self.w1) + self.b1
-        h = self.activation(z1)
-        z2 = np.dot(h, self.w2) + self.b2
-        f_c = softmax(z2)
-        return z1, h, z2, f_c
-    
-    def predict(self, X):
-        _, _, _, f_c = self.forward(X)
-        y_hat = np.argmax(f_c, axis=1)
-        return y_hat
-```
-
- The `forward` function returns a vector of softmax distributions $f_c$ for a batch of samples `X`, along with other variables that will be useful for backpropagation, while the `predict` function returns a vector of predicted classes $\hat{y}^{(i)}$.
 
 <!-- ## Defining the Loss Function -->
 
@@ -170,7 +133,7 @@ $$
 
 where $K = n_y$ is the number of classes.
 
-To solve this optimization problem, we will use **gradient descent** with the **backpropagation** algorithm, which I will assume the reader has some familiarity with. At a high level, backpropagation allows us to efficiently compute the derivatives needed to perform gradient updates using the chain rule in calculus. During this process, derivatives from later layers in the network get passed back through previous layers, hence the name!
+To solve this optimization problem, we will use **gradient descent** with the **backpropagation** algorithm. At a high level, backpropagation allows us to efficiently compute the derivatives needed to perform gradient updates using the chain rule in calculus. During this process, derivatives from later layers in the network get passed back through previous layers, hence the name!
 
 ## Deriving the Backprop Learning Updates
 
@@ -191,7 +154,7 @@ b^{[2]} & \leftarrow b^{[2]} - \alpha \frac{\partial \mathcal{L}}{\partial b^{[2
 \end{align*}
 $$
 
-It's important to remember that $W^{[l]}$ is a *matrix* and $b^{[l]}$ is a *vector*, so the result of each derivative here will be either a matrix or vector as well. The components of these derivative objects is the partial derivative with respect to *each individual weight*. That is,
+It's important to remember that $W^{[l]}$ is a *matrix* and $b^{[l]}$ is a *vector*, so the result of each derivative here will be either a matrix or vector as well. The components of these derivative objects are the partial derivative with respect to *each individual weight*. That is,
 
 $$
 \begin{equation}
@@ -216,7 +179,7 @@ $$ -->
 
 ### Forward Pass
 
-To begin with an iteration of backpropogation, we first do a **forward pass**, where we pass an input $x$ through the network. During the forward pass, we compute outputs at each stage of the network, and store some which will be used later during the backward pass. We introduce the variable $z^{[l]}$, to aid us during the backward pass as well:
+To begin with an iteration of backpropogation, we first do a **forward pass**, where we pass an input $x$ through the network. During the forward pass, we compute outputs at each layer of the network, and store some which will be used later during the backward pass. We introduce the variable $z^{[l]}$ as well, to aid us during the backward pass:
 
 $$
 \begin{align*}
@@ -233,44 +196,175 @@ At this stage, it is helpful if we visualize how all of these outputs and parame
 <!-- ![Output Layer](images/output_layer_base.png)
 {width=500 alt="Gravel Calls" class="center"} -->
 
-{{< figure src="/images/output_layer_base.png" caption="This is the caption for the image" class="center" >}}
-
 ### Backward Pass
 
-For our **backward pass**, we will compute the partial derivatives needed for our learning update. To accomplish this, we use the [chain rule](https://en.wikipedia.org/wiki/Chain_rule) to decompose the gradient into constituent parts which can be calculated independently.
+For our **backward pass**, we will compute the partial derivatives needed for our learning update. Conceptually, we can think of this as figuring out how much a change in each weight contributes to a change in the overall loss. Similarly, we can consider how much a change in each intermediate variable, such as $z^{[l]}$ contributes to the loss. To determine derivatives for weights in earlier layers in the network, we use the [chain rule](https://en.wikipedia.org/wiki/Chain_rule) to decompose the derivatives into parts, which enables re-use of derivatives that were computed for later layers; this is essentially dynamic programming.
 
-{{< figure src="/images/output_layer_highlighted.png" caption="This is the caption for the image" class="center" >}}
+Let's start by computing derivatives $\frac{\partial \mathcal{L}}{\partial W_{j,i}^{[l]}}$ for weights in the output layer, visualized below. Note that we will be using $j$ to index neurons in the output layer, and $i$ to index neurons in the input layer. So $W_{2,1}^{[2]}$ indicates the weight connecting neuron $1$ from the $h$ and neuron $2$ in $z^{[2]}$.
 
-Let's start with the weights in the output layer:
+{{< figure src="/images/output_layer_base.png" caption="Output layer of our simplified neural network." class="center" >}}
+
+We first notice that $\mathcal{L}$ is a function of $z_j^{[l]}$ and use the chain rule to re-express our derivative:
+
+$$
+    \frac{\partial \mathcal{L}}{\partial W_{j,i}^{[2]}} = \frac{\partial \mathcal{L}}{\partial z_j^{[2]}} \frac{\partial z_j^{[2]}}{\partial W_{j,i}^{[2]}}.
+$$
+
+You might think (as I did) that the same pattern could be applied for $\hat{y}$, but interestingly, this is not the case:
+
+$$
+    \frac{\partial \mathcal{L}}{\partial W_{j,i}^{[2]}} \neq \frac{\partial \mathcal{L}}{\partial \hat{y_j}} \frac{\partial \hat{y_j}}{\partial z_j^{[2]}} \frac{\partial z_j^{[2]}}{\partial W_{j,i}^{[2]}}.
+$$
+
+The reason for this is related to our usage of the $\text{softmax}$ function over our outputs $z_j^{[l]}$. Because $\text{softmax}$ causes $z_j^{[l]}$ to have an effect on both $\hat{y}_1$ and $\hat{y}_2$, we need to take both of these "paths" into account when applying the chain rule.
+
+<!-- {{< figure src="/images/output_layer_highlighted.png" caption="The path that W_{1,1}^{[2]} takes through to $\mathcal{L}$." class="center" >}} -->
+
+{{< figure-math src="images/output_layer_highlighted.png" class="center">}}
+The path that $W_{1,1}^{[2]}$ takes to reach $\mathcal{L}$. Notice that the computation flows through all nodes in $\hat{y}$.
+{{< /figure-math >}}
+
+So in this case, we need to apply the **multivariable chain rule** by summing the derivatives of each path:
+
+$$
+\begin{equation}
+    \frac{\partial \mathcal{L}}{\partial W_{j,i}^{[2]}} = \sum_{k=1}^{K} \frac{\partial \mathcal{L}}{\partial \hat{y_k}} \frac{\partial \hat{y_k}}{\partial z_j^{[2]}} \frac{\partial z_j^{[2]}}{\partial W_{j,i}^{[2]}}\space.
+\end{equation}
+$$
+
+As we'll see, it is also useful to split this expression into cases where $j=k$ and $j \neq k$:
+
+$$
+\begin{equation}
+\label{eq:dldw2_expanded}
+    \frac{\partial \mathcal{L}}{\partial W_{j,i}^{[2]}} = \frac{\partial \mathcal{L}}{\partial \hat{y_k}} \frac{\partial \hat{y_k}}{\partial z_k^{[2]}} \frac{\partial z_k^{[2]}}{\partial W_{j,i}^{[2]}} + \sum_{k \neq j} \frac{\partial \mathcal{L}}{\partial \hat{y_k}} \frac{\partial \hat{y_k}}{\partial z_j^{[2]}} \frac{\partial z_j^{[2]}}{\partial W_{j,i}^{[2]}}\space.
+\end{equation}
+$$
+
+Let's go ahead and solve this expression, one term at a time.
+
+#### First Term
+
+For the first term, we can take the derivative of the loss with respect to $\hat{y}_k$ by noting that the derivative is zero for each term in the sum, save for the case where $u=k$:
 
 $$
 \begin{align}
-    \frac{\partial \mathcal{L}}{\partial W_{j,i}^{[2]}} = \frac{\partial \mathcal{L}}{\partial \hat{y_j}} \frac{\partial \hat{y_j}}{\partial z_j^{[2]}} \frac{\partial z_j^{[2]}}{\partial W_{j,i}^{[2]}}
+    \frac{\partial \mathcal{L}}{\partial \hat{y_k}} &= \frac{\partial}{\partial \hat{y_k}} \bigl( - \sum_{u=1}^{K} y_u \log \hat{y}_u \bigr) \nonumber \\\\\\
+    &= -y_k \frac{\partial}{\partial \hat{y_k}} \log \hat{y_k} \nonumber \\\\\\
+    &= -\frac{y_k}{\hat{y}_k}\space.
 \end{align}
 $$
 
-For the first term, we can take the derivative of the loss w.r.t. $\hat{y}_j$ by noting that the derivative is zero for each term in the sum, save for the case where $k=j$: 
+#### Second Term
+
+TODO: probably move most of this derivation to a footnote.
+
+For the second term, we need to consider both cases where $j=k$ and where $j \neq k$.
+
+<!-- When $j=k$:
 
 $$
 \begin{align*}
-    \frac{\partial \mathcal{L}}{\partial \hat{y_j}} &= \frac{\partial}{\partial \hat{y_j}} \bigl( - \sum_{k=1}^{K} y_k \log \hat{y}_k \bigr) \\\\\\
-    &= -y_j \frac{\partial}{\partial \hat{y_j}} \log \hat{y_j} \\\\\\
-    &= -\frac{y_j}{\hat{y}_j}.
+\frac{\partial \hat{y_j}}{\partial z_j^{[2]}} &= \frac{\partial }{\partial z_j^{[2]}} \Biggl( \frac{e^{z_j^{[2]}}}{\sum_{u=1}^{K} e^{z_u^{[2]}}} \Biggr) \\\\\\
 \end{align*}
+$$ -->
+
+For the case when $j = k$:
+
 $$
+\frac{\partial \hat{y_k}}{\partial z_j^{[2]}} = \frac{\partial}{\partial z_j^{[2]}} \biggl( \frac{e^{z_k^{[2]}}}{\sum_{t=1}^{K} e^{z_t^{[2]}}} \biggr)
+$$
+
+Using the [quotient rule](https://en.wikipedia.org/wiki/Quotient_rule), where $u = e^{z_k^{[2]}}$ and $v = \sum_{t=1}^{K} e^{z_t^{[2]}}$:
+
+$$
+\frac{\partial \hat{y}_k}{\partial z_j^{[2]}} = \frac{(v \cdot \frac{\partial u}{\partial z_j^{[2]}} - u \cdot \frac{\partial v}{\partial z_j^{[2]}})}{v^2}
+$$
+
+Since $u = e^{z_k^{[2]}}$, we have:
+
+$$
+\frac{\partial u}{\partial z_j^{[2]}} = \frac{\partial e^{z_k^{[2]}}}{\partial z_j^{[2]}} = 
+\begin{cases}
+e^{z_k^{[2]}}, & \text{if } j = k \\\\\\
+0, & \text{if } j \neq k
+\end{cases}
+$$
+
+Also, since $v = \sum_{t=1}^{K} e^{z_t^{[2]}}$, we have:
+
+$$
+\frac{\partial v}{\partial z_j^{[2]}} = \frac{\partial}{\partial z_j^{[2]}} \sum_{t=1}^{n} e^{z_t^{[2]}} = e^{z_j^{[2]}}
+$$
+
+Substituting these into the quotient rule:
+
+<!-- $$
+\frac{\partial \hat{y_k}}{\partial z_j^{[2]}} = \frac{(\sum_{j=1}^{n} e^{z_j} \cdot e^{z_i} ) - e^{z_i} \cdot e^{z_j^{[2]}}}{(\sum_{j=1}^{n} e^{z_j})^2}
+$$ -->
+
+$$
+\frac{\partial \hat{y_k}}{\partial z_j^{[2]}} = \frac{\Bigl(\sum_{t=1}^{n} e^{z_t^{[2]}}  \cdot e^{z_k^{[2]}} \Bigr) - e^{z_k^{[2]}} \cdot e^{z_j^{[2]}}} {\Bigl(\sum_{t=1}^{n} e^{z_t^{[2]}} \Bigr)^2},
+$$
+
+which simplifies to
+
+$$
+\begin{equation}
+\frac{\partial \hat{y_k}}{\partial z_j^{[2]}} = \hat{y}_k \left( 1 - \hat{y}_k \right)
+\end{equation}
+$$
+
+When $j \neq k$, the derivation is similar, but in this case, the term $ \frac{\partial u}{\partial z_j^{[2]}} = 0 $, because $u = e^{z_k^{[2]}}$ and $j \neq k$. We still have
+
+$$
+\frac{\partial \hat{y_k}}{\partial z_j^{[2]}} = \frac{- e^{z_k^{[2]}} \cdot e^{z_j^{[2]}}} {\Bigl(\sum_{t=1}^{n} e^{z_t^{[2]}} \Bigr)^2},
+$$
+
+which simplifies to
+
+$$
+\begin{equation}
+\frac{\partial \hat{y}_k}{\partial z_j^{[2]}} = -\hat{y}_j \hat{y}_k
+\end{equation}
+$$
+
+Thus, we can express the derivative of the softmax output $\hat{y}_k$ with respect to $z_j^{[2]}$ with
+
+$$
+\begin{equation}
+\frac{\partial \hat{y}_k}{\partial z_j^{[2]}} =
+\begin{cases}
+\hat{y}_k \left( 1 - \hat{y}_k \right), & \text{if } j = k \\\\\\
+-\hat{y}_j \hat{y}_k, & \text{if } j \neq k
+\end{cases}
+\end{equation}
+$$
+
+#### Third Term
 
 For the third term, again we note that the derivative is zero for each term in $W^{[2]} h$, except for $W_{j,i}^{[2]} h$:
 
 $$
-\begin{align*}
-    \frac{\partial z_j^{[2]}}{\partial W_{j,i}^{[2]}} &= \frac{\partial }{\partial W_{j,i}^{[2]}} \bigl( W^{[2]} h + b^{[2]} \bigr) \\\\\\
-    &= \frac{\partial }{\partial W_{j,i}^{[2]}} W_{j,i}^{[2]} h \\\\\\
-    &= h
-\end{align*}
+\begin{align}
+    \frac{\partial z_j^{[2]}}{\partial W_{j,i}^{[2]}} &= \frac{\partial }{\partial W_{j,i}^{[2]}} \bigl( W^{[2]} h + b^{[2]} \bigr) \nonumber \\\\\\
+    &= \frac{\partial }{\partial W_{j,i}^{[2]}} W_{j,i}^{[2]} h_i \nonumber \\\\\\
+    &= h_i.
+\end{align}
 $$
 
-For the second term, things are slightly trickier. Notice in diagram (TODO: reference):
+#### Putting it Together
 
+Plugging each of these results back into Equation \ref{eq:dldw2_expanded} we get:
+
+$$
+\begin{align}
+\frac{\partial \mathcal{L}}{\partial W_{j,i}^{[2]}} &= \biggl(-\frac{y_j}{\hat{y_j}} \biggr) \biggl( \hat{y_j} (1 - \hat{y_j}) \biggr) h_i + \sum_{k \neq j} \biggl(-\frac{y_k}{\hat{y_k}} \biggr) \biggl( -\hat{y_j} \hat{y_k} \biggr) h_i \nonumber \\\\\\
+&= h_i \Biggl[ -y_j + y_j \hat{y_j} + \hat{y_j} \sum_{k \neq j} y_k \Biggr] \nonumber \\\\\\
+&= h_i \Biggl[ -y_j + \hat{y_j} \underbrace{\biggl(y_j + \sum_{k \neq j} y_k \biggr)}_{=1} \Biggr] \nonumber \\\\\\
+&= h_i \bigl(\hat{y_j} - y_j \bigr)
+\end{align}
+$$
 
 <!-- $$
 \begin{align*}
@@ -278,9 +372,43 @@ For the second term, things are slightly trickier. Notice in diagram (TODO: refe
 \end{align*}
 $$ -->
 
-... For the first layer... Notice that the two terms were the same that we computed
+## Python Implementation
 
-### Python Code for Backpropagation:
+```python
+import numpy as np
+
+def sigmoid(x):
+    return 1 / (1 + np.exp(-x))
+
+def softmax(z):
+    exp_z = np.exp(z - np.max(z, axis=1, keepdims=True))  # Subtract max(z) for numerical stability
+    return exp_z / exp_z.sum(axis=1, keepdims=True)
+
+class FCNetwork():
+    """Single hidden layer network"""
+    def __init__(self, input_dim, hidden_dim, output_dim, activation=sigmoid):
+        self.w1 = np.random.randn(input_dim, hidden_dim) * np.sqrt(1. / input_dim) # d x h
+        self.w2 = np.random.randn(hidden_dim, output_dim) * np.sqrt(1. / hidden_dim) # h x 10
+        self.b1 = np.random.rand(1, hidden_dim) # 1 x h
+        self.b2 = np.random.rand(1, output_dim) # 1 x 10
+        self.activation = activation
+
+    def forward(self, X):
+        batch_size = X.shape[0]
+        X = X.reshape((batch_size, -1))
+        z1 = np.dot(X, self.w1) + self.b1
+        h = self.activation(z1)
+        z2 = np.dot(h, self.w2) + self.b2
+        f_c = softmax(z2)
+        return z1, h, z2, f_c
+    
+    def predict(self, X):
+        _, _, _, f_c = self.forward(X)
+        y_hat = np.argmax(f_c, axis=1)
+        return y_hat
+```
+
+ The `forward` function returns a vector of softmax distributions $f_c$ for a batch of samples `X`, along with other variables that will be useful for backpropagation, while the `predict` function returns a vector of predicted classes $\hat{y}^{(i)}$.
 
 ```python
 def backprop(X, y, model, learning_rate=0.01):
