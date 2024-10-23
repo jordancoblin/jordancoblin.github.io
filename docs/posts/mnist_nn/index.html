@@ -49,7 +49,7 @@
   />
 
   
-  <title>Backpropagation by Hand: Gradient Derivations for MNIST Classification - AI Meanderings</title>
+  <title>Backpropagation by Hand: Deriving the Learning Updates for Neural Networks - AI Meanderings</title>
 
   
   <meta name="theme-color" />
@@ -260,7 +260,7 @@ Into the meaty content. In this post, I will walk through the implementation of 
 
 <article>
   <header class="mb-14">
-    <h1 class="!my-0 pb-2.5">Backpropagation by Hand: Gradient Derivations for MNIST Classification</h1>
+    <h1 class="!my-0 pb-2.5">Backpropagation by Hand: Deriving the Learning Updates for Neural Networks</h1>
 
     
     <div class="text-xs antialiased opacity-60">
@@ -463,87 +463,38 @@ $$</p>
 \end{align}
 $$</p>
 <h4 id="second-term">Second Term</h4>
-<p>TODO: probably move most of this derivation to a footnote.</p>
-<p>For the second term, we need to consider both cases where $j=k$ and where $j \neq k$.</p>
-<!-- When $j=k$:
-
-$$
-\begin{align*}
-\frac{\partial \hat{y_j}}{\partial z_j^{[2]}} &= \frac{\partial }{\partial z_j^{[2]}} \Biggl( \frac{e^{z_j^{[2]}}}{\sum_{u=1}^{K} e^{z_u^{[2]}}} \Biggr) \\\\\\
-\end{align*}
-$$ -->
-<p>For the case when $j = k$:</p>
-<p>$$
-\frac{\partial \hat{y_k}}{\partial z_j^{[2]}} = \frac{\partial}{\partial z_j^{[2]}} \biggl( \frac{e^{z_k^{[2]}}}{\sum_{t=1}^{K} e^{z_t^{[2]}}} \biggr)
-$$</p>
-<p>Using the <a href="https://en.wikipedia.org/wiki/Quotient_rule">quotient rule</a>, where $u = e^{z_k^{[2]}}$ and $v = \sum_{t=1}^{K} e^{z_t^{[2]}}$:</p>
-<p>$$
-\frac{\partial \hat{y}_k}{\partial z_j^{[2]}} = \frac{(v \cdot \frac{\partial u}{\partial z_j^{[2]}} - u \cdot \frac{\partial v}{\partial z_j^{[2]}})}{v^2}
-$$</p>
-<p>Since $u = e^{z_k^{[2]}}$, we have:</p>
-<p>$$
-\frac{\partial u}{\partial z_j^{[2]}} = \frac{\partial e^{z_k^{[2]}}}{\partial z_j^{[2]}} =
-\begin{cases}
-e^{z_k^{[2]}}, &amp; \text{if } j = k \\\
-0, &amp; \text{if } j \neq k
-\end{cases}
-$$</p>
-<p>Also, since $v = \sum_{t=1}^{K} e^{z_t^{[2]}}$, we have:</p>
-<p>$$
-\frac{\partial v}{\partial z_j^{[2]}} = \frac{\partial}{\partial z_j^{[2]}} \sum_{t=1}^{n} e^{z_t^{[2]}} = e^{z_j^{[2]}}
-$$</p>
-<p>Substituting these into the quotient rule:</p>
-<!-- $$
-\frac{\partial \hat{y_k}}{\partial z_j^{[2]}} = \frac{(\sum_{j=1}^{n} e^{z_j} \cdot e^{z_i} ) - e^{z_i} \cdot e^{z_j^{[2]}}}{(\sum_{j=1}^{n} e^{z_j})^2}
-$$ -->
-<p>$$
-\frac{\partial \hat{y_k}}{\partial z_j^{[2]}} = \frac{\Bigl(\sum_{t=1}^{n} e^{z_t^{[2]}}  \cdot e^{z_k^{[2]}} \Bigr) - e^{z_k^{[2]}} \cdot e^{z_j^{[2]}}} {\Bigl(\sum_{t=1}^{n} e^{z_t^{[2]}} \Bigr)^2},
-$$</p>
-<p>which simplifies to</p>
-<p>$$
-\begin{equation}
-\frac{\partial \hat{y_k}}{\partial z_j^{[2]}} = \hat{y}_k \left( 1 - \hat{y}_k \right)
-\end{equation}
-$$</p>
-<p>When $j \neq k$, the derivation is similar, but in this case, the term $ \frac{\partial u}{\partial z_j^{[2]}} = 0 $, because $u = e^{z_k^{[2]}}$ and $j \neq k$. We still have</p>
-<p>$$
-\frac{\partial \hat{y_k}}{\partial z_j^{[2]}} = \frac{- e^{z_k^{[2]}} \cdot e^{z_j^{[2]}}} {\Bigl(\sum_{t=1}^{n} e^{z_t^{[2]}} \Bigr)^2},
-$$</p>
-<p>which simplifies to</p>
-<p>$$
-\begin{equation}
-\frac{\partial \hat{y}_k}{\partial z_j^{[2]}} = -\hat{y}_j \hat{y}_k
-\end{equation}
-$$</p>
-<p>Thus, we can express the derivative of the softmax output $\hat{y}_k$ with respect to $z_j^{[2]}$ with</p>
+<p>Solving this term is a bit more involved, and so we&rsquo;ll leave out an in-depth derivation here. If you&rsquo;d like to dig into the nitty gritty here, a full derivation is provided in <a href="#softmax-gradient-derivation">Appendix: Softmax Gradient Derivation</a>. For now, just note that you can use the <a href="https://en.wikipedia.org/wiki/Quotient_rule">quotient rule</a>, along with splitting into different cases to solve. In the end, we find that</p>
 <p>$$
 \begin{equation}
 \frac{\partial \hat{y}_k}{\partial z_j^{[2]}} =
 \begin{cases}
 \hat{y}_k \left( 1 - \hat{y}_k \right), &amp; \text{if } j = k \\\
--\hat{y}_j \hat{y}_k, &amp; \text{if } j \neq k
+-\hat{y}_j \hat{y}_k, &amp; \text{if } j \neq k \space.
 \end{cases}
 \end{equation}
 $$</p>
 <h4 id="third-term">Third Term</h4>
-<p>For the third term, again we note that the derivative is zero for each term in $W^{[2]} h$, except for $W_{j,i}^{[2]} h$:</p>
+<p>For the third term, again we note that the derivative is zero for each term in $W^{[2]} h$, except for $W_{j,i}^{[2]} h_i$:</p>
 <p>$$
 \begin{align}
 \frac{\partial z_j^{[2]}}{\partial W_{j,i}^{[2]}} &amp;= \frac{\partial }{\partial W_{j,i}^{[2]}} \bigl( W^{[2]} h + b^{[2]} \bigr) \nonumber \\\
 &amp;= \frac{\partial }{\partial W_{j,i}^{[2]}} W_{j,i}^{[2]} h_i \nonumber \\\
-&amp;= h_i.
+&amp;= h_i \space.
 \end{align}
 $$</p>
 <h4 id="putting-it-together">Putting it Together</h4>
-<p>Plugging each of these results back into Equation \ref{eq:dldw2_expanded} we get:</p>
+<p>Plugging each of these results back into Equation \ref{eq:dldw2_expanded} we get</p>
 <p>$$
 \begin{align}
 \frac{\partial \mathcal{L}}{\partial W_{j,i}^{[2]}} &amp;= \biggl(-\frac{y_j}{\hat{y_j}} \biggr) \biggl( \hat{y_j} (1 - \hat{y_j}) \biggr) h_i + \sum_{k \neq j} \biggl(-\frac{y_k}{\hat{y_k}} \biggr) \biggl( -\hat{y_j} \hat{y_k} \biggr) h_i \nonumber \\\
 &amp;= h_i \Biggl[ -y_j + y_j \hat{y_j} + \hat{y_j} \sum_{k \neq j} y_k \Biggr] \nonumber \\\
 &amp;= h_i \Biggl[ -y_j + \hat{y_j} \underbrace{\biggl(y_j + \sum_{k \neq j} y_k \biggr)}_{=1} \Biggr] \nonumber \\\
-&amp;= h_i \bigl(\hat{y_j} - y_j \bigr)
+&amp;= h_i \bigl(\hat{y_j} - y_j \bigr) \space.
 \end{align}
 $$</p>
+<p>That took a bit of work, but we now see that the derivative of the loss with respect to a single weight in the output layer is equal to the value of the input neuron, times the difference between our predicted output $\hat{y_j}$ and ground truth $y_j$. Pretty cool!</p>
+<p>Next: solve for biases.</p>
+<p>Next: solve for input layer - recursion.</p>
 <!-- $$
 \begin{align*}
     \frac{\partial \mathcal{L}}{\partial \hat{Y}} = \frac{\partial }
@@ -640,6 +591,62 @@ Try different activations: Sigmoid can suffer from saturation in deep networks. 
 <p>In this post, we’ve implemented a fully connected neural network from scratch using NumPy, trained it using stochastic gradient descent and backpropagation, and tested it on the MNIST dataset. This foundational understanding will be useful as we move to more advanced architectures.</p>
 <p>Next, we’ll take on the challenge of implementing a <strong>convolutional neural network (CNN)</strong> to tackle a more complex dataset, the CIFAR-10, where image recognition becomes more nuanced.</p>
 <p>Stay tuned!</p>
+<h1 id="appendix">Appendix</h1>
+<h2 id="softmax-gradient-derivation">Softmax Gradient Derivation</h2>
+<p>To solve for $\frac{\partial \hat{y_k}}{\partial z_j^{[2]}}$, we need to consider both cases where $j=k$ and where $j \neq k$.</p>
+<p>For the case when $j = k$:</p>
+<p>$$
+\frac{\partial \hat{y_k}}{\partial z_j^{[2]}} = \frac{\partial}{\partial z_j^{[2]}} \biggl( \frac{e^{z_k^{[2]}}}{\sum_{t=1}^{K} e^{z_t^{[2]}}} \biggr)
+$$</p>
+<p>Using the <a href="https://en.wikipedia.org/wiki/Quotient_rule">quotient rule</a>, where $u = e^{z_k^{[2]}}$ and $v = \sum_{t=1}^{K} e^{z_t^{[2]}}$:</p>
+<p>$$
+\frac{\partial \hat{y}_k}{\partial z_j^{[2]}} = \frac{(v \cdot \frac{\partial u}{\partial z_j^{[2]}} - u \cdot \frac{\partial v}{\partial z_j^{[2]}})}{v^2}
+$$</p>
+<p>Since $u = e^{z_k^{[2]}}$, we have:</p>
+<p>$$
+\frac{\partial u}{\partial z_j^{[2]}} = \frac{\partial e^{z_k^{[2]}}}{\partial z_j^{[2]}} =
+\begin{cases}
+e^{z_k^{[2]}}, &amp; \text{if } j = k \\\
+0, &amp; \text{if } j \neq k
+\end{cases}
+$$</p>
+<p>Also, since $v = \sum_{t=1}^{K} e^{z_t^{[2]}}$, we have:</p>
+<p>$$
+\frac{\partial v}{\partial z_j^{[2]}} = \frac{\partial}{\partial z_j^{[2]}} \sum_{t=1}^{n} e^{z_t^{[2]}} = e^{z_j^{[2]}}
+$$</p>
+<p>Substituting these into the quotient rule:</p>
+<!-- $$
+\frac{\partial \hat{y_k}}{\partial z_j^{[2]}} = \frac{(\sum_{j=1}^{n} e^{z_j} \cdot e^{z_i} ) - e^{z_i} \cdot e^{z_j^{[2]}}}{(\sum_{j=1}^{n} e^{z_j})^2}
+$$ -->
+<p>$$
+\frac{\partial \hat{y_k}}{\partial z_j^{[2]}} = \frac{\Bigl(\sum_{t=1}^{n} e^{z_t^{[2]}}  \cdot e^{z_k^{[2]}} \Bigr) - e^{z_k^{[2]}} \cdot e^{z_j^{[2]}}} {\Bigl(\sum_{t=1}^{n} e^{z_t^{[2]}} \Bigr)^2},
+$$</p>
+<p>which simplifies to</p>
+<p>$$
+\begin{equation}
+\frac{\partial \hat{y_k}}{\partial z_j^{[2]}} = \hat{y}_k \left( 1 - \hat{y}_k \right)
+\end{equation}
+$$</p>
+<p>When $j \neq k$, the derivation is similar, but in this case, the term $ \frac{\partial u}{\partial z_j^{[2]}} = 0 $, because $u = e^{z_k^{[2]}}$ and $j \neq k$. We still have</p>
+<p>$$
+\frac{\partial \hat{y_k}}{\partial z_j^{[2]}} = \frac{- e^{z_k^{[2]}} \cdot e^{z_j^{[2]}}} {\Bigl(\sum_{t=1}^{n} e^{z_t^{[2]}} \Bigr)^2},
+$$</p>
+<p>which simplifies to</p>
+<p>$$
+\begin{equation}
+\frac{\partial \hat{y}_k}{\partial z_j^{[2]}} = -\hat{y}_j \hat{y}_k
+\end{equation}
+$$</p>
+<p>Thus, we can express the derivative of the softmax output $\hat{y}_k$ with respect to $z_j^{[2]}$ with</p>
+<p>$$
+\begin{equation}
+\frac{\partial \hat{y}_k}{\partial z_j^{[2]}} =
+\begin{cases}
+\hat{y}_k \left( 1 - \hat{y}_k \right), &amp; \text{if } j = k \\\
+-\hat{y}_j \hat{y}_k, &amp; \text{if } j \neq k
+\end{cases}
+\end{equation}
+$$</p>
 </section>
 
   
