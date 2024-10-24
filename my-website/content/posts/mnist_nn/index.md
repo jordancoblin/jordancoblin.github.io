@@ -213,10 +213,10 @@ $$
     \frac{\partial \mathcal{L}}{\partial W_{j,i}^{[2]}} = \frac{\partial \mathcal{L}}{\partial z_j^{[2]}} \frac{\partial z_j^{[2]}}{\partial W_{j,i}^{[2]}}.
 $$
 
-You might think (as I did) that the same pattern could be applied for $\hat{y}$, but interestingly, this is not the case:
+This $\frac{\partial \mathcal{L}}{\partial z_j^{[2]}}$ term is important, as we'll be re-using it later to compute derivatives in earlier layers. To solve for this quantity, you might think (as I did) that the same pattern could be applied when decomposing by $\hat{y}$, but interestingly, this is not the case:
 
 $$
-    \frac{\partial \mathcal{L}}{\partial W_{j,i}^{[2]}} \neq \frac{\partial \mathcal{L}}{\partial \hat{y_j}} \frac{\partial \hat{y_j}}{\partial z_j^{[2]}} \frac{\partial z_j^{[2]}}{\partial W_{j,i}^{[2]}}.
+    \frac{\partial \mathcal{L}}{\partial z_j^{[2]}} \neq \frac{\partial \mathcal{L}}{\partial \hat{y_j}} \frac{\partial \hat{y_j}}{\partial z_j^{[2]}} \space.
 $$
 
 The reason for this is related to our usage of the $\text{softmax}$ function over our outputs $z_j^{[l]}$. Because $\text{softmax}$ causes $z_j^{[l]}$ to have an effect on both $\hat{y}_1$ and $\hat{y}_2$, we need to take both of these "paths" into account when applying the chain rule.
@@ -231,7 +231,7 @@ So in this case, we need to apply the **multivariable chain rule** by summing th
 
 $$
 \begin{equation}
-    \frac{\partial \mathcal{L}}{\partial W_{j,i}^{[2]}} = \sum_{k=1}^{K} \frac{\partial \mathcal{L}}{\partial \hat{y_k}} \frac{\partial \hat{y_k}}{\partial z_j^{[2]}} \frac{\partial z_j^{[2]}}{\partial W_{j,i}^{[2]}}\space.
+    \frac{\partial \mathcal{L}}{\partial z_j^{[2]}} = \sum_{k=1}^{K} \frac{\partial \mathcal{L}}{\partial \hat{y_k}} \frac{\partial \hat{y_k}}{\partial z_j^{[2]}} \space.
 \end{equation}
 $$
 
@@ -328,12 +328,19 @@ $$
 
 #### Hidden Layer Derivatives
 
-Now that we've solved for the output layer, we can move on to the hidden layer. The process is similar, but we need to consider the *effect of the hidden layer on the output layer* when taking the derivative. We can start by computing the derivative of the loss with respect to the weights in the hidden layer:
+Now that we've solved for the output layer, we can move on to the hidden layer. The process is similar, except we'll now be passing derivatives computed in the output layer back to the hidden layer - finally some backpropagation! Looking at the full network, we can see how the effect of the hidden layer's weights flow through the network:
+
+{{< figure-math src="images/full_network_highlighted.png" class="center">}}
+The path that $W_{1,1}^{[1]}$ takes to reach $\mathcal{L}$.
+{{< /figure-math >}}
+
+
+ We can start by decomposing the derivative of the loss with respect to the weights in the hidden layer, using the chain rule once again:
 
 $$
 \begin{align}
     \frac{\partial \mathcal{L}}{\partial W_{j,i}^{[1]}} &= \frac{\partial \mathcal{L}}{\partial h_j} \frac{\partial h_j}{\partial z_j^{[1]}} \frac{\partial z_j^{[1]}}{\partial W_{j,i}^{[1]}} \nonumber \\\\\\
-    &= \sum_{k=1}^{K} \frac{\partial \mathcal{L}}{\partial \hat{y_k}} \frac{\partial \hat{y_k}}{\partial z_k^{[2]}} \frac{\partial z_k^{[2]}}{\partial h_j} \frac{\partial h_j}{\partial z_j^{[1]}} \frac{\partial z_j^{[1]}}{\partial W_{j,i}^{[1]}},
+    &= \frac{\partial \mathcal{L}}{\partial z_j^{[2]}} \frac{\partial z_j^{[2]}}{\partial h_j} \frac{\partial h_j}{\partial z_j^{[1]}} \frac{\partial z_j^{[1]}}{\partial W_{j,i}^{[1]}},
 \end{align}
 $$
 
