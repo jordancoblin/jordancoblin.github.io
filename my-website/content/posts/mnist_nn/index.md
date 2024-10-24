@@ -1,5 +1,5 @@
 +++
-title = 'Neural Network Foundations: Implementing Backpropagation from Scratch'
+title = 'ML Foundations: Implementing Backpropagation from Scratch'
 date = 2024-09-18T15:51:45-06:00
 draft = false
 +++

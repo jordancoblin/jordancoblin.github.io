@@ -49,7 +49,7 @@
   />
 
   
-  <title>Neural Network Foundations: Implementing Backpropagation from Scratch - AI Meanderings</title>
+  <title>ML Foundations: Implementing Backpropagation from Scratch - AI Meanderings</title>
 
   
   <meta name="theme-color" />
@@ -124,7 +124,7 @@ Into the meaty content. In this post, I will walk through the implementation of 
   
   
   
-  <meta itemprop="name" content="Neural Network Foundations: Implementing Backpropagation from Scratch">
+  <meta itemprop="name" content="ML Foundations: Implementing Backpropagation from Scratch">
   <meta itemprop="description" content="Welcome to my very first post of the blog! I wanted to take some time to brush up on ML foundations and what better way to learn (or re-learn) technical topics than to write up one’s findings? I’m also hoping that treating these blog posts as final artifacts will be a useful forcing function for actually completing the projects.
 Into the meaty content. In this post, I will walk through the implementation of a simple fully-connected neural network to tackle image classification on the MNIST dataset. I will implement backpropagation and stochastic gradient descent from scratch using numpy and provide high-level derivations and intuition for computing weight updates of each of the neurons, but I’ll try not to get overly academic with it. This was a fun and surprisingly challenging exercise, and it made me even more thankful that mature automatic differentiation libraries like pytorch exist - I imagine that manually computing gradients for a 30&#43; layer ResNet would entail a special kind of masochism.">
   <meta itemprop="datePublished" content="2024-09-18T15:51:45-06:00">
@@ -133,7 +133,7 @@ Into the meaty content. In this post, I will walk through the implementation of 
   
   <meta property="og:url" content="/posts/mnist_nn/">
   <meta property="og:site_name" content="AI Meanderings">
-  <meta property="og:title" content="Neural Network Foundations: Implementing Backpropagation from Scratch">
+  <meta property="og:title" content="ML Foundations: Implementing Backpropagation from Scratch">
   <meta property="og:description" content="Welcome to my very first post of the blog! I wanted to take some time to brush up on ML foundations and what better way to learn (or re-learn) technical topics than to write up one’s findings? I’m also hoping that treating these blog posts as final artifacts will be a useful forcing function for actually completing the projects.
 Into the meaty content. In this post, I will walk through the implementation of a simple fully-connected neural network to tackle image classification on the MNIST dataset. I will implement backpropagation and stochastic gradient descent from scratch using numpy and provide high-level derivations and intuition for computing weight updates of each of the neurons, but I’ll try not to get overly academic with it. This was a fun and surprisingly challenging exercise, and it made me even more thankful that mature automatic differentiation libraries like pytorch exist - I imagine that manually computing gradients for a 30&#43; layer ResNet would entail a special kind of masochism.">
   <meta property="og:locale" content="en_us">
@@ -145,7 +145,7 @@ Into the meaty content. In this post, I will walk through the implementation of 
   
   
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="Neural Network Foundations: Implementing Backpropagation from Scratch">
+  <meta name="twitter:title" content="ML Foundations: Implementing Backpropagation from Scratch">
   <meta name="twitter:description" content="Welcome to my very first post of the blog! I wanted to take some time to brush up on ML foundations and what better way to learn (or re-learn) technical topics than to write up one’s findings? I’m also hoping that treating these blog posts as final artifacts will be a useful forcing function for actually completing the projects.
 Into the meaty content. In this post, I will walk through the implementation of a simple fully-connected neural network to tackle image classification on the MNIST dataset. I will implement backpropagation and stochastic gradient descent from scratch using numpy and provide high-level derivations and intuition for computing weight updates of each of the neurons, but I’ll try not to get overly academic with it. This was a fun and surprisingly challenging exercise, and it made me even more thankful that mature automatic differentiation libraries like pytorch exist - I imagine that manually computing gradients for a 30&#43; layer ResNet would entail a special kind of masochism.">
 
@@ -295,7 +295,7 @@ Into the meaty content. In this post, I will walk through the implementation of 
 
 <article>
   <header class="mb-14">
-    <h1 class="!my-0 pb-2.5">Neural Network Foundations: Implementing Backpropagation from Scratch</h1>
+    <h1 class="!my-0 pb-2.5">ML Foundations: Implementing Backpropagation from Scratch</h1>
 
     
     <div class="text-xs antialiased opacity-60">
