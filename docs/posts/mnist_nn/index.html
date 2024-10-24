@@ -414,7 +414,7 @@ $$</p>
 <!-- ![Output Layer](images/output_layer_base.png)
 {width=500 alt="Gravel Calls" class="center"} -->
 <h3 id="backward-pass">Backward Pass</h3>
-<p>For our <strong>backward pass</strong>, we will compute the partial derivatives needed for our learning update. Conceptually, we can think of this as figuring out how much a change in each weight contributes to a change in the overall loss. Similarly, we can consider how much a change in each intermediate variable, such as $z^{[l]}$ contributes to the loss. To determine derivatives for weights in earlier layers in the network, we use the <a href="https://en.wikipedia.org/wiki/Chain_rule">chain rule</a> to decompose the derivatives into parts, which enables re-use of derivatives that were computed for later layers; this is essentially dynamic programming.</p>
+<p>For our <strong>backward pass</strong>, we will compute the partial derivatives needed for our learning update. Conceptually, we can think of this as figuring out how much a change in each weight contributes to a change in the overall loss. To determine derivatives for weights in earlier layers in the network, we use the <a href="https://en.wikipedia.org/wiki/Chain_rule">chain rule</a> to decompose the derivatives into parts, which enables re-use of derivatives that were computed for later layers; this is essentially dynamic programming.</p>
 <p>Let&rsquo;s start by computing derivatives $\frac{\partial \mathcal{L}}{\partial W_{j,i}^{[l]}}$ for weights in the output layer, visualized below. Note that we will be using $j$ to index neurons in the output layer, and $i$ to index neurons in the input layer. So $W_{2,1}^{[2]}$ indicates the weight connecting neuron $1$ from the $h$ and neuron $2$ in $z^{[2]}$.</p>
 <figure class="center"><img src="/posts/mnist_nn/images/output_layer_base.png"
     alt="Output layer of our simplified neural network."><figcaption>
@@ -426,7 +426,7 @@ $$</p>
 <p>$$
 \frac{\partial \mathcal{L}}{\partial W_{j,i}^{[2]}} = \frac{\partial \mathcal{L}}{\partial z_j^{[2]}} \frac{\partial z_j^{[2]}}{\partial W_{j,i}^{[2]}}.
 $$</p>
-<p>This $\frac{\partial \mathcal{L}}{\partial z_j^{[2]}}$ term is important, as we&rsquo;ll be re-using it later to compute derivatives in earlier layers. To solve for this quantity, you might think (as I did) that the same pattern could be applied when decomposing by $\hat{y}$, but interestingly, this is not the case:</p>
+<p>This $\frac{\partial \mathcal{L}}{\partial z_j^{[2]}}$ term is important, as we&rsquo;ll be re-using it later to compute derivatives in the earlier hidden layer. To solve for this quantity, you might think (as I did) that the same pattern could be applied when decomposing by $\hat{y}$, but interestingly, this is not the case:</p>
 <p>$$
 \frac{\partial \mathcal{L}}{\partial z_j^{[2]}} \neq \frac{\partial \mathcal{L}}{\partial \hat{y_j}} \frac{\partial \hat{y_j}}{\partial z_j^{[2]}} \space.
 $$</p>
@@ -443,13 +443,26 @@ $$</p>
 The path that $W_{1,1}^{[2]}$ takes to reach $\mathcal{L}$. Notice that the computation flows through all nodes in $\hat{y}$.
 </figcaption>
 </figure>
-<p>So in this case, we need to apply the <strong>multivariable chain rule</strong> by summing the derivatives of each path:</p>
+<p>So in this case, we need to apply the <strong>multivariable chain rule</strong> by <em>summing</em> the derivatives of each path:</p>
 <p>$$
-\begin{equation}
 \frac{\partial \mathcal{L}}{\partial z_j^{[2]}} = \sum_{k=1}^{K} \frac{\partial \mathcal{L}}{\partial \hat{y_k}} \frac{\partial \hat{y_k}}{\partial z_j^{[2]}} \space.
-\end{equation}
 $$</p>
 <p>As we&rsquo;ll see, it is also useful to split this expression into cases where $j=k$ and $j \neq k$:</p>
+<p>$$
+\begin{equation}
+\label{eq:dldz2_expanded}
+\frac{\partial \mathcal{L}}{\partial z_j^{[2]}} = \frac{\partial \mathcal{L}}{\partial \hat{y_k}} \frac{\partial \hat{y_k}}{\partial z_k^{[2]}} + \sum_{k \neq j} \frac{\partial \mathcal{L}}{\partial \hat{y_k}} \frac{\partial \hat{y_k}}{\partial z_j^{[2]}}\space.
+\end{equation}
+$$</p>
+<p>Our final expression for the derivative of the loss with respect to a single weight in the output layer then becomes</p>
+<!-- $$
+\begin{equation}
+\label{eq:dldw2}
+    \frac{\partial \mathcal{L}}{\partial W_{j,i}^{[2]}} = \sum_{k=1}^K \frac{\partial \mathcal{L}}{\partial \hat{y_k}} \frac{\partial \hat{y_k}}{\partial z_j^{[2]}} \frac{\partial z_j^{[2]}}{\partial W_{j,i}^{[2]}}\space.
+\end{equation}
+$$
+
+As we'll see, it is also useful to split this expression into cases where $j=k$ and $j \neq k$: -->
 <p>$$
 \begin{equation}
 \label{eq:dldw2_expanded}
@@ -457,8 +470,8 @@ $$</p>
 \end{equation}
 $$</p>
 <p>Let&rsquo;s go ahead and solve this expression, one term at a time.</p>
-<h4 id="first-term">First Term</h4>
-<p>For the first term, we can take the derivative of the loss with respect to $\hat{y}_k$ by noting that the derivative is zero for each term in the sum, save for the case where $u=k$:</p>
+<h4 id="solving-individual-derivatives">Solving Individual Derivatives</h4>
+<p>For the first derivative term in Equation \ref{eq:dldw2_expanded}, we can take the derivative of the loss with respect to $\hat{y}_k$ by noting that the derivative is zero for each term in the sum, save for the case where $u=k$:</p>
 <p>$$
 \begin{align}
 \frac{\partial \mathcal{L}}{\partial \hat{y_k}} &amp;= \frac{\partial}{\partial \hat{y_k}} \bigl( - \sum_{u=1}^{K} y_u \log \hat{y}_u \bigr) \nonumber \\\
@@ -466,8 +479,7 @@ $$</p>
 &amp;= -\frac{y_k}{\hat{y}_k}\space.
 \end{align}
 $$</p>
-<h4 id="second-term">Second Term</h4>
-<p>Solving this term is a bit more involved, and so we&rsquo;ll leave out an in-depth derivation here. If you&rsquo;d like to dig into the nitty gritty here, a full derivation is provided in <a href="#softmax-gradient-derivation">Appendix: Softmax Gradient Derivation</a>. For now, just note that you can use the <a href="https://en.wikipedia.org/wiki/Quotient_rule">quotient rule</a>, along with splitting into different cases to solve. In the end, we find that</p>
+<p>Solving the $\frac{\partial \hat{y}_k}{\partial z_j^{[2]}}$ term is a bit more involved, and so we&rsquo;ll leave out an in-depth derivation here. If you&rsquo;d like to dig into the nitty gritty here, a full derivation is provided in <a href="#softmax-gradient-derivation">Appendix: Softmax Gradient Derivation</a>. For now, just note that you can use the <a href="https://en.wikipedia.org/wiki/Quotient_rule">quotient rule</a>, along with splitting into different cases to solve. In the end, we find the solution to be the following piecewise function:</p>
 <p>$$
 \begin{equation}
 \frac{\partial \hat{y}_k}{\partial z_j^{[2]}} =
@@ -477,7 +489,6 @@ $$</p>
 \end{cases}
 \end{equation}
 $$</p>
-<h4 id="third-term">Third Term</h4>
 <p>For the third term, again we note that the derivative is zero for each term in $W^{[2]} h$, except for $W_{j,i}^{[2]} h_i$:</p>
 <p>$$
 \begin{align}
@@ -487,13 +498,20 @@ $$</p>
 \end{align}
 $$</p>
 <h4 id="putting-it-together">Putting it Together</h4>
-<p>Plugging each of these results back into Equation \ref{eq:dldw2_expanded} we get</p>
+<p>Plugging each of these results first into Equation \ref{eq:dldz2_expanded} we get</p>
 <p>$$
 \begin{align}
-\frac{\partial \mathcal{L}}{\partial W_{j,i}^{[2]}} &amp;= \biggl(-\frac{y_j}{\hat{y_j}} \biggr) \biggl( \hat{y_j} (1 - \hat{y_j}) \biggr) h_i + \sum_{k \neq j} \biggl(-\frac{y_k}{\hat{y_k}} \biggr) \biggl( -\hat{y_j} \hat{y_k} \biggr) h_i \nonumber \\\
-&amp;= h_i \Biggl[ -y_j + y_j \hat{y_j} + \hat{y_j} \sum_{k \neq j} y_k \Biggr] \nonumber \\\
-&amp;= h_i \Biggl[ -y_j + \hat{y_j} \underbrace{\biggl(y_j + \sum_{k \neq j} y_k \biggr)}_{=1} \Biggr] \nonumber \\\
-&amp;= h_i \bigl(\hat{y_j} - y_j \bigr) \space.
+\frac{\partial \mathcal{L}}{\partial z_j^{[2]}} &amp;= \biggl(-\frac{y_j}{\hat{y_j}} \biggr) \biggl( \hat{y_j} (1 - \hat{y_j}) \biggr) + \sum_{k \neq j} \biggl(-\frac{y_k}{\hat{y_k}} \biggr) \biggl( -\hat{y_j} \hat{y_k} \biggr) \nonumber \\\
+&amp;= -y_j + y_j \hat{y_j} + \hat{y_j} \sum_{k \neq j} y_k  \nonumber \\\
+&amp;= -y_j + \hat{y_j} \underbrace{\biggl(y_j + \sum_{k \neq j} y_k \biggr)}_{=1} \nonumber \\\
+&amp;= \hat{y_j} - y_j \space.
+\end{align}
+$$</p>
+<p>Now solving for $\frac{\partial \mathcal{L}}{\partial W_{j,i}^{[2]}}$ by plugging in the results above, we get</p>
+<p>$$
+\begin{align}
+\frac{\partial \mathcal{L}}{\partial W_{j,i}^{[2]}} &amp;= \frac{\partial \mathcal{L}}{\partial z_j^{[2]}} \frac{\partial z_k^{[2]}}{\partial W_{j,i}^{[2]}} \nonumber \\\
+&amp;= \bigl(\hat{y_j} - y_j \bigr) h_i \space.
 \end{align}
 $$</p>
 <p>That took a bit of work, but we now see that the derivative of the loss with respect to a single weight in the output layer is equal to the value of the input neuron $h_i$ times the difference between the predicted output $\hat{y_j}$ and ground truth $y_j$. Pretty cool!</p>
@@ -501,10 +519,10 @@ $$</p>
 <p>We&rsquo;re almost done with the output layer, but we still need to solve for the derivative of the loss with respect to the bias term. Again we can use the chain rule to decompose the derivative:</p>
 <p>$$
 \begin{equation*}
-\frac{\partial \mathcal{L}}{\partial b_{j,i}^{[2]}} = \sum_{k=1}^{K} \frac{\partial \mathcal{L}}{\partial \hat{y_k}} \frac{\partial \hat{y_k}}{\partial z_j^{[2]}} \frac{\partial z_j^{[2]}}{\partial b_{j,i}^{[2]}}\space.
+\frac{\partial \mathcal{L}}{\partial b_{j,i}^{[2]}} = \frac{\partial \mathcal{L}}{\partial z_j^{[2]}} \frac{\partial z_j^{[2]}}{\partial b_{j,i}^{[2]}}\space.
 \end{equation*}
 $$</p>
-<p>Since we&rsquo;ve only swapped out $W_{j,i}^{[2]}$ for $b_{j,i}^{[2]}$, the solutions for the first two terms remain the same. Solving for the third term,</p>
+<p>We already know the solution for the first term here. Solving for the second term,</p>
 <p>$$
 \begin{align*}
 \frac{\partial z_j^{[2]}}{\partial b_{j,i}^{[2]}} &amp;= \frac{\partial }{\partial b_{j,i}^{[2]}} \bigl( W^{[2]} h + b^{[2]} \bigr) \nonumber \\\
@@ -530,10 +548,9 @@ The path that $W_{1,1}^{[1]}$ takes to reach $\mathcal{L}$.
 <p>$$
 \begin{align}
 \frac{\partial \mathcal{L}}{\partial W_{j,i}^{[1]}} &amp;= \frac{\partial \mathcal{L}}{\partial h_j} \frac{\partial h_j}{\partial z_j^{[1]}} \frac{\partial z_j^{[1]}}{\partial W_{j,i}^{[1]}} \nonumber \\\
-&amp;= \frac{\partial \mathcal{L}}{\partial z_j^{[2]}} \frac{\partial z_j^{[2]}}{\partial h_j} \frac{\partial h_j}{\partial z_j^{[1]}} \frac{\partial z_j^{[1]}}{\partial W_{j,i}^{[1]}},
+&amp;= \frac{\partial \mathcal{L}}{\partial z_j^{[2]}} \frac{\partial z_j^{[2]}}{\partial h_j} \frac{\partial h_j}{\partial z_j^{[1]}} \frac{\partial z_j^{[1]}}{\partial W_{j,i}^{[1]}} \space.
 \end{align}
 $$</p>
-<p>where we&rsquo;ve used the chain rule to break down the derivative into parts. We can solve this expression in a similar manner to the output layer, but we&rsquo;ll leave the details to the reader.</p>
 <h2 id="python-implementation">Python Implementation</h2>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">import</span> numpy <span style="color:#66d9ef">as</span> np
 </span></span><span style="display:flex;"><span>
