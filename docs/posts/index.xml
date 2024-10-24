@@ -2,17 +2,17 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Posts on AI Meanderings</title>
-    <link>//localhost:1313/posts/</link>
+    <link>/posts/</link>
     <description>Recent content in Posts on AI Meanderings</description>
     <generator>Hugo</generator>
     <language>en-us</language>
     <lastBuildDate>Wed, 18 Sep 2024 15:51:45 -0600</lastBuildDate>
-    <atom:link href="//localhost:1313/posts/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="/posts/index.xml" rel="self" type="application/rss+xml" />
     <item>
-      <title>Backpropagation by Hand: Gradient Derivations for MNIST Classification</title>
-      <link>//localhost:1313/posts/mnist_nn/</link>
+      <title>Neural Network Foundations: Implementing Backpropagation from Scratch</title>
+      <link>/posts/mnist_nn/</link>
       <pubDate>Wed, 18 Sep 2024 15:51:45 -0600</pubDate>
-      <guid>//localhost:1313/posts/mnist_nn/</guid>
+      <guid>/posts/mnist_nn/</guid>
       <description>&lt;p&gt;Welcome to my very first post of the blog! I wanted to take some time to brush up on ML foundations and what better way to learn (or re-learn) technical topics than to write up one&amp;rsquo;s findings? I&amp;rsquo;m also hoping that treating these blog posts as final artifacts will be a useful forcing function for actually completing the projects.&lt;/p&gt;&#xA;&lt;p&gt;Into the meaty content. In this post, I will walk through the implementation of a simple fully-connected neural network to tackle image classification on the &lt;a href=&#34;https://www.kaggle.com/datasets/hojjatk/mnist-dataset&#34;&gt;MNIST dataset&lt;/a&gt;. I will implement backpropagation and stochastic gradient descent from scratch using &lt;code&gt;numpy&lt;/code&gt; and provide high-level derivations and intuition for computing weight updates of each of the neurons, but I&amp;rsquo;ll try not to get overly academic with it. This was a fun and surprisingly challenging exercise, and it made me even more thankful that mature automatic differentiation libraries like &lt;code&gt;pytorch&lt;/code&gt; exist - I imagine that manually computing gradients for a 30+ layer ResNet would entail a special kind of masochism.&lt;/p&gt;</description>
     </item>
   </channel>

@@ -1,5 +1,5 @@
 +++
-title = 'Backpropagation by Hand: Deriving the Learning Updates for Neural Networks'
+title = 'Neural Network Foundations: Implementing Backpropagation from Scratch'
 date = 2024-09-18T15:51:45-06:00
 draft = false
 +++
@@ -34,18 +34,18 @@ test_loader = DataLoader(test_dataset, batch_size=1000, shuffle=False)
 
 <!--  Following this for notation: https://cs230.stanford.edu/files/Notation.pdf -->
 
-Let's begin by laying some notational groundwork for the MNIST classification task. As usual for supervised learning problems, we consider the setting where we are provided a dataset $\mathcal{D}$ consisting of input vectors $x$ and label vectors $y$:
+Let's begin by laying some notational groundwork for the classification task. As usual for supervised learning problems, we consider the setting where we are provided a dataset $\mathcal{D}$ consisting of input vectors $x$ and label vectors $y$:
 
-$$\mathcal{D} = \bigl\lbrace (x^{(i)}, y^{(i)}) \bigr\rbrace_{i=1}^m, $$ 
+$$\mathcal{D} = \bigl\lbrace (x^{(i)}, y^{(i)}) \bigr\rbrace_{i=1}^m \space,$$ 
 
 where $m$ is the number of samples in our dataset. The standard MNIST dataset consists of 60,000 training images and 10,000 test images, which we will call $\mathcal{D_{\text{train}}}$ and $\mathcal{D_{\text{test}}}$. An image can be represented as a column vector:
 
-$$x^{(i)} = [x_1^{(i)}, x_2^{(i)}, ..., x_{n_x}^{(i)}]^T,$$
+$$x^{(i)} = [x_1^{(i)}, x_2^{(i)}, ..., x_{n_x}^{(i)}]^T \space,$$
 
 where $n_x = 28 \times 28$ is the number of pixels in each image. Each image has a real-valued label $y^{(i)} \in [0, 9]$ that indicates which digit, or class, the image corresponds to. To help us perform classification, we will represent this as a one-hot encoded vector:
 
 <!--  TODO: switch to Mathjax here -->
-$$y^{(i)} = [y_1^{(i)}, y_2^{(i)}, ..., y_{n_y}^{(i)}]^T,$$ where $n_y = 10$ is the number of digits or classes to choose from and 
+$$y^{(i)} = [y_1^{(i)}, y_2^{(i)}, ..., y_{n_y}^{(i)}]^T \space,$$ where $n_y = 10$ is the number of digits or classes to choose from and 
 
 $$
 y_k^{(i)} = \begin{cases}
@@ -66,19 +66,17 @@ Because we have multiple digits to choose from, we consider this a **multi-class
 
 ## Neural Network Definition
 
-TODO: introduce batch/vector notation here
-
 Most of you are probably familiar enough with neural networks that I can skip a conceptual introduction. Instead, I will move into defining the neural network as a mathematical function, so that we can work with each part for our backprop derivations.
 
-Let $f(x; W)$ be the classification function (model) parameterized by weights $W$ and biases $b$; for notation simplicity, we can absorb $b$ into $W$. This classification function outputs the predicted label $\hat{y}^{(i)} = f(x^{(i)}; W) = \arg\max_c f_c(x^{(i)}; W)$, where $f_c(x^{(i)}; W)$ is the score or probability for class $c$. This function $f_c$ is what we will be modeling with our neural network.
+Let $f(x; \theta)$ be the classification function (model) parameterized by $\theta$, which maps from inputs $x$ to a predicted class $\hat{y}$. This classification function typically takes the..... TODO.... $\hat{y} = f(x; \theta) = \arg\max_c f_c(x; \theta),$ where $f_c(x; \theta)$ is the score or probability for class $c$. This function $f_c$ is what we will be modeling with our neural network.
 
 <!-- $$f: \mathbb{R}^{n_x} \rightarrow \mathbb{R}^{n_y}.$$ -->
 
-Neural networks may have an abritrary number of layers (hence the name *deep* learning), and we will use the notation $W^{[l]}$ and $b^{[l]}$ to denote the weights and biases for layer $l$. For our model, we will use a network with a single hidden layer of size 128. The output of this hidden layer is:
+Neural networks may have an abritrary number of layers - the more layers, the "deeper" the network. The parameters $\theta$ of our model are comprised of **weights** and **biases**, which are denoted using $W^{[l]}$ and $b^{[l]}$ respectively, for each layer $l$. For the MNIST problem, we will use a network with a single hidden layer of size 128. The output of this first layer, also known as a **hidden** layer, is:
 
-$$h = \sigma (W^{[1]} x^{(i)} + b^{[1]}),$$
+$$h(x) = \sigma (W^{[1]} x + b^{[1]}),$$
 
-where $W^{[1]} \in \mathbb{R}^{n_h \times n_x}$ is the hidden layer's weight matrix, $b^{[1]} \in \mathbb{R}^{n_x}$ is the bias vector, $n_h = 128$ is the hidden layer size, and $\sigma$ is the sigmoid activation function. The dimensions of each matrix and vector become quite important during implementation - shape errors tend to be where I spend much of my debugging time in the early stages of a project.
+where $W^{[1]} \in \mathbb{R}^{n_h \times n_x}$ is the hidden layer's weight matrix, $b^{[1]} \in \mathbb{R}^{n_x}$ is the bias vector, $n_h = 128$ is the hidden layer size, and $\sigma$ is the sigmoid activation function. Note that the dimensions of each matrix and vector become quite important during implementation - shape errors tend to be where I spend much of my debugging time in the early stages of development.
 
 For classification problems where a single label is predicted, it is typical to use the softmax function to convert the final layer outputs into a probability distribution:
 
@@ -86,11 +84,16 @@ $$\text{softmax}(z) = \frac{e^{z}}{\sum_{j=1}^{C} e^{z}_{j}}.$$
 
 With this, the final output of our neural network becomes:
 
-$$f_c(x^{(i)}; \theta) = \text{softmax} (W^{[2]} h + b^{[2]}),$$
+$$f_c(x; \theta) = \text{softmax} (W^{[2]} h(x) + b^{[2]}),$$
 
-where $W^{[2]} \in \mathbb{R}^{n_y \times n_h}$ and $b^{[2]} \in \mathbb{R}^{n_y}$ are the *output* layer's weight matrix and bias vector, respectively.
+where $W^{[2]} \in \mathbb{R}^{n_y \times n_h}$ and $b^{[2]} \in \mathbb{R}^{n_y}$ are the *output* layer's weight matrix and bias vector, respectively. Fully expanded, the output of our network can be written in one line as
+$$
+\begin{equation*}
+    f_c(x; \theta) = \text{softmax} \bigl( W^{[2]} \sigma (W^{[1]} x + b^{[1]}) + b^{[2]} \bigr) \space.
+\end{equation*}
+$$
 
-Pictorally, our network looks something like this... TODO
+Pictorally, we can visualize our network like so: TODO
 
 <!-- Our neural network will consist of a single hidden layer, where each node in the hidden layer applies an activation function to a weighted sum of the inputs. The choice of activation function is crucial, as it introduces non-linearity to the model, enabling it to learn complex patterns. -->
 
@@ -120,7 +123,7 @@ In this function, we first clip the predicted values y_hat to avoid undefined va
 
 We now have a parameterized model that is capable of representing a variety of functions. Our goal is to find the function which provides the best fit with respect to our dataset $\mathcal{D}$. To accomplish this, we will introduce a **loss function** $\mathcal{L}(\hat{y}, y)$ as a measure of fit, and then *minimize* this function to find the optimal parameters of the model:
 
-$$W_* = \arg\min_{W} \mathcal{L}(\hat{y}, y).$$
+$$\theta_* = \arg\min_{\theta} \mathcal{L}(\hat{y}, y).$$
 
 For multi-class classification problems, cross-entropy is a common loss function which measures the distance between the distribution produced by our model, and the true distribution $P(y|x)$. The cross-entropy loss for a tuple $(x, y)$ is defined as:
 
@@ -146,12 +149,12 @@ $$ \theta \leftarrow \theta - \alpha \nabla \mathcal{L}(\theta).$$
 Breaking down the gradient by each set of weights and biases in our network, we arrive at the following four update expressions:
 
 $$
-\begin{align*}
+\begin{align}
 W^{[1]} & \leftarrow W^{[1]} - \alpha \frac{\partial \mathcal{L}}{\partial W^{[1]}} \\\\\\
 b^{[1]} & \leftarrow b^{[1]} - \alpha \frac{\partial \mathcal{L}}{\partial b^{[1]}} \\\\\\
 W^{[2]} & \leftarrow W^{[2]} - \alpha \frac{\partial \mathcal{L}}{\partial W^{[2]}} \\\\\\
-b^{[2]} & \leftarrow b^{[2]} - \alpha \frac{\partial \mathcal{L}}{\partial b^{[2]}}. \\\\\\
-\end{align*}
+b^{[2]} & \leftarrow b^{[2]} - \alpha \frac{\partial \mathcal{L}}{\partial b^{[2]}}\space.
+\end{align}
 $$
 
 It's important to remember that $W^{[l]}$ is a *matrix* and $b^{[l]}$ is a *vector*, so the result of each derivative here will be either a matrix or vector as well. The components of these derivative objects are the partial derivative with respect to *each individual weight*. That is,
@@ -294,17 +297,49 @@ $$
 \end{align}
 $$
 
- That took a bit of work, but we now see that the derivative of the loss with respect to a single weight in the output layer is equal to the value of the input neuron, times the difference between our predicted output $\hat{y_j}$ and ground truth $y_j$. Pretty cool!
+ That took a bit of work, but we now see that the derivative of the loss with respect to a single weight in the output layer is equal to the value of the input neuron $h_i$ times the difference between the predicted output $\hat{y_j}$ and ground truth $y_j$. Pretty cool!
 
-Next: solve for biases.
+#### Output Layer Bias Derivative
 
-Next: solve for input layer - recursion.
+We're almost done with the output layer, but we still need to solve for the derivative of the loss with respect to the bias term. Again we can use the chain rule to decompose the derivative:
 
-<!-- $$
+$$
+\begin{equation*}
+    \frac{\partial \mathcal{L}}{\partial b_{j,i}^{[2]}} = \sum_{k=1}^{K} \frac{\partial \mathcal{L}}{\partial \hat{y_k}} \frac{\partial \hat{y_k}}{\partial z_j^{[2]}} \frac{\partial z_j^{[2]}}{\partial b_{j,i}^{[2]}}\space.
+\end{equation*}
+$$
+
+Since we've only swapped out $W_{j,i}^{[2]}$ for $b_{j,i}^{[2]}$, the solutions for the first two terms remain the same. Solving for the third term,
+
+$$
 \begin{align*}
-    \frac{\partial \mathcal{L}}{\partial \hat{Y}} = \frac{\partial }
+    \frac{\partial z_j^{[2]}}{\partial b_{j,i}^{[2]}} &= \frac{\partial }{\partial b_{j,i}^{[2]}} \bigl( W^{[2]} h + b^{[2]} \bigr) \nonumber \\\\\\
+    &= \frac{\partial }{\partial b_{j,i}^{[2]}} b_{j,i}^{[2]} \nonumber \\\\\\
+    &= 1 \space,
 \end{align*}
-$$ -->
+$$
+
+such that
+$$
+\begin{align}
+    \frac{\partial \mathcal{L}}{\partial b_{j,i}^{[2]}} &= \hat{y_j} - y_j \space.
+\end{align}
+$$
+
+#### Hidden Layer Derivatives
+
+Now that we've solved for the output layer, we can move on to the hidden layer. The process is similar, but we need to consider the *effect of the hidden layer on the output layer* when taking the derivative. We can start by computing the derivative of the loss with respect to the weights in the hidden layer:
+
+$$
+\begin{align}
+    \frac{\partial \mathcal{L}}{\partial W_{j,i}^{[1]}} &= \frac{\partial \mathcal{L}}{\partial h_j} \frac{\partial h_j}{\partial z_j^{[1]}} \frac{\partial z_j^{[1]}}{\partial W_{j,i}^{[1]}} \nonumber \\\\\\
+    &= \sum_{k=1}^{K} \frac{\partial \mathcal{L}}{\partial \hat{y_k}} \frac{\partial \hat{y_k}}{\partial z_k^{[2]}} \frac{\partial z_k^{[2]}}{\partial h_j} \frac{\partial h_j}{\partial z_j^{[1]}} \frac{\partial z_j^{[1]}}{\partial W_{j,i}^{[1]}},
+\end{align}
+$$
+
+where we've used the chain rule to break down the derivative into parts. We can solve this expression in a similar manner to the output layer, but we'll leave the details to the reader.
+
+
 
 ## Python Implementation
 
@@ -426,9 +461,9 @@ Next, we’ll take on the challenge of implementing a **convolutional neural net
 
 Stay tuned!
 
-# Appendix
+## Appendix
 
-## Softmax Gradient Derivation
+### Softmax Gradient Derivation
 
 To solve for $\frac{\partial \hat{y_k}}{\partial z_j^{[2]}}$, we need to consider both cases where $j=k$ and where $j \neq k$.
 
@@ -503,3 +538,7 @@ $$
 \end{cases}
 \end{equation}
 $$
+
+Text with footnote .[^1]
+
+[^1]: [Deep Learning Specialization](https://www.coursera.org/specializations/deep-learning) by Andrew Ng
