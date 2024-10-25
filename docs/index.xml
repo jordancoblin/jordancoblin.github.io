@@ -2,38 +2,38 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>AI Meanderings</title>
-    <link>//localhost:1313/</link>
+    <link>/</link>
     <description>Recent content on AI Meanderings</description>
     <generator>Hugo</generator>
     <language>en-us</language>
     <lastBuildDate>Wed, 18 Sep 2024 15:51:45 -0600</lastBuildDate>
-    <atom:link href="//localhost:1313/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>ML Foundations: Implementing Backpropagation from Scratch</title>
-      <link>//localhost:1313/posts/mnist_nn/</link>
+      <link>/posts/mnist_nn/</link>
       <pubDate>Wed, 18 Sep 2024 15:51:45 -0600</pubDate>
-      <guid>//localhost:1313/posts/mnist_nn/</guid>
+      <guid>/posts/mnist_nn/</guid>
       <description>&lt;p&gt;Welcome to my very first post of the blog! I wanted to take some time to brush up on ML foundations and what better way to learn (or re-learn) technical topics than to write up one&amp;rsquo;s findings? I&amp;rsquo;m also hoping that treating these blog posts as final artifacts will be a useful forcing function for actually completing the projects.&lt;/p&gt;&#xA;&lt;p&gt;Into the meaty content. In this post, I will walk through the implementation of a simple fully-connected neural network to tackle image classification on the &lt;a href=&#34;https://www.kaggle.com/datasets/hojjatk/mnist-dataset&#34;&gt;MNIST dataset&lt;/a&gt;. I will implement backpropagation and stochastic gradient descent from scratch using &lt;code&gt;numpy&lt;/code&gt; and provide high-level derivations and intuition for computing weight updates of each of the neurons, but I&amp;rsquo;ll try not to get overly academic with it. This was a fun and surprisingly challenging exercise, and it made me even more thankful that mature automatic differentiation libraries like &lt;code&gt;pytorch&lt;/code&gt; exist - I imagine that manually computing gradients for a 30+ layer ResNet would entail a special kind of masochism.&lt;/p&gt;</description>
     </item>
     <item>
       <title></title>
-      <link>//localhost:1313/about/</link>
+      <link>/about/</link>
       <pubDate>Wed, 18 Sep 2024 00:00:00 +0000</pubDate>
-      <guid>//localhost:1313/about/</guid>
-      <description>&lt;figure class=&#34;img-avatar&#34;&gt;&lt;img src=&#34;//localhost:1313/images/avatar.jpeg&#34;&gt;&#xA;&lt;/figure&gt;&#xA;&#xA;&lt;p&gt;Hey there 👋 My name is &lt;strong&gt;Jordan&lt;/strong&gt;, and I am a machine learning engineer who loves exploring and experimenting with new ideas. This blog is a space to share some of those explorations.&lt;/p&gt;&#xA;&lt;p&gt;I completed my M.Sc. under &lt;a href=&#34;https://sites.ualberta.ca/~amw8/&#34;&gt;Adam White&lt;/a&gt; in the &lt;a href=&#34;http://rlai.ualberta.ca/&#34;&gt;RLAI Lab&lt;/a&gt; at the University of Alberta, where my &lt;a href=&#34;https://drive.google.com/file/d/1Vz8l086xKTiqASWE-_ufIc8G-RMQ24sa/view?usp=sharing&#34;&gt;thesis&lt;/a&gt; was on applying reinforcement learning to a real-world water treatment plant. I&amp;rsquo;ve also worked on computer vision for agricultural robots at &lt;a href=&#34;https://upsiderobotics.com/&#34;&gt;Upside Robotics&lt;/a&gt;, blockchain collectibles at &lt;a href=&#34;https://www.dapperlabs.com/&#34;&gt;Dapper Labs&lt;/a&gt;, and conversational analytics at &lt;a href=&#34;https://www.tableau.com/&#34;&gt;Tableau&lt;/a&gt;. In my spare time, I enjoy training in the art of folding clothes while people are still in them, also commonly referred to as Brazilian Jiu Jitsu.&lt;/p&gt;</description>
+      <guid>/about/</guid>
+      <description>&lt;figure class=&#34;img-avatar&#34;&gt;&lt;img src=&#34;/images/avatar.jpeg&#34;&gt;&#xA;&lt;/figure&gt;&#xA;&#xA;&lt;p&gt;Hey there 👋 My name is &lt;strong&gt;Jordan&lt;/strong&gt;, and I am a machine learning engineer who loves exploring and experimenting with new ideas. This blog is a space to share some of those explorations.&lt;/p&gt;&#xA;&lt;p&gt;I completed my M.Sc. under &lt;a href=&#34;https://sites.ualberta.ca/~amw8/&#34;&gt;Adam White&lt;/a&gt; in the &lt;a href=&#34;http://rlai.ualberta.ca/&#34;&gt;RLAI Lab&lt;/a&gt; at the University of Alberta, where my &lt;a href=&#34;https://drive.google.com/file/d/1Vz8l086xKTiqASWE-_ufIc8G-RMQ24sa/view?usp=sharing&#34;&gt;thesis&lt;/a&gt; was on applying reinforcement learning to a real-world water treatment plant. I&amp;rsquo;ve also worked on computer vision for agricultural robots at &lt;a href=&#34;https://upsiderobotics.com/&#34;&gt;Upside Robotics&lt;/a&gt;, blockchain collectibles at &lt;a href=&#34;https://www.dapperlabs.com/&#34;&gt;Dapper Labs&lt;/a&gt;, and conversational analytics at &lt;a href=&#34;https://www.tableau.com/&#34;&gt;Tableau&lt;/a&gt;. In my spare time, I enjoy training in the art of folding clothes while people are still in them, also commonly referred to as Brazilian Jiu Jitsu.&lt;/p&gt;</description>
     </item>
     <item>
       <title></title>
-      <link>//localhost:1313/archives/</link>
+      <link>/archives/</link>
       <pubDate>Tue, 28 May 2019 00:00:00 +0000</pubDate>
-      <guid>//localhost:1313/archives/</guid>
+      <guid>/archives/</guid>
       <description></description>
     </item>
     <item>
       <title></title>
-      <link>//localhost:1313/homepage/</link>
+      <link>/homepage/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      <guid>//localhost:1313/homepage/</guid>
+      <guid>/homepage/</guid>
       <description></description>
     </item>
   </channel>
