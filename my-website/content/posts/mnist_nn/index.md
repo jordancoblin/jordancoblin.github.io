@@ -76,7 +76,7 @@ Neural networks may have an abritrary number of layers - the more layers, the "d
 
 $$h(x) = \sigma (W^{[1]} x + b^{[1]}),$$
 
-where $W^{[1]} \in \mathbb{R}^{n_h \times n_x}$ is the hidden layer's weight matrix, $b^{[1]} \in \mathbb{R}^{n_x}$ is the bias vector, $n_h = 128$ is the hidden layer size, and $\sigma$ is the sigmoid activation function. Note that the dimensions of each matrix and vector become quite important during implementation - shape errors tend to be where I spend much of my debugging time in the early stages of development.
+where $W^{[1]} \in \mathbb{R}^{n_h \times n_x}$ is the hidden layer's weight matrix, $b^{[1]} \in \mathbb{R}^{n_h}$ is the bias vector, $n_h = 128$ is the hidden layer size, and $\sigma$ is the sigmoid activation function. Note that the dimensions of each matrix and vector become quite important during implementation - shape errors tend to be where I spend much of my debugging time in the early stages of development.
 
 For classification problems where a single label is predicted, it is typical to use the softmax function to convert the final layer outputs into a probability distribution:
 
@@ -201,9 +201,11 @@ At this stage, it is helpful if we visualize how all of these outputs and parame
 
 ### Backward Pass
 
-For our **backward pass**, we will compute the partial derivatives needed for our learning update. Conceptually, we can think of this as figuring out how much a change in each weight contributes to a change in the overall loss. To determine derivatives for weights in earlier layers in the network, we use the [chain rule](https://en.wikipedia.org/wiki/Chain_rule) to decompose the derivatives into parts, which enables re-use of derivatives that were computed for later layers; this is essentially dynamic programming.
+For our **backward pass**, we will compute the partial derivatives needed for our learning update. Conceptually, we can think of this as figuring out how much a change in each weight contributes to a change in the overall loss. To determine derivatives for weights in earlier layers in the network, we use the [chain rule](https://en.wikipedia.org/wiki/Chain_rule) to decompose the derivatives into parts, which enables re-use of derivatives that were computed for later layers; this is essentially dynamic programming. Let's start by computing derivatives $\frac{\partial \mathcal{L}}{\partial W_{j,i}^{[l]}}$ for weights in the output layer, and then move on to the hidden layer.
 
-Let's start by computing derivatives $\frac{\partial \mathcal{L}}{\partial W_{j,i}^{[l]}}$ for weights in the output layer, visualized below. Note that we will be using $j$ to index neurons in the output layer, and $i$ to index neurons in the input layer. So $W_{2,1}^{[2]}$ indicates the weight connecting neuron $1$ from the $h$ and neuron $2$ in $z^{[2]}$.
+### Output Layer Derivatives
+
+ It is helpful to start by visualizing the output layer of our network, to understand how the weights and biases connect with the loss function. We will be using $j$ to index neurons in the output layer, and $i$ to index neurons in the hidden layer. So $W_{2,1}^{[2]}$ indicates the weight connecting neuron $1$ in $h$ and neuron $2$ in $z^{[2]}$:
 
 {{< figure src="/images/output_layer_base.png" caption="Output layer of our simplified neural network." class="center" >}}
 
@@ -305,7 +307,7 @@ $$
 \frac{\partial \mathcal{L}}{\partial z_j^{[2]}} &= \biggl(-\frac{y_j}{\hat{y_j}} \biggr) \biggl( \hat{y_j} (1 - \hat{y_j}) \biggr) + \sum_{k \neq j} \biggl(-\frac{y_k}{\hat{y_k}} \biggr) \biggl( -\hat{y_j} \hat{y_k} \biggr) \nonumber \\\\\\
 &= -y_j + y_j \hat{y_j} + \hat{y_j} \sum_{k \neq j} y_k  \nonumber \\\\\\
 &= -y_j + \hat{y_j} \underbrace{\biggl(y_j + \sum_{k \neq j} y_k \biggr)}_{=1} \nonumber \\\\\\
-&= \hat{y_j} - y_j \space.
+&= \hat{y_j} - y_j \space. \label{eq:dl_dz2_final}
 \end{align}
 $$
 
@@ -320,7 +322,7 @@ $$
 
  That took a bit of work, but we now see that the derivative of the loss with respect to a single weight in the output layer is equal to the value of the input neuron $h_i$ times the difference between the predicted output $\hat{y_j}$ and ground truth $y_j$. Pretty cool!
 
-#### Output Layer Bias Derivative
+#### The Bias Term
 
 We're almost done with the output layer, but we still need to solve for the derivative of the loss with respect to the bias term. Again we can use the chain rule to decompose the derivative:
 
@@ -347,7 +349,7 @@ $$
 \end{align}
 $$
 
-#### Hidden Layer Derivatives
+### Hidden Layer Derivatives
 
 Now that we've solved for the output layer, we can move on to the hidden layer. The process is similar, except we'll now be passing derivatives computed in the output layer back to the hidden layer - finally some backpropagation! Looking at the full network, we can see how the effect of the hidden layer's weights flow through the network:
 
@@ -355,23 +357,133 @@ Now that we've solved for the output layer, we can move on to the hidden layer. 
 The path that $W_{1,1}^{[1]}$ takes to reach $\mathcal{L}$.
 {{< /figure-math >}}
 
-
  We can start by decomposing the derivative of the loss with respect to the weights in the hidden layer, using the chain rule once again:
 
-$$
+<!-- $$
 \begin{align}
     \frac{\partial \mathcal{L}}{\partial W_{j,i}^{[1]}} &= \frac{\partial \mathcal{L}}{\partial h_j} \frac{\partial h_j}{\partial z_j^{[1]}} \frac{\partial z_j^{[1]}}{\partial W_{j,i}^{[1]}} \nonumber \\\\\\
     &= \frac{\partial \mathcal{L}}{\partial z_j^{[2]}} \frac{\partial z_j^{[2]}}{\partial h_j} \frac{\partial h_j}{\partial z_j^{[1]}} \frac{\partial z_j^{[1]}}{\partial W_{j,i}^{[1]}} \space.
 \end{align}
+$$ -->
+
+$$
+\begin{align}
+    \frac{\partial \mathcal{L}}{\partial W_{j,i}^{[1]}} &= \frac{\partial \mathcal{L}}{\partial h_j} \frac{\partial h_j}{\partial z_j^{[1]}} \frac{\partial z_j^{[1]}}{\partial W_{j,i}^{[1]}} \space. \nonumber
+\end{align}
 $$
 
+Here we use $i$ to index neurons in the input and $j$ to index neurons in the hidden layer, and we can solve for each of these derivatives in a similar manner to the output layer.
+
+#### Solving Individual Terms
+
+For the first term, notice that we need to sum over all paths from $h_j$ to $\mathcal{L}$,
+
+$$
+\frac{\partial \mathcal{L}}{\partial h_j} = \sum_{k=1}^{K} \frac{\partial \mathcal{L}}{\partial z_k^{[2]}} \frac{\partial z_k^{[2]}}{\partial h_j} \space.
+$$
+
+Since $z_k^{[2]} = \sum_{j=1}^{n_h} W_{k,j}^{[2]} h_j + b_k^{[2]}$, we have
+
+$$
+\frac{\partial z_k^{[2]}}{\partial h_j} = W_{k,j}^{[2]}.
+$$
+
+And using the result that we previously computed in Equation \ref{eq:dl_dz2_final} for the output layer, we find that
+
+$$
+\begin{equation}
+\frac{\partial \mathcal{L}}{\partial h_j} = \sum_{k=1}^{K} (\hat{y_k} - y_k) W_{k,j}^{[2]} \space.
+\end{equation}
+$$
+
+Solving for the second term $\frac{\partial h_j}{\partial z_j^{[1]}}$ is straightforward, as the derivative of the sigmoid function $\sigma$ is simply $\sigma(1 - \sigma)$. Thus,
+
+$$
+\begin{align}
+    \frac{\partial h_j}{\partial z_j^{[1]}} &= \sigma(z_j^{[1]}) (1 - \sigma(z_j^{[1]})) \nonumber \\\\\\
+    &= h_j (1 - h_j) \space.
+\end{align}
+$$
+
+Finally, the third term is the same as before, where the derivative is zero for all terms except for $W_{j,i}^{[1]} x_i$:
+
+$$
+\begin{align}
+    \frac{\partial z_j^{[1]}}{\partial W_{j,i}^{[1]}} &= \frac{\partial }{\partial W_{j,i}^{[1]}} \bigl( W^{[1]} x + b^{[1]} \bigr) \nonumber \\\\\\
+    &= \frac{\partial }{\partial W_{j,i}^{[1]}} W_{j,i}^{[1]} x_i \nonumber \\\\\\
+    &= x_i \space.
+\end{align}
+$$
+
+#### Putting it Together
+
+Plugging these results back into our original expression, we find that the derivative of the loss with respect to a single weight in the hidden layer is
+
+$$
+\begin{align}
+    \frac{\partial \mathcal{L}}{\partial W_{j,i}^{[1]}} &= \biggl[ \sum_{k=1}^{K} (\hat{y_k} - y_k) W_{k,j}^{[2]} \biggr] h_j (1 - h_j) x_i \space.
+\end{align}
+$$
+
+And similarly for the bias terms, we find that
+
+$$
+\begin{align}
+    \frac{\partial \mathcal{L}}{\partial b_{j,i}^{[1]}} &= \biggl[ \sum_{k=1}^{K} (\hat{y_k} - y_k) W_{k,j}^{[2]} \biggr] h_j (1 - h_j) \space.
+\end{align}
+$$
+
+### Summary
+
+We've now solved for the derivatives of the loss with respect to each weight and bias in our network. We can now use these results to update the parameters of our model using gradient descent! Collecting the derivatives for each set of parameters, we have
+
+$$
+\begin{align*}
+    \frac{\partial \mathcal{L}}{\partial W_{j,i}^{[1]}} &= \biggl[ \sum_{k=1}^{K} (\hat{y_k} - y_k) W_{k,j}^{[2]} \biggr] h_j (1 - h_j) x_i \\\\\\
+    \frac{\partial \mathcal{L}}{\partial b_{j,i}^{[1]}} &= \biggl[ \sum_{k=1}^{K} (\hat{y_k} - y_k) W_{k,j}^{[2]} \biggr] h_j (1 - h_j) \\\\\\
+    \frac{\partial \mathcal{L}}{\partial W_{j,i}^{[2]}} &= (\hat{y_j} - y_j) h_i \\\\\\
+    \frac{\partial \mathcal{L}}{\partial b_{j,i}^{[2]}} &= \hat{y_j} - y_j \space.
+\end{align*}
+$$
+
+In vectorized form, we can express these individual parameter derivatives over the full gradient objects:
+
+$$
+\begin{align*}
+    \frac{\partial \mathcal{L}}{\partial W^{[1]}} &= x^T \bigl[ \bigl( (\hat{y} - y) W^{[2]} \bigr) \odot h \odot (1 - h) \bigr] \\\\\\
+    \frac{\partial \mathcal{L}}{\partial b^{[1]}} &= (\hat{y} - y) W^{[2]} \odot h \odot (1 - h) \\\\\\
+    \frac{\partial \mathcal{L}}{\partial W^{[2]}} &= h^T (\hat{y} - y) \\\\\\
+    \frac{\partial \mathcal{L}}{\partial b^{[2]}} &= \hat{y} - y \space,
+\end{align*}
+$$
+
+where the hadamard product $\odot$ allows us to vectorize the expression using element-wise multiplication.
+
+<!-- Finally, since gradient descent is typically performed over mini-batches[^1], we can average these gradients over the batch size to get the final gradient updates:
+
+$$
+\begin{align*}
+    \frac{\partial \mathcal{L}}{\partial W^{[1]}} &= \frac{1}{N} X^T \bigl[ \bigl( (\hat{y} - y) W^{[2]} \bigr) \odot h \odot (1 - h) \bigr] \\\\\\
+    \frac{\partial \mathcal{L}}{\partial b^{[1]}} &= \frac{1}{N} \sum \bigl( (\hat{y} - y) W^{[2]} \bigr) \odot h \odot (1 - h) \\\\\\
+    \frac{\partial \mathcal{L}}{\partial W^{[2]}} &= \frac{1}{N} h^T (\hat{y} - y) \\\\\\
+    \frac{\partial \mathcal{L}}{\partial b^{[2]}} &= \frac{1}{N} \sum (\hat{y} - y) \space.
+\end{align*}
+$$ -->
+
+You might be suspecting this, but given the recursive structure of neural networks, the gradients that we computed here can be expressed in a general form for any layer $l$ in a network. We'll leave this as an exercise for the reader, but suffice to say that the derivations we've done here provide the foundation for training neural networks of any depth.
+
 ## Python Implementation
+
+Okay enough talk, let's get back to the task at hand: training a neural network on the MNIST dataset. We'll implement a simple feedforward neural network with a single hidden layer, using the sigmoid activation function and softmax output layer. Here's the Python code for our network:
 
 ```python
 import numpy as np
 
-def sigmoid(x):
-    return 1 / (1 + np.exp(-x))
+def sigmoid(z):
+    return 1 / (1 + np.exp(-z))
+
+def sigmoid_derivative(z):
+    return sigmoid(z) * (1 - sigmoid(z))
 
 def softmax(z):
     exp_z = np.exp(z - np.max(z, axis=1, keepdims=True))  # Subtract max(z) for numerical stability
@@ -399,91 +511,143 @@ class FCNetwork():
         _, _, _, f_c = self.forward(X)
         y_hat = np.argmax(f_c, axis=1)
         return y_hat
+
+    def compute_grad(self, X, y, y_hat, z1, a1, z2):
+        batch_size = X.shape[0]
+        X = X.reshape((batch_size, -1))
+
+        # Output layer grads
+        dz2 = y_hat - y
+        dw2 = np.dot(a1.T, dz2)
+        db2 = np.sum(dz2, axis=0, keepdims=True) / batch_size # sum over sammples
+
+        # Hidden layer grads 
+        dz1 = np.dot(dz2, self.w2.T) * sigmoid_derivative(z1)
+        dw1 = np.dot(X.T, dz1)
+        db1 = np.sum(dz1, axis=0, keepdims=True) / batch_size # sum over sammples
+
+        return dw1, db1, dw2, db2
+    
+    def update_weights(self, dw1, db1, dw2, db2, lr):
+        self.w1 -= lr * dw1
+        self.b1 -= lr * db1
+        self.w2 -= lr * dw2
+        self.b2 -= lr * db2
 ```
 
- The `forward` function returns a vector of softmax distributions $f_c$ for a batch of samples `X`, along with other variables that will be useful for backpropagation, while the `predict` function returns a vector of predicted classes $\hat{y}^{(i)}$.
+The gradients computed in the `compute_grad` method are the same as the ones we derived, but modified slightly to work with mini-batches[^1] of dataset tuples. These batch updates are accomplished by averaging the gradients over each mini-batch, which helps to stabilize the learning process.
+
+### Evaluating Performance
+
+After training the model, we want to evaluate how well it generalizes to unseen data (our validation/test set). We can accomplish this using the **accuracy** metric, which is the percentage of correctly predicted examples. We'll also track the *training loss* to monitor the model's learning progress:
 
 ```python
-def backprop(X, y, model, learning_rate=0.01):
-    # Forward pass
-    y_hat = model.forward(X)
+def cross_entropy_loss(y, y_hat):
+    # Small epsilon added to avoid log(0)
+    epsilon = 1e-12
+    y_hat = np.clip(y_hat, epsilon, 1. - epsilon)  # Ensure y_hat is within (0, 1) to prevent log(0)
     
-    # Compute the error at the output layer
-    dz2 = y_hat - y  # (batch_size, 10)
-    dw2 = np.dot(model.a1.T, dz2) / X.shape[0]
-    db2 = np.sum(dz2, axis=0, keepdims=True) / X.shape[0]
-    
-    # Compute the error at the hidden layer
-    dz1 = np.dot(dz2, model.w2.T) * sigmoid_derivative(model.z1)
-    dw1 = np.dot(X.T, dz1) / X.shape[0]
-    db1 = np.sum(dz1, axis=0, keepdims=True) / X.shape[0]
-    
-    # Update weights and biases
-    model.w2 -= learning_rate * dw2
-    model.b2 -= learning_rate * db2
-    model.w1 -= learning_rate * dw1
-    model.b1 -= learning_rate * db1
+    # Compute cross-entropy
+    return -np.sum(y * np.log(y_hat)) / y.shape[0]  # Average over the batch
+
+def evaluate(model, data_loader):
+    total_loss = 0
+    correct = 0
+    for X_val, y_val in data_loader:
+        _, _, _, y_pred = model.forward(X_val)
+        y_onehot = np.eye(10)[y_val]
+        loss = cross_entropy_loss(y_onehot, y_pred)
+        total_loss += loss
+
+        y_pred_classes = np.argmax(y_pred, axis=1)
+        y_true = np.argmax(y_onehot, axis=1)
+        correct += np.sum(y_pred_classes == y_true)
+   
+    accuracy = correct / len(data_loader.dataset)
+    avg_loss = total_loss / len(data_loader)
+    return accuracy, avg_loss
 ```
 
-The backpropagation algorithm updates the weights (w1 and w2) and biases (b1 and b2) by computing the gradients of the loss with respect to each parameter. These gradients are used to adjust the parameters in the direction that reduces the loss, as governed by the learning rate.
+Here, we convert the one-hot encoded labels and predictions into their respective class indices using `np.argmax`, and then compute the percentage of correctly predicted examples.
 
-## Evaluating Performance
+### Training the Model
 
-After training the model, we want to evaluate how well it generalizes to unseen data (our test set). The accuracy metric is a simple yet effective measure, especially for classification tasks like MNIST.
-
-### Python Code for Accuracy:
-```python
-def accuracy(y_true, y_pred):
-    y_true_labels = np.argmax(y_true, axis=1)
-    y_pred_labels = np.argmax(y_pred, axis=1)
-    return np.mean(y_true_labels == y_pred_labels)
-```
-
-Here, we convert the one-hot encoded labels and predictions into their respective class indices using argmax, and then compute the percentage of correctly predicted examples.
-
-## Training the Model
-
-We can now tie everything together in a training loop. The model will iterate over the training data, compute the loss, backpropagate the errors, and update its parameters.
-
-### Python Code for Training Loop:
+We can now tie everything together in a training loop. The model will iterate over the training data, compute the loss, backpropagate the errors, and update its parameters. After each epoch, we evaluate the model on the test set to monitor its performance:
 
 ```python
-epochs = 10
-learning_rate = 0.01
+def train(train_loader: DataLoader, test_loader: DataLoader):
+    # Initialize the weights
+    lr = 0.01
+    input_dim = 28 * 28
+    hidden_dim = 256
+    output_dim = 10
+    model = FCNetwork(input_dim, hidden_dim, output_dim)
+    
+    NUM_EPOCHS = 20
+    VAL_INTERVAL = 1
+    for epoch in range(NUM_EPOCHS):
+        train_loss = 0
+        for batch_idx, (x, y) in enumerate(train_loader):
+            y_onehot = np.eye(output_dim)[y]
 
-for epoch in range(epochs):
-    for batch_idx, (X_batch, y_batch) in enumerate(train_loader):
-        X_batch = X_batch.view(X_batch.size(0), -1).numpy()  # Flatten the input images
-        y_batch_onehot = np.eye(10)[y_batch.numpy()]  # Convert labels to one-hot encoding
+            # Forward pass
+            z1, h, z2, f_c = model.forward(x)
+            loss = cross_entropy_loss(y_onehot, f_c)
+            train_loss += loss 
+            
+            # Backward pass
+            dw1, db1, dw2, db2 = model.compute_grad(x, y_onehot, f_c, z1, h, z2)
+            model.update_weights(dw1, db1, dw2, db2, lr)
+
+        # Compute average training loss across minibatches
+        avg_train_loss = train_loss / len(train_loader)
         
-        # Forward and Backpropagation
-        backprop(X_batch, y_batch_onehot, model, learning_rate)
-    
-    # Test performance on test set
-    test_X = test_loader.dataset.data.view(-1, 28*28).numpy()
-    test_y = np.eye(10)[test_loader.dataset.targets.numpy()]
-    test_predictions = model.forward(test_X)
-    test_accuracy = accuracy(test_y, test_predictions)
-    print(f"Epoch {epoch+1}/{epochs} - Test Accuracy: {test_accuracy:.4f}")
+        # Evaluate on validation set every VAL_INTERVAL epochs
+        if (epoch + 1) % VAL_INTERVAL == 0:
+            val_acc, val_loss = evaluate(model, test_loader)
+            print(f"Epoch {epoch}, Train Loss: {avg_train_loss:.4f}, Validation Accuracy: {val_acc:.4f}, Validation Loss: {val_loss:.4f}")
+        else:
+            print(f"Epoch {epoch}, Training Loss: {avg_train_loss:.4f}")
+
+    return model
 ```
 
-This loop trains the model for a set number of epochs, where each epoch processes the entire dataset. After each epoch, we compute the accuracy on the test dataset.
+Now, it's simply a matter of loading the MNIST dataset, and calling the `train` function to train the model:
 
-## Debugging
+```python
+from torch.utils.data import DataLoader
+from torchvision import datasets, transforms
+
+transform = transforms.Compose([
+    transforms.Resize((28, 28)),
+    transforms.ToTensor(),  # Ensure fast so no action is needed
+])
+
+# Fetch the dataset
+train_dataset = datasets.MNIST(root='./data', train=True, transform=transform, download=True)
+test_dataset = datasets.MNIST(root='./data', train=False, transform=transform, download=True)
+
+train_loader = DataLoader(train_dataset, batch_size=64, shuffle=True)
+test_loader = DataLoader(test_dataset, batch_size=1000, shuffle=False)
+
+train(train_loader, test_loader)
+```
+
+And that's it! We've implemented a simple feedforward neural network from scratch and trained it on the MNIST dataset. The model should achieve an accuracy of around 98% on the test set after 20 epochs, which is quite impressive for such a simple model.
+
+<!-- ## Debugging
 
 Training a neural network from scratch can often result in a few hiccups along the way, including issues like vanishing gradients, slow convergence, or poor generalization. A few debugging tips:
 
 Check the learning rate: If the model is not improving, the learning rate may be too high or too low.
 Inspect gradients: If the weights are not updating properly, inspect the gradients and make sure they are neither too large nor vanishingly small.
-Try different activations: Sigmoid can suffer from saturation in deep networks. Experiment with ReLU or Leaky ReLU if needed.
+Try different activations: Sigmoid can suffer from saturation in deep networks. Experiment with ReLU or Leaky ReLU if needed. -->
 
 ## Conclusion
 
-In this post, we’ve implemented a fully connected neural network from scratch using NumPy, trained it using stochastic gradient descent and backpropagation, and tested it on the MNIST dataset. This foundational understanding will be useful as we move to more advanced architectures.
+In this post, we've covered the basics of implementing a neural network from scratch. We carefully calculated the gradients for a simple feedforward neural network with a single hidden layer, and implemented the model in Python using `numpy`. We then trained the model on the MNIST dataset and achieved 98% accuracy using the gradients we manually derived.
 
-Next, we’ll take on the challenge of implementing a **convolutional neural network (CNN)** to tackle a more complex dataset, the CIFAR-10, where image recognition becomes more nuanced.
-
-Stay tuned!
+Hopefully this post has given you a better understanding of how neural networks work under the hood. Stay tuned for more posts on foundations of machine learning, or maybe pictures of my latest sourdough loaf. Until next time!
 
 ## Appendix
 
@@ -565,4 +729,4 @@ $$
 
 Text with footnote .[^1]
 
-[^1]: [Deep Learning Specialization](https://www.coursera.org/specializations/deep-learning) by Andrew Ng
+[^1]: [Minibatch Stochastic Gradient Descent](https://d2l.ai/chapter_optimization/minibatch-sgd.html)
