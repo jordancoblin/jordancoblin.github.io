@@ -4,9 +4,15 @@ date = 2024-09-18T15:51:45-06:00
 draft = false
 +++
 
+The last decade has seen a heyday for neural networks, driving innovations from deep learning advancements to the rise of transformer models that power tools like ChatGPT, Claude, and other large language models. Several weeks ago, Geoffrey Hinton was even [awarded the Nobel Prize in Physics](https://www.utoronto.ca/news/geoffrey-hinton-wins-nobel-prize#:~:text=Geoffrey%20Hinton%2C%20a%20University%20Professor,2024%20Nobel%20Prize%20in%20Physics) for his pioneering contributions to neural networks - a testament to the profound impact of these models on both AI and society.
+
+While a variety of powerful libraries, such as PyTorch, TensorFlow, and JAX, have simplified the process of training and deploying neural networks, a deep understanding of their underlying principles remains invaluable. In this post, I’ll guide you through implementing a fully connected neural network to classify images in the [MNIST dataset](https://www.kaggle.com/datasets/hojjatk/mnist-dataset). I'll cover derivations and intuition for the gradient computations in backpropagation and implement everything from scratch using NumPy. Let’s dive in!
+
+<!-- Despite the ubiquity of these tools, it's still important to understand the fundamentals of how they work. In this post, I'll walk through the implementation of a simple fully-connected neural network to tackle image classification on the MNIST dataset. We'll implement backpropagation and stochastic gradient descent from scratch using `numpy`, and provide high-level derivations and intuition for computing weight updates of each of the neurons.
+
 Welcome to my very first post of the blog! I wanted to take some time to brush up on ML foundations and what better way to learn (or re-learn) technical topics than to write up one's findings? I'm also hoping that treating these blog posts as final artifacts will be a useful forcing function for actually completing the projects.
 
-Into the meaty content. In this post, I will walk through the implementation of a simple fully-connected neural network to tackle image classification on the [MNIST dataset](https://www.kaggle.com/datasets/hojjatk/mnist-dataset). I will implement backpropagation and stochastic gradient descent from scratch using `numpy` and provide high-level derivations and intuition for computing weight updates of each of the neurons, but I'll try not to get overly academic with it. This was a fun and surprisingly challenging exercise, and it made me even more thankful that mature automatic differentiation libraries like `pytorch` exist - I imagine that manually computing gradients for a 30+ layer ResNet would entail a special kind of masochism.
+Into the meaty content. In this post, I will walk through the implementation of a simple fully-connected neural network to tackle image classification on the [MNIST dataset](https://www.kaggle.com/datasets/hojjatk/mnist-dataset). I will implement backpropagation and stochastic gradient descent from scratch using `numpy` and provide high-level derivations and intuition for computing weight updates of each of the neurons, but I'll try not to get overly academic with it. This was a fun and surprisingly challenging exercise, and it made me even more thankful that mature automatic differentiation libraries like `pytorch` exist - I imagine that manually computing gradients for a 30+ layer ResNet would entail a special kind of masochism. -->
 
 <!-- ## Loading the Dataset
 
@@ -645,7 +651,7 @@ Try different activations: Sigmoid can suffer from saturation in deep networks. 
 
 ## Conclusion
 
-In this post, we've covered the basics of implementing a neural network from scratch. We carefully calculated the gradients for a simple feedforward neural network with a single hidden layer, and implemented the model in Python using `numpy`. We then trained the model on the MNIST dataset and achieved 98% accuracy using the gradients we manually derived.
+In this post, we've covered the basics of implementing a neural network from scratch. We carefully calculated the gradients for a simple feedforward neural network with a single hidden layer, and implemented the model in Python using `numpy`. We then trained the model on the MNIST dataset and achieved 98% accuracy using the gradients we manually derived. For a more intuitive, visual walkthrough of backpropagation, I highly recommend the [What is backpropagation really doing?](https://youtu.be/Ilg3gGewQ5U?si=RtR800MxuAhM5gn-) video by 3Blue1Brown.
 
 Hopefully this post has given you a better understanding of how neural networks work under the hood. Stay tuned for more posts on foundations of machine learning, or maybe pictures of my latest sourdough loaf. Until next time!
 
