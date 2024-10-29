@@ -1,12 +1,16 @@
 +++
-title = 'ML Foundations: Implementing Backpropagation from Scratch'
+title = 'ML Foundations: Understanding the Math Behind Backpropagation'
 date = 2024-09-18T15:51:45-06:00
 draft = false
 +++
 
-The last decade has seen a heyday for neural networks, driving innovations from deep learning advancements to the rise of transformer models that power tools like ChatGPT, Claude, and other large language models. Several weeks ago, Geoffrey Hinton was even [awarded the Nobel Prize in Physics](https://www.utoronto.ca/news/geoffrey-hinton-wins-nobel-prize#:~:text=Geoffrey%20Hinton%2C%20a%20University%20Professor,2024%20Nobel%20Prize%20in%20Physics) for his pioneering contributions to neural networks - a testament to the profound impact of these models on both AI and society.
+The past decade has marked a heyday for neural network, driving innovations from deep learning advancements to the rise of transformer models that power tools like ChatGPT, Claude, and other large language models. Recently, Geoffrey Hinton was even [awarded the Nobel Prize in Physics](https://www.utoronto.ca/news/geoffrey-hinton-wins-nobel-prize#:~:text=Geoffrey%20Hinton%2C%20a%20University%20Professor,2024%20Nobel%20Prize%20in%20Physics) for his pioneering contributions to neural networks - a testament to the profound impact of these models on both AI and society.
 
-While a variety of powerful libraries, such as PyTorch, TensorFlow, and JAX, have simplified the process of training and deploying neural networks, a deep understanding of their underlying principles remains invaluable. In this post, I’ll guide you through implementing a fully connected neural network to classify images in the [MNIST dataset](https://www.kaggle.com/datasets/hojjatk/mnist-dataset). I'll cover derivations and intuition for the gradient computations in backpropagation and implement everything from scratch using NumPy. Let’s dive in!
+While a variety of powerful libraries, such as PyTorch, TensorFlow, and JAX, have simplified the process of training and deploying neural networks, developing an understanding of their underlying principles remains invaluable. In this post, I’ll guide you through the mathematical underpinnings of backpropagation, a key algorithm for training neural networks, and demonstrate how to implement it from scratch using Python. We’ll apply this knowledge to train a simple fully connected neural network for classifying images in the [MNIST dataset](https://www.kaggle.com/datasets/hojjatk/mnist-dataset).
+
+By the end of this post, you can expect to have have a deeper understanding of how neural networks learn and a larger appreciation for the automatic differentiation libraries that handle many of the mathematical details for you. Let's dive in!
+
+<!-- implementing a fully connected neural network to classify images in the [MNIST dataset](https://www.kaggle.com/datasets/hojjatk/mnist-dataset). I'll cover derivations and intuition for the gradient computations in backpropagation and implement everything from scratch using NumPy. Let’s dive in! -->
 
 <!-- Despite the ubiquity of these tools, it's still important to understand the fundamentals of how they work. In this post, I'll walk through the implementation of a simple fully-connected neural network to tackle image classification on the MNIST dataset. We'll implement backpropagation and stochastic gradient descent from scratch using `numpy`, and provide high-level derivations and intuition for computing weight updates of each of the neurons.
 
@@ -50,7 +54,6 @@ $$x^{(i)} = [x_1^{(i)}, x_2^{(i)}, ..., x_{n_x}^{(i)}]^T \space,$$
 
 where $n_x = 28 \times 28$ is the number of pixels in each image. Each image has a real-valued label $y^{(i)} \in [0, 9]$ that indicates which digit, or class, the image corresponds to. To help us perform classification, we will represent this as a one-hot encoded vector:
 
-<!--  TODO: switch to Mathjax here -->
 $$y^{(i)} = [y_1^{(i)}, y_2^{(i)}, ..., y_{n_y}^{(i)}]^T \space,$$ where $n_y = 10$ is the number of digits or classes to choose from and 
 
 $$
@@ -72,34 +75,46 @@ Because we have multiple digits to choose from, we consider this a **multi-class
 
 ## Neural Network Definition
 
-Most of you are probably familiar enough with neural networks that I can skip a conceptual introduction. Instead, I will move into defining the neural network as a mathematical function, so that we can work with each part for our backprop derivations.
+<!-- Most of you are probably familiar enough with neural networks that I can skip a conceptual introduction. Instead, I will move into defining the neural network as a mathematical function, so that we can work with each part for our backprop derivations. -->
 
-Let $f(x; \theta)$ be the classification function (model) parameterized by $\theta$, which maps from inputs $x$ to a predicted class $\hat{y}$. This classification function typically takes the..... TODO.... $\hat{y} = f(x; \theta) = \arg\max_c f_c(x; \theta),$ where $f_c(x; \theta)$ is the score or probability for class $c$. This function $f_c$ is what we will be modeling with our neural network.
+In this section, we’ll outline the the mathematical foundation of our neural network model, starting with the classification function $ f(x; \theta) $. This function maps input data $x$ to a predicted class $ \hat{y} $, represented as $ \hat{y} = f(x; \theta) = \arg\max_k f_k(x; \theta) $, where $ f_k(x; \theta) $ denotes the score or probability for class $k$. The neural network’s purpose is to model $f_k(x; \theta)$ with learnable parameters $\theta$ .
+
+<!-- For our MNIST classification task, we’ll build a simple, fully connected neural network with a single hidden layer of 128 units. In this hidden layer, the output $ h(x) $ is calculated as $ h(x) = \sigma (W^{[1]} x + b^{[1]}) $, where $ W^{[1]} $ and $ b^{[1]} $ are the weights and biases for the hidden layer. To output class probabilities, we’ll apply a softmax function to the final layer, providing a normalized probability distribution across the classes, making it ideal for classification. -->
+
+<!-- Let $f(x; \theta)$ be the classification function (model) parameterized by $\theta$, which maps from inputs $x$ to a predicted class $\hat{y}$. This classification function typically takes the..... TODO.... $\hat{y} = f(x; \theta) = \arg\max_c f_k(x; \theta),$ where $f_k(x; \theta)$ is the score or probability for class $c$. This function $f_k$ is what we will be modeling with our neural network. -->
 
 <!-- $$f: \mathbb{R}^{n_x} \rightarrow \mathbb{R}^{n_y}.$$ -->
 
-Neural networks may have an abritrary number of layers - the more layers, the "deeper" the network. The parameters $\theta$ of our model are comprised of **weights** and **biases**, which are denoted using $W^{[l]}$ and $b^{[l]}$ respectively, for each layer $l$. For the MNIST problem, we will use a network with a single hidden layer of size 128. The output of this first layer, also known as a **hidden** layer, is:
+Neural networks may have an abritrary number of layers - the more layers, the "deeper" the network. The parameters $\theta$ of our model are comprised of **weights** and **biases**, which are denoted using $W^{[l]}$ and $b^{[l]}$ respectively, for each layer $l$. For our MNIST classification problem, we will use a network with a single hidden layer of size 128. The output of this first layer, also known as a **hidden** layer, is:
 
 $$h(x) = \sigma (W^{[1]} x + b^{[1]}),$$
 
-where $W^{[1]} \in \mathbb{R}^{n_h \times n_x}$ is the hidden layer's weight matrix, $b^{[1]} \in \mathbb{R}^{n_h}$ is the bias vector, $n_h = 128$ is the hidden layer size, and $\sigma$ is the sigmoid activation function. Note that the dimensions of each matrix and vector become quite important during implementation - shape errors tend to be where I spend much of my debugging time in the early stages of development.
+where $W^{[1]} \in \mathbb{R}^{n_h \times n_x}$, $b^{[1]} \in \mathbb{R}^{n_h}$, $n_h = 128$ is the hidden layer size, and $\sigma$ is the sigmoid activation function. To output class probabilities, we’ll apply a softmax function to the final layer, providing a normalized probability distribution across the classes, making it ideal for classification. The softmax function is defined as
 
-For classification problems where a single label is predicted, it is typical to use the softmax function to convert the final layer outputs into a probability distribution:
+<!-- Note that the dimensions of each matrix and vector become quite important during implementation - shape errors tend to be where I spend much of my debugging time in the early stages of development.
 
-$$\text{softmax}(z) = \frac{e^{z}}{\sum_{j=1}^{C} e^{z}_{j}}.$$
+For classification problems where a single label is predicted, it is typical to use the softmax function to convert the final layer outputs into a probability distribution: -->
 
-With this, the final output of our neural network becomes:
+$$\text{softmax}(z) = \frac{e^{z}}{\sum_{k=1}^{C} e^{z}_{k}} \space,$$
 
-$$f_c(x; \theta) = \text{softmax} (W^{[2]} h(x) + b^{[2]}),$$
+where $K = n_y$ is the number of classes. With this, the final output of our neural network becomes:
 
-where $W^{[2]} \in \mathbb{R}^{n_y \times n_h}$ and $b^{[2]} \in \mathbb{R}^{n_y}$ are the *output* layer's weight matrix and bias vector, respectively. Fully expanded, the output of our network can be written in one line as
+$$f_k(x; \theta) = \text{softmax} (W^{[2]} h(x) + b^{[2]}),$$
+
+where $W^{[2]} \in \mathbb{R}^{n_y \times n_h}$ and $b^{[2]} \in \mathbb{R}^{n_y}$. Notice that our input $x$ is passed through the hidden layer to produce $h(x)$, which is then passed through the output layer to produce the final class probabilities.
+
+<!-- Fully expanded, the output of our network can be written in a single line as
 $$
 \begin{equation*}
-    f_c(x; \theta) = \text{softmax} \bigl( W^{[2]} \sigma (W^{[1]} x + b^{[1]}) + b^{[2]} \bigr) \space.
+    f_k(x; \theta) = \text{softmax} \bigl( W^{[2]} \sigma (W^{[1]} x + b^{[1]}) + b^{[2]} \bigr) \space.
 \end{equation*}
-$$
+$$ -->
 
-Pictorally, we can visualize our network like so: TODO
+Pictorally, our neural network can be visualized as follows:
+
+{{< figure-math src="images/full_network_base.png" class="center">}}
+A simple fully-connected neural network with a single hidden layer.
+{{< /figure-math >}}
 
 <!-- Our neural network will consist of a single hidden layer, where each node in the hidden layer applies an activation function to a weighted sum of the inputs. The choice of activation function is crucial, as it introduces non-linearity to the model, enabling it to learn complex patterns. -->
 
@@ -136,11 +151,11 @@ For multi-class classification problems, cross-entropy is a common loss function
 $$
 \begin{equation}
 \label{eq:loss}
-    \mathcal{L}(\hat{y}, y) = - \sum_{k=1}^{K} y_k \log \hat{y}_k
+    \mathcal{L}(\hat{y}, y) = - \sum_{k=1}^{K} y_k \log \hat{y}_k \space.
 \end{equation}
 $$
 
-where $K = n_y$ is the number of classes.
+<!-- where $K = n_y$ is the number of classes. -->
 
 To solve this optimization problem, we will use **gradient descent** with the **backpropagation** algorithm. At a high level, backpropagation allows us to efficiently compute the derivatives needed to perform gradient updates using the chain rule in calculus. During this process, derivatives from later layers in the network get passed back through previous layers, hence the name!
 
@@ -155,18 +170,18 @@ $$ \theta \leftarrow \theta - \alpha \nabla \mathcal{L}(\theta).$$
 Breaking down the gradient by each set of weights and biases in our network, we arrive at the following four update expressions:
 
 $$
-\begin{align}
+\begin{align*}
 W^{[1]} & \leftarrow W^{[1]} - \alpha \frac{\partial \mathcal{L}}{\partial W^{[1]}} \\\\\\
 b^{[1]} & \leftarrow b^{[1]} - \alpha \frac{\partial \mathcal{L}}{\partial b^{[1]}} \\\\\\
 W^{[2]} & \leftarrow W^{[2]} - \alpha \frac{\partial \mathcal{L}}{\partial W^{[2]}} \\\\\\
 b^{[2]} & \leftarrow b^{[2]} - \alpha \frac{\partial \mathcal{L}}{\partial b^{[2]}}\space.
-\end{align}
+\end{align*}
 $$
 
-It's important to remember that $W^{[l]}$ is a *matrix* and $b^{[l]}$ is a *vector*, so the result of each derivative here will be either a matrix or vector as well. The components of these derivative objects are the partial derivative with respect to *each individual weight*. That is,
+It's important to remember that $W^{[l]}$ is a *matrix* and $b^{[l]}$ is a *vector*, so the result of the gradients here will be either a matrix or vector as well. The components of these gradient objects are the partial derivative with respect to *each individual weight*. That is,
 
 $$
-\begin{equation}
+\begin{equation*}
 \label{eq:jacobian}
 \frac{\partial \mathcal{L}}{\partial W^{[l]}} = 
 \begin{bmatrix}
@@ -175,7 +190,7 @@ $$
     \vdots & \vdots & \ddots & \vdots \\\\\\
     \frac{\partial \mathcal{L}}{\partial W_{n_l,1}^{[l]}} & \frac{\partial \mathcal{L}}{\partial W_{n_l,2}^{[l]}} & \cdots & \frac{\partial \mathcal{L}}{\partial W_{n_l,n_{l-1}}^{[l]}} \\\\\\ 
 \end{bmatrix},
-\end{equation}
+\end{equation*}
 $$
 
 where $n_l$ and $n_{l-1}$ are the number of neurons in layers $l$ and $l-1$, respectively.
@@ -480,7 +495,7 @@ You might be suspecting this, but given the recursive structure of neural networ
 
 ## Python Implementation
 
-Okay enough talk, let's get back to the task at hand: training a neural network on the MNIST dataset. We'll implement a simple feedforward neural network with a single hidden layer, using the sigmoid activation function and softmax output layer. Here's the Python code for our network:
+Okay enough math, let's get back to the task we set out to tackle: training a neural network on the MNIST dataset. For this purpose, we'll implement a simple feedforward neural network with a single hidden layer, using the sigmoid activation function and softmax output layer. Here's the Python code for our network:
 
 ```python
 import numpy as np
@@ -510,12 +525,12 @@ class FCNetwork():
         z1 = np.dot(X, self.w1) + self.b1
         h = self.activation(z1)
         z2 = np.dot(h, self.w2) + self.b2
-        f_c = softmax(z2)
-        return z1, h, z2, f_c
+        f_k = softmax(z2)
+        return z1, h, z2, f_k
     
     def predict(self, X):
-        _, _, _, f_c = self.forward(X)
-        y_hat = np.argmax(f_c, axis=1)
+        _, _, _, f_k = self.forward(X)
+        y_hat = np.argmax(f_k, axis=1)
         return y_hat
 
     def compute_grad(self, X, y, y_hat, z1, a1, z2):
@@ -542,6 +557,8 @@ class FCNetwork():
 ```
 
 The gradients computed in the `compute_grad` method are the same as the ones we derived, but modified slightly to work with mini-batches[^1] of dataset tuples. These batch updates are accomplished by averaging the gradients over each mini-batch, which helps to stabilize the learning process.
+
+Also note the initialization scheme used for the weights, which is known as [Xavier initialization](http://proceedings.mlr.press/v9/glorot10a/glorot10a.pdf). This initialization scheme helps to prevent the gradients from vanishing or exploding during training, which can be a common issue in deep networks. In practice, I found that a basic initialization which sampled from a Gaussian with mean 0 and standard deviation of 1 caused learning to fail, but using Xavier initialization fixed the issue.
 
 ### Evaluating Performance
 
@@ -597,12 +614,12 @@ def train(train_loader: DataLoader, test_loader: DataLoader):
             y_onehot = np.eye(output_dim)[y]
 
             # Forward pass
-            z1, h, z2, f_c = model.forward(x)
-            loss = cross_entropy_loss(y_onehot, f_c)
+            z1, h, z2, f_k = model.forward(x)
+            loss = cross_entropy_loss(y_onehot, f_k)
             train_loss += loss 
             
             # Backward pass
-            dw1, db1, dw2, db2 = model.compute_grad(x, y_onehot, f_c, z1, h, z2)
+            dw1, db1, dw2, db2 = model.compute_grad(x, y_onehot, f_k, z1, h, z2)
             model.update_weights(dw1, db1, dw2, db2, lr)
 
         # Compute average training loss across minibatches
@@ -639,7 +656,7 @@ test_loader = DataLoader(test_dataset, batch_size=1000, shuffle=False)
 train(train_loader, test_loader)
 ```
 
-And that's it! We've implemented a simple feedforward neural network from scratch and trained it on the MNIST dataset. The model should achieve an accuracy of around 98% on the test set after 20 epochs, which is quite impressive for such a simple model.
+And that's it! We've implemented a feedforward neural network from scratch and trained it on the MNIST dataset. The model should achieve an accuracy of roughly 98% on the test set after 20 epochs, which is quite impressive for such a simple model.
 
 <!-- ## Debugging
 
@@ -702,9 +719,9 @@ $$
 which simplifies to
 
 $$
-\begin{equation}
+\begin{equation*}
 \frac{\partial \hat{y_k}}{\partial z_j^{[2]}} = \hat{y}_k \left( 1 - \hat{y}_k \right)
-\end{equation}
+\end{equation*}
 $$
 
 When $j \neq k$, the derivation is similar, but in this case, the term $ \frac{\partial u}{\partial z_j^{[2]}} = 0 $, because $u = e^{z_k^{[2]}}$ and $j \neq k$. We still have
@@ -716,21 +733,21 @@ $$
 which simplifies to
 
 $$
-\begin{equation}
+\begin{equation*}
 \frac{\partial \hat{y}_k}{\partial z_j^{[2]}} = -\hat{y}_j \hat{y}_k
-\end{equation}
+\end{equation*}
 $$
 
 Thus, we can express the derivative of the softmax output $\hat{y}_k$ with respect to $z_j^{[2]}$ with
 
 $$
-\begin{equation}
+\begin{equation*}
 \frac{\partial \hat{y}_k}{\partial z_j^{[2]}} =
 \begin{cases}
 \hat{y}_k \left( 1 - \hat{y}_k \right), & \text{if } j = k \\\\\\
 -\hat{y}_j \hat{y}_k, & \text{if } j \neq k
 \end{cases}
-\end{equation}
+\end{equation*}
 $$
 
 Text with footnote .[^1]
