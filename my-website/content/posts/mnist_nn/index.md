@@ -6,7 +6,7 @@ draft = false
 
 The past decade has marked a heyday for neural network, driving innovations from deep learning advancements to the rise of transformer models that power tools like ChatGPT, Claude, and other large language models. Recently, Geoffrey Hinton was even [awarded the Nobel Prize in Physics](https://www.utoronto.ca/news/geoffrey-hinton-wins-nobel-prize#:~:text=Geoffrey%20Hinton%2C%20a%20University%20Professor,2024%20Nobel%20Prize%20in%20Physics) for his pioneering contributions to neural networks - a testament to the profound impact of these models on both AI and society.
 
-While a variety of powerful libraries, such as PyTorch, TensorFlow, and JAX, have simplified the process of training and deploying neural networks, developing an understanding of their underlying principles remains invaluable. In this post, I’ll guide you through the mathematical underpinnings of backpropagation, a key algorithm for training neural networks, and demonstrate how to implement it from scratch using Python. We’ll apply this knowledge to train a simple fully connected neural network for classifying images in the [MNIST dataset](https://www.kaggle.com/datasets/hojjatk/mnist-dataset).
+While a variety of powerful libraries, such as PyTorch, TensorFlow, and JAX, have simplified the process of training and deploying neural networks, developing an understanding of their underlying principles remains invaluable. In this post, I’ll guide you through the mathematical underpinnings of backpropagation, a key algorithm for training neural networks, and demonstrate how to implement it from scratch using Python with NumPy. We’ll apply this knowledge to train a simple fully connected neural network for classifying images in the [MNIST dataset](https://www.kaggle.com/datasets/hojjatk/mnist-dataset).
 
 By the end of this post, you can expect to have have a deeper understanding of how neural networks learn and a larger appreciation for the automatic differentiation libraries that handle many of the mathematical details for you. Let's dive in!
 
@@ -161,7 +161,7 @@ To solve this optimization problem, we will use **gradient descent** with the **
 
 ## Deriving the Backprop Learning Updates
 
-At this point, the fastest way forward would be to use an automatic differentiation library like `pytorch` to handle all the gradient computations and not muddle ourselves in all the mathematical details. But where would be the fun in that? Let's go ahead and derive the gradient descent updates ourselves.
+At this point, the fastest way forward would be to use an automatic differentiation library like [PyTorch](https://pytorch.org/) to handle all the gradient computations and not muddle ourselves in all the mathematical details. But where would be the fun in that? Let's go ahead and derive the gradient descent updates ourselves.
 
 Updating parameters $\theta$ at each iteration of gradient descent is a matter of taking a step in the direction of steepest descent in the loss function, with step size $\alpha$:
 
@@ -409,7 +409,7 @@ $$
 \frac{\partial z_k^{[2]}}{\partial h_j} = W_{k,j}^{[2]}.
 $$
 
-And using the result that we previously computed in Equation \ref{eq:dl_dz2_final} for the output layer, we find that
+Here we notice that the $\frac{\partial \mathcal{L}}{\partial z_k^{[2]}}$ term is exactly the result we computed in Equation \ref{eq:dl_dz2_final} for the output layer. *Propagating* this derivative *backwards* through the network to the hidden layer, we find that
 
 $$
 \begin{equation}
@@ -491,7 +491,7 @@ $$
 \end{align*}
 $$ -->
 
-You might be suspecting this, but given the recursive structure of neural networks, the gradients that we computed here can be expressed in a general form for any layer $l$ in a network. We'll leave this as an exercise for the reader, but suffice to say that the derivations we've done here provide the foundation for training neural networks of any depth.
+You might be suspecting this, but given the repetitive structure of neural networks, the gradients that we computed here can be expressed in a general form for any layer $l$ in a network. We'll leave this as an exercise for the reader, but suffice to say that the derivations we've done here provide the foundation for training neural networks of any depth.
 
 ## Python Implementation
 
@@ -668,7 +668,7 @@ Try different activations: Sigmoid can suffer from saturation in deep networks. 
 
 ## Conclusion
 
-In this post, we've covered the basics of implementing a neural network from scratch. We carefully calculated the gradients for a simple feedforward neural network with a single hidden layer, and implemented the model in Python using `numpy`. We then trained the model on the MNIST dataset and achieved 98% accuracy using the gradients we manually derived. For a more intuitive, visual walkthrough of backpropagation, I highly recommend the [What is backpropagation really doing?](https://youtu.be/Ilg3gGewQ5U?si=RtR800MxuAhM5gn-) video by 3Blue1Brown.
+In this post, we've covered the basics of implementing a neural network from scratch. We carefully calculated the gradients for a simple feedforward neural network with a single hidden layer, and implemented the model in Python using NumPy. We then trained the model on the MNIST dataset and achieved 98% accuracy using the gradients we manually derived. For a more intuitive, visual walkthrough of backpropagation, I highly recommend the [What is backpropagation really doing?](https://youtu.be/Ilg3gGewQ5U?si=RtR800MxuAhM5gn-) video by 3Blue1Brown.
 
 Hopefully this post has given you a better understanding of how neural networks work under the hood. Stay tuned for more posts on foundations of machine learning, or maybe pictures of my latest sourdough loaf. Until next time!
 

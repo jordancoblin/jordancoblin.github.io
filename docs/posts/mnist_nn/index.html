@@ -59,7 +59,7 @@
   
   
   <meta name="description" content="The past decade has marked a heyday for neural network, driving innovations from deep learning advancements to the rise of transformer models that power tools like ChatGPT, Claude, and other large language models. Recently, Geoffrey Hinton was even awarded the Nobel Prize in Physics for his pioneering contributions to neural networks - a testament to the profound impact of these models on both AI and society.
-While a variety of powerful libraries, such as PyTorch, TensorFlow, and JAX, have simplified the process of training and deploying neural networks, developing an understanding of their underlying principles remains invaluable. In this post, I’ll guide you through the mathematical underpinnings of backpropagation, a key algorithm for training neural networks, and demonstrate how to implement it from scratch using Python. We’ll apply this knowledge to train a simple fully connected neural network for classifying images in the MNIST dataset." />
+While a variety of powerful libraries, such as PyTorch, TensorFlow, and JAX, have simplified the process of training and deploying neural networks, developing an understanding of their underlying principles remains invaluable. In this post, I’ll guide you through the mathematical underpinnings of backpropagation, a key algorithm for training neural networks, and demonstrate how to implement it from scratch using Python with NumPy. We’ll apply this knowledge to train a simple fully connected neural network for classifying images in the MNIST dataset." />
   <meta name="author" content="AI Meanderings" />
   
 
@@ -126,16 +126,16 @@ While a variety of powerful libraries, such as PyTorch, TensorFlow, and JAX, hav
   
   <meta itemprop="name" content="ML Foundations: Understanding the Math Behind Backpropagation">
   <meta itemprop="description" content="The past decade has marked a heyday for neural network, driving innovations from deep learning advancements to the rise of transformer models that power tools like ChatGPT, Claude, and other large language models. Recently, Geoffrey Hinton was even awarded the Nobel Prize in Physics for his pioneering contributions to neural networks - a testament to the profound impact of these models on both AI and society.
-While a variety of powerful libraries, such as PyTorch, TensorFlow, and JAX, have simplified the process of training and deploying neural networks, developing an understanding of their underlying principles remains invaluable. In this post, I’ll guide you through the mathematical underpinnings of backpropagation, a key algorithm for training neural networks, and demonstrate how to implement it from scratch using Python. We’ll apply this knowledge to train a simple fully connected neural network for classifying images in the MNIST dataset.">
+While a variety of powerful libraries, such as PyTorch, TensorFlow, and JAX, have simplified the process of training and deploying neural networks, developing an understanding of their underlying principles remains invaluable. In this post, I’ll guide you through the mathematical underpinnings of backpropagation, a key algorithm for training neural networks, and demonstrate how to implement it from scratch using Python with NumPy. We’ll apply this knowledge to train a simple fully connected neural network for classifying images in the MNIST dataset.">
   <meta itemprop="datePublished" content="2024-09-18T15:51:45-06:00">
   <meta itemprop="dateModified" content="2024-09-18T15:51:45-06:00">
-  <meta itemprop="wordCount" content="4210">
+  <meta itemprop="wordCount" content="4230">
   
   <meta property="og:url" content="/posts/mnist_nn/">
   <meta property="og:site_name" content="AI Meanderings">
   <meta property="og:title" content="ML Foundations: Understanding the Math Behind Backpropagation">
   <meta property="og:description" content="The past decade has marked a heyday for neural network, driving innovations from deep learning advancements to the rise of transformer models that power tools like ChatGPT, Claude, and other large language models. Recently, Geoffrey Hinton was even awarded the Nobel Prize in Physics for his pioneering contributions to neural networks - a testament to the profound impact of these models on both AI and society.
-While a variety of powerful libraries, such as PyTorch, TensorFlow, and JAX, have simplified the process of training and deploying neural networks, developing an understanding of their underlying principles remains invaluable. In this post, I’ll guide you through the mathematical underpinnings of backpropagation, a key algorithm for training neural networks, and demonstrate how to implement it from scratch using Python. We’ll apply this knowledge to train a simple fully connected neural network for classifying images in the MNIST dataset.">
+While a variety of powerful libraries, such as PyTorch, TensorFlow, and JAX, have simplified the process of training and deploying neural networks, developing an understanding of their underlying principles remains invaluable. In this post, I’ll guide you through the mathematical underpinnings of backpropagation, a key algorithm for training neural networks, and demonstrate how to implement it from scratch using Python with NumPy. We’ll apply this knowledge to train a simple fully connected neural network for classifying images in the MNIST dataset.">
   <meta property="og:locale" content="en_us">
   <meta property="og:type" content="article">
     <meta property="article:section" content="posts">
@@ -147,7 +147,7 @@ While a variety of powerful libraries, such as PyTorch, TensorFlow, and JAX, hav
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="ML Foundations: Understanding the Math Behind Backpropagation">
   <meta name="twitter:description" content="The past decade has marked a heyday for neural network, driving innovations from deep learning advancements to the rise of transformer models that power tools like ChatGPT, Claude, and other large language models. Recently, Geoffrey Hinton was even awarded the Nobel Prize in Physics for his pioneering contributions to neural networks - a testament to the profound impact of these models on both AI and society.
-While a variety of powerful libraries, such as PyTorch, TensorFlow, and JAX, have simplified the process of training and deploying neural networks, developing an understanding of their underlying principles remains invaluable. In this post, I’ll guide you through the mathematical underpinnings of backpropagation, a key algorithm for training neural networks, and demonstrate how to implement it from scratch using Python. We’ll apply this knowledge to train a simple fully connected neural network for classifying images in the MNIST dataset.">
+While a variety of powerful libraries, such as PyTorch, TensorFlow, and JAX, have simplified the process of training and deploying neural networks, developing an understanding of their underlying principles remains invaluable. In this post, I’ll guide you through the mathematical underpinnings of backpropagation, a key algorithm for training neural networks, and demonstrate how to implement it from scratch using Python with NumPy. We’ll apply this knowledge to train a simple fully connected neural network for classifying images in the MNIST dataset.">
 
   
   
@@ -310,7 +310,7 @@ While a variety of powerful libraries, such as PyTorch, TensorFlow, and JAX, hav
   </header>
 
   <section><p>The past decade has marked a heyday for neural network, driving innovations from deep learning advancements to the rise of transformer models that power tools like ChatGPT, Claude, and other large language models. Recently, Geoffrey Hinton was even <a href="https://www.utoronto.ca/news/geoffrey-hinton-wins-nobel-prize#:~:text=Geoffrey%20Hinton%2C%20a%20University%20Professor,2024%20Nobel%20Prize%20in%20Physics">awarded the Nobel Prize in Physics</a> for his pioneering contributions to neural networks - a testament to the profound impact of these models on both AI and society.</p>
-<p>While a variety of powerful libraries, such as PyTorch, TensorFlow, and JAX, have simplified the process of training and deploying neural networks, developing an understanding of their underlying principles remains invaluable. In this post, I’ll guide you through the mathematical underpinnings of backpropagation, a key algorithm for training neural networks, and demonstrate how to implement it from scratch using Python. We’ll apply this knowledge to train a simple fully connected neural network for classifying images in the <a href="https://www.kaggle.com/datasets/hojjatk/mnist-dataset">MNIST dataset</a>.</p>
+<p>While a variety of powerful libraries, such as PyTorch, TensorFlow, and JAX, have simplified the process of training and deploying neural networks, developing an understanding of their underlying principles remains invaluable. In this post, I’ll guide you through the mathematical underpinnings of backpropagation, a key algorithm for training neural networks, and demonstrate how to implement it from scratch using Python with NumPy. We’ll apply this knowledge to train a simple fully connected neural network for classifying images in the <a href="https://www.kaggle.com/datasets/hojjatk/mnist-dataset">MNIST dataset</a>.</p>
 <p>By the end of this post, you can expect to have have a deeper understanding of how neural networks learn and a larger appreciation for the automatic differentiation libraries that handle many of the mathematical details for you. Let&rsquo;s dive in!</p>
 <!-- implementing a fully connected neural network to classify images in the [MNIST dataset](https://www.kaggle.com/datasets/hojjatk/mnist-dataset). I'll cover derivations and intuition for the gradient computations in backpropagation and implement everything from scratch using NumPy. Let’s dive in! -->
 <!-- Despite the ubiquity of these tools, it's still important to understand the fundamentals of how they work. In this post, I'll walk through the implementation of a simple fully-connected neural network to tackle image classification on the MNIST dataset. We'll implement backpropagation and stochastic gradient descent from scratch using `numpy`, and provide high-level derivations and intuition for computing weight updates of each of the neurons.
@@ -421,7 +421,7 @@ $$</p>
 <!-- where $K = n_y$ is the number of classes. -->
 <p>To solve this optimization problem, we will use <strong>gradient descent</strong> with the <strong>backpropagation</strong> algorithm. At a high level, backpropagation allows us to efficiently compute the derivatives needed to perform gradient updates using the chain rule in calculus. During this process, derivatives from later layers in the network get passed back through previous layers, hence the name!</p>
 <h2 id="deriving-the-backprop-learning-updates">Deriving the Backprop Learning Updates</h2>
-<p>At this point, the fastest way forward would be to use an automatic differentiation library like <code>pytorch</code> to handle all the gradient computations and not muddle ourselves in all the mathematical details. But where would be the fun in that? Let&rsquo;s go ahead and derive the gradient descent updates ourselves.</p>
+<p>At this point, the fastest way forward would be to use an automatic differentiation library like <a href="https://pytorch.org/">PyTorch</a> to handle all the gradient computations and not muddle ourselves in all the mathematical details. But where would be the fun in that? Let&rsquo;s go ahead and derive the gradient descent updates ourselves.</p>
 <p>Updating parameters $\theta$ at each iteration of gradient descent is a matter of taking a step in the direction of steepest descent in the loss function, with step size $\alpha$:</p>
 <p>$$ \theta \leftarrow \theta - \alpha \nabla \mathcal{L}(\theta).$$</p>
 <p>Breaking down the gradient by each set of weights and biases in our network, we arrive at the following four update expressions:</p>
@@ -619,7 +619,7 @@ $$</p>
 <p>$$
 \frac{\partial z_k^{[2]}}{\partial h_j} = W_{k,j}^{[2]}.
 $$</p>
-<p>And using the result that we previously computed in Equation \ref{eq:dl_dz2_final} for the output layer, we find that</p>
+<p>Here we notice that the $\frac{\partial \mathcal{L}}{\partial z_k^{[2]}}$ term is exactly the result we computed in Equation \ref{eq:dl_dz2_final} for the output layer. <em>Propagating</em> this derivative <em>backwards</em> through the network to the hidden layer, we find that</p>
 <p>$$
 \begin{equation}
 \frac{\partial \mathcal{L}}{\partial h_j} = \sum_{k=1}^{K} (\hat{y_k} - y_k) W_{k,j}^{[2]} \space.
@@ -683,7 +683,7 @@ $$
     \frac{\partial \mathcal{L}}{\partial b^{[2]}} &= \frac{1}{N} \sum (\hat{y} - y) \space.
 \end{align*}
 $$ -->
-<p>You might be suspecting this, but given the recursive structure of neural networks, the gradients that we computed here can be expressed in a general form for any layer $l$ in a network. We&rsquo;ll leave this as an exercise for the reader, but suffice to say that the derivations we&rsquo;ve done here provide the foundation for training neural networks of any depth.</p>
+<p>You might be suspecting this, but given the repetitive structure of neural networks, the gradients that we computed here can be expressed in a general form for any layer $l$ in a network. We&rsquo;ll leave this as an exercise for the reader, but suffice to say that the derivations we&rsquo;ve done here provide the foundation for training neural networks of any depth.</p>
 <h2 id="python-implementation">Python Implementation</h2>
 <p>Okay enough math, let&rsquo;s get back to the task we set out to tackle: training a neural network on the MNIST dataset. For this purpose, we&rsquo;ll implement a simple feedforward neural network with a single hidden layer, using the sigmoid activation function and softmax output layer. Here&rsquo;s the Python code for our network:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">import</span> numpy <span style="color:#66d9ef">as</span> np
@@ -834,7 +834,7 @@ Check the learning rate: If the model is not improving, the learning rate may be
 Inspect gradients: If the weights are not updating properly, inspect the gradients and make sure they are neither too large nor vanishingly small.
 Try different activations: Sigmoid can suffer from saturation in deep networks. Experiment with ReLU or Leaky ReLU if needed. -->
 <h2 id="conclusion">Conclusion</h2>
-<p>In this post, we&rsquo;ve covered the basics of implementing a neural network from scratch. We carefully calculated the gradients for a simple feedforward neural network with a single hidden layer, and implemented the model in Python using <code>numpy</code>. We then trained the model on the MNIST dataset and achieved 98% accuracy using the gradients we manually derived. For a more intuitive, visual walkthrough of backpropagation, I highly recommend the <a href="https://youtu.be/Ilg3gGewQ5U?si=RtR800MxuAhM5gn-">What is backpropagation really doing?</a> video by 3Blue1Brown.</p>
+<p>In this post, we&rsquo;ve covered the basics of implementing a neural network from scratch. We carefully calculated the gradients for a simple feedforward neural network with a single hidden layer, and implemented the model in Python using NumPy. We then trained the model on the MNIST dataset and achieved 98% accuracy using the gradients we manually derived. For a more intuitive, visual walkthrough of backpropagation, I highly recommend the <a href="https://youtu.be/Ilg3gGewQ5U?si=RtR800MxuAhM5gn-">What is backpropagation really doing?</a> video by 3Blue1Brown.</p>
 <p>Hopefully this post has given you a better understanding of how neural networks work under the hood. Stay tuned for more posts on foundations of machine learning, or maybe pictures of my latest sourdough loaf. Until next time!</p>
 <h2 id="appendix">Appendix</h2>
 <h3 id="softmax-gradient-derivation">Softmax Gradient Derivation</h3>
