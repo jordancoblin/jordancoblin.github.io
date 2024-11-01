@@ -1,6 +1,7 @@
 +++
 title = 'ML Foundations: Understanding the Math Behind Backpropagation'
-date = 2024-09-18T15:51:45-06:00
+slug = 'understanding-the-math-behind-backpropagation'
+date = 2024-11-01T00:00:00
 draft = false
 +++
 

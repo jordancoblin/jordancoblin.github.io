@@ -1,0 +1,961 @@
+<!doctype html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<html
+  class="not-ready lg:text-base"
+  style="--bg: #faf8f1"
+  lang="en-us"
+  dir="ltr"
+>
+  <head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, shrink-to-fit=no"
+  />
+
+  
+  <title>ML Foundations: Understanding the Math Behind Backpropagation - AI Meanderings</title>
+
+  
+  <meta name="theme-color" />
+
+  
+  
+  
+  
+  <meta name="description" content="The past decade has marked a heyday for neural network, driving innovations from deep learning advancements to the rise of transformer models that power tools like ChatGPT, Claude, and other large language models. Recently, Geoffrey Hinton was even awarded the Nobel Prize in Physics for his pioneering contributions to neural networks - a testament to the profound impact of these models on both AI and society.
+While a variety of powerful libraries, such as PyTorch, TensorFlow, and JAX, have simplified the process of training and deploying neural networks, developing an understanding of their underlying principles remains invaluable. In this post, I’ll guide you through the mathematical underpinnings of backpropagation, a key algorithm for training neural networks, and demonstrate how to implement it from scratch using Python with NumPy. We’ll apply this knowledge to train a simple fully connected neural network for classifying images in the MNIST dataset." />
+  <meta name="author" content="AI Meanderings" />
+  
+
+  
+  
+  
+  
+  
+  
+  <link rel="preload stylesheet" as="style" href="/main.min.css" />
+
+  
+  
+  
+  
+  
+  <link rel="preload" as="image" href="/theme.png" />
+
+  
+  
+  
+  
+  
+
+  
+  
+  <link rel="preload" as="image" href="/github.svg" />
+  
+  <link rel="preload" as="image" href="/linkedin.svg" />
+  
+  
+
+  
+  
+  <script
+    defer
+    src="/highlight.min.js"
+    onload="hljs.initHighlightingOnLoad();"
+  ></script>
+  
+
+  
+  
+  
+
+  
+  <link
+    rel="icon"
+    href="/favicon.ico"
+  />
+  <link
+    rel="apple-touch-icon"
+    href="/apple-touch-icon.png"
+  />
+
+  
+  <meta name="generator" content="Hugo 0.134.2">
+
+  
+  
+  
+  
+  
+  
+  <meta itemprop="name" content="ML Foundations: Understanding the Math Behind Backpropagation">
+  <meta itemprop="description" content="The past decade has marked a heyday for neural network, driving innovations from deep learning advancements to the rise of transformer models that power tools like ChatGPT, Claude, and other large language models. Recently, Geoffrey Hinton was even awarded the Nobel Prize in Physics for his pioneering contributions to neural networks - a testament to the profound impact of these models on both AI and society.
+While a variety of powerful libraries, such as PyTorch, TensorFlow, and JAX, have simplified the process of training and deploying neural networks, developing an understanding of their underlying principles remains invaluable. In this post, I’ll guide you through the mathematical underpinnings of backpropagation, a key algorithm for training neural networks, and demonstrate how to implement it from scratch using Python with NumPy. We’ll apply this knowledge to train a simple fully connected neural network for classifying images in the MNIST dataset.">
+  <meta itemprop="datePublished" content="2024-11-01T00:00:00+00:00">
+  <meta itemprop="dateModified" content="2024-11-01T00:00:00+00:00">
+  <meta itemprop="wordCount" content="4230">
+  
+  <meta property="og:url" content="/posts/understanding-the-math-behind-backpropagation/">
+  <meta property="og:site_name" content="AI Meanderings">
+  <meta property="og:title" content="ML Foundations: Understanding the Math Behind Backpropagation">
+  <meta property="og:description" content="The past decade has marked a heyday for neural network, driving innovations from deep learning advancements to the rise of transformer models that power tools like ChatGPT, Claude, and other large language models. Recently, Geoffrey Hinton was even awarded the Nobel Prize in Physics for his pioneering contributions to neural networks - a testament to the profound impact of these models on both AI and society.
+While a variety of powerful libraries, such as PyTorch, TensorFlow, and JAX, have simplified the process of training and deploying neural networks, developing an understanding of their underlying principles remains invaluable. In this post, I’ll guide you through the mathematical underpinnings of backpropagation, a key algorithm for training neural networks, and demonstrate how to implement it from scratch using Python with NumPy. We’ll apply this knowledge to train a simple fully connected neural network for classifying images in the MNIST dataset.">
+  <meta property="og:locale" content="en_us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2024-11-01T00:00:00+00:00">
+    <meta property="article:modified_time" content="2024-11-01T00:00:00+00:00">
+
+  
+  
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="ML Foundations: Understanding the Math Behind Backpropagation">
+  <meta name="twitter:description" content="The past decade has marked a heyday for neural network, driving innovations from deep learning advancements to the rise of transformer models that power tools like ChatGPT, Claude, and other large language models. Recently, Geoffrey Hinton was even awarded the Nobel Prize in Physics for his pioneering contributions to neural networks - a testament to the profound impact of these models on both AI and society.
+While a variety of powerful libraries, such as PyTorch, TensorFlow, and JAX, have simplified the process of training and deploying neural networks, developing an understanding of their underlying principles remains invaluable. In this post, I’ll guide you through the mathematical underpinnings of backpropagation, a key algorithm for training neural networks, and demonstrate how to implement it from scratch using Python with NumPy. We’ll apply this knowledge to train a simple fully connected neural network for classifying images in the MNIST dataset.">
+
+  
+  
+
+  
+  <link rel="canonical" href="/posts/understanding-the-math-behind-backpropagation/" />
+  
+  
+
+  
+
+  
+  <script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.0/es5/tex-mml-chtml.js">
+  </script>
+
+  <script type="text/javascript">
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$']],  
+        displayMath: [['$$', '$$']],  
+        tags: 'ams',  
+        processEscapes: true
+      }
+    };
+  </script>
+
+</head>
+
+  <body class="text-black duration-200 ease-out dark:text-white">
+    <header class="mx-auto flex h-[4.5rem] max-w-[--w] px-8 lg:justify-center">
+  <div class="relative z-50 ltr:mr-auto rtl:ml-auto flex items-center">
+    <a class="-translate-y-[1px] text-2xl font-medium" href="/"
+      >AI Meanderings</a
+    >
+    <div
+      class="btn-dark text-[0] ltr:ml-4 rtl:mr-4 h-6 w-6 shrink-0 cursor-pointer [background:url(./theme.png)_left_center/_auto_theme('spacing.6')_no-repeat] [transition:_background-position_0.4s_steps(5)] dark:[background-position:right]"
+      role="button"
+      aria-label="Dark"
+    ></div>
+  </div>
+
+  <div
+    class="btn-menu relative z-50 ltr:-mr-8 rtl:-ml-8 flex h-[4.5rem] w-[5rem] shrink-0 cursor-pointer flex-col items-center justify-center gap-2.5 lg:hidden"
+    role="button"
+    aria-label="Menu"
+  ></div>
+
+  
+
+  <script>
+    
+    const htmlClass = document.documentElement.classList;
+    setTimeout(() => {
+      htmlClass.remove('not-ready');
+    }, 10);
+
+    
+    const btnMenu = document.querySelector('.btn-menu');
+    btnMenu.addEventListener('click', () => {
+      htmlClass.toggle('open');
+    });
+
+    
+    const metaTheme = document.querySelector('meta[name="theme-color"]');
+    const lightBg = '#faf8f1'.replace(/"/g, '');
+    const setDark = (isDark) => {
+      metaTheme.setAttribute('content', isDark ? '#000' : lightBg);
+      htmlClass[isDark ? 'add' : 'remove']('dark');
+      localStorage.setItem('dark', isDark);
+    };
+
+    
+    const darkScheme = window.matchMedia('(prefers-color-scheme: dark)');
+    if (htmlClass.contains('dark')) {
+      setDark(true);
+    } else {
+      const darkVal = localStorage.getItem('dark');
+      setDark(darkVal ? darkVal === 'true' : darkScheme.matches);
+    }
+
+    
+    darkScheme.addEventListener('change', (event) => {
+      setDark(event.matches);
+    });
+
+    
+    const btnDark = document.querySelector('.btn-dark');
+    btnDark.addEventListener('click', () => {
+      setDark(localStorage.getItem('dark') !== 'true');
+    });
+  </script>
+
+  <div
+    class="nav-wrapper fixed inset-x-0 top-full z-40 flex h-full select-none flex-col justify-center pb-16 duration-200 dark:bg-black lg:static lg:h-auto lg:flex-row lg:!bg-transparent lg:pb-0 lg:transition-none"
+  >
+    
+    
+    <nav class="lg:ml-12 lg:flex lg:flex-row lg:items-center lg:space-x-10 rtl:space-x-reverse">
+      
+      <a
+        class="block text-center text-xl leading-[5rem] lg:text-base lg:font-normal"
+        href="/about/"
+        >About</a
+      >
+      
+    </nav>
+    
+
+    
+    <nav
+      class="mt-12 flex justify-center space-x-10 rtl:space-x-reverse dark:invert ltr:lg:ml-14 rtl:lg:mr-14 lg:mt-0 lg:items-center"
+    >
+      
+      <a
+        class="h-7 w-7 text-[0] [background:var(--url)_center_center/cover_no-repeat] lg:h-6 lg:w-6"
+        style="--url: url(./github.svg)"
+        href="https://github.com/jordancoblin"
+        target="_blank"
+        rel="me"
+      >
+        github
+      </a>
+      
+      <a
+        class="h-7 w-7 text-[0] [background:var(--url)_center_center/cover_no-repeat] lg:h-6 lg:w-6"
+        style="--url: url(./linkedin.svg)"
+        href="https://linkedin.com/in/jordan-coblin-59237597"
+        target="_blank"
+        rel="me"
+      >
+        linkedin
+      </a>
+      
+    </nav>
+    
+  </div>
+</header>
+
+
+    <main
+      class="prose prose-neutral relative mx-auto min-h-[calc(100%-9rem)] max-w-[--w] px-8 pb-16 pt-14 dark:prose-invert"
+    >
+      
+
+<article>
+  <header class="mb-14">
+    <h1 class="!my-0 pb-2.5">ML Foundations: Understanding the Math Behind Backpropagation</h1>
+
+    
+    <div class="text-xs antialiased opacity-60">
+      
+      <time>Nov 1, 2024</time>
+      
+      
+      
+      
+    </div>
+    
+  </header>
+
+  <section><p>The past decade has marked a heyday for neural network, driving innovations from deep learning advancements to the rise of transformer models that power tools like ChatGPT, Claude, and other large language models. Recently, Geoffrey Hinton was even <a href="https://www.utoronto.ca/news/geoffrey-hinton-wins-nobel-prize#:~:text=Geoffrey%20Hinton%2C%20a%20University%20Professor,2024%20Nobel%20Prize%20in%20Physics">awarded the Nobel Prize in Physics</a> for his pioneering contributions to neural networks - a testament to the profound impact of these models on both AI and society.</p>
+<p>While a variety of powerful libraries, such as PyTorch, TensorFlow, and JAX, have simplified the process of training and deploying neural networks, developing an understanding of their underlying principles remains invaluable. In this post, I’ll guide you through the mathematical underpinnings of backpropagation, a key algorithm for training neural networks, and demonstrate how to implement it from scratch using Python with NumPy. We’ll apply this knowledge to train a simple fully connected neural network for classifying images in the <a href="https://www.kaggle.com/datasets/hojjatk/mnist-dataset">MNIST dataset</a>.</p>
+<p>By the end of this post, you can expect to have have a deeper understanding of how neural networks learn and a larger appreciation for the automatic differentiation libraries that handle many of the mathematical details for you. Let&rsquo;s dive in!</p>
+<!-- implementing a fully connected neural network to classify images in the [MNIST dataset](https://www.kaggle.com/datasets/hojjatk/mnist-dataset). I'll cover derivations and intuition for the gradient computations in backpropagation and implement everything from scratch using NumPy. Let’s dive in! -->
+<!-- Despite the ubiquity of these tools, it's still important to understand the fundamentals of how they work. In this post, I'll walk through the implementation of a simple fully-connected neural network to tackle image classification on the MNIST dataset. We'll implement backpropagation and stochastic gradient descent from scratch using `numpy`, and provide high-level derivations and intuition for computing weight updates of each of the neurons.
+
+Welcome to my very first post of the blog! I wanted to take some time to brush up on ML foundations and what better way to learn (or re-learn) technical topics than to write up one's findings? I'm also hoping that treating these blog posts as final artifacts will be a useful forcing function for actually completing the projects.
+
+Into the meaty content. In this post, I will walk through the implementation of a simple fully-connected neural network to tackle image classification on the [MNIST dataset](https://www.kaggle.com/datasets/hojjatk/mnist-dataset). I will implement backpropagation and stochastic gradient descent from scratch using `numpy` and provide high-level derivations and intuition for computing weight updates of each of the neurons, but I'll try not to get overly academic with it. This was a fun and surprisingly challenging exercise, and it made me even more thankful that mature automatic differentiation libraries like `pytorch` exist - I imagine that manually computing gradients for a 30+ layer ResNet would entail a special kind of masochism. -->
+<!-- ## Loading the Dataset
+
+Let's start off by loading the train and test datasets from the `torchvision` python package. While we won't be using `pytorch` for training, we will make use of the `DataLoader` class for sampling minibatches from the training dataset.
+
+```python
+from torch.utils.data import DataLoader
+from torchvision import datasets, transforms
+
+transform = transforms.Compose([
+    transforms.Resize((28, 28)),
+    transforms.ToTensor(),  # Ensure fast so no action is needed
+])
+
+# Fetch the dataset
+train_dataset = datasets.MNIST(root='./data', train=True, transform=transform, download=True)
+test_dataset = datasets.MNIST(root='./data', train=False, transform=transform, download=True)
+
+train_loader = DataLoader(train_dataset, batch_size=64, shuffle=True)
+test_loader = DataLoader(test_dataset, batch_size=1000, shuffle=False)
+```
+ -->
+<h2 id="mnist-digit-classification">MNIST Digit Classification</h2>
+<!--  Following this for notation: https://cs230.stanford.edu/files/Notation.pdf -->
+<p>Let&rsquo;s begin by laying some notational groundwork for the classification task. As usual for supervised learning problems, we consider the setting where we are provided a dataset $\mathcal{D}$ consisting of input vectors $x$ and label vectors $y$:</p>
+<p>$$\mathcal{D} = \bigl\lbrace (x^{(i)}, y^{(i)}) \bigr\rbrace_{i=1}^m \space,$$</p>
+<p>where $m$ is the number of samples in our dataset. The standard MNIST dataset consists of 60,000 training images and 10,000 test images, which we will call $\mathcal{D_{\text{train}}}$ and $\mathcal{D_{\text{test}}}$. An image can be represented as a column vector:</p>
+<p>$$x^{(i)} = [x_1^{(i)}, x_2^{(i)}, &hellip;, x_{n_x}^{(i)}]^T \space,$$</p>
+<p>where $n_x = 28 \times 28$ is the number of pixels in each image. Each image has a real-valued label $y^{(i)} \in [0, 9]$ that indicates which digit, or class, the image corresponds to. To help us perform classification, we will represent this as a one-hot encoded vector:</p>
+<p>$$y^{(i)} = [y_1^{(i)}, y_2^{(i)}, &hellip;, y_{n_y}^{(i)}]^T \space,$$ where $n_y = 10$ is the number of digits or classes to choose from and</p>
+<p>$$
+y_k^{(i)} = \begin{cases}
+1 &amp; \text{if class } k \text{ is the correct class}, \\\
+0 &amp; \text{otherwise}.
+\end{cases}
+$$</p>
+<p>Below we can see some sample images from this dataset, along with their corresponding labels.</p>
+<!-- $$ 
+\mathcal{D} = \mathcal{D_{\text{train}}} \cup \mathcal{D_{\text{test}}} = \lbrace (\boldsymbol{x}_i, \boldsymbol{y}_i) \mid i = 1, 2, ..., m \rbrace.
+$$ -->
+<p><img src="images/mnist_sample_with_labels.png" alt="MNIST sample"></p>
+<p>Because we have multiple digits to choose from, we consider this a <strong>multi-class classification</strong> problem, where the goal is roughly to find some function $f(x)$ that is able to correctly determine the labels for as many images in our dataset (or more precisely, our test set) as possible.</p>
+<h2 id="neural-network-definition">Neural Network Definition</h2>
+<!-- Most of you are probably familiar enough with neural networks that I can skip a conceptual introduction. Instead, I will move into defining the neural network as a mathematical function, so that we can work with each part for our backprop derivations. -->
+<p>In this section, we’ll outline the the mathematical foundation of our neural network model, starting with the classification function $ f(x; \theta) $. This function maps input data $x$ to a predicted class $ \hat{y} $, represented as $ \hat{y} = f(x; \theta) = \arg\max_k f_k(x; \theta) $, where $ f_k(x; \theta) $ denotes the score or probability for class $k$. The neural network’s purpose is to model $f_k(x; \theta)$ with learnable parameters $\theta$ .</p>
+<!-- For our MNIST classification task, we’ll build a simple, fully connected neural network with a single hidden layer of 128 units. In this hidden layer, the output $ h(x) $ is calculated as $ h(x) = \sigma (W^{[1]} x + b^{[1]}) $, where $ W^{[1]} $ and $ b^{[1]} $ are the weights and biases for the hidden layer. To output class probabilities, we’ll apply a softmax function to the final layer, providing a normalized probability distribution across the classes, making it ideal for classification. -->
+<!-- Let $f(x; \theta)$ be the classification function (model) parameterized by $\theta$, which maps from inputs $x$ to a predicted class $\hat{y}$. This classification function typically takes the..... TODO.... $\hat{y} = f(x; \theta) = \arg\max_c f_k(x; \theta),$ where $f_k(x; \theta)$ is the score or probability for class $c$. This function $f_k$ is what we will be modeling with our neural network. -->
+<!-- $$f: \mathbb{R}^{n_x} \rightarrow \mathbb{R}^{n_y}.$$ -->
+<p>Neural networks may have an abritrary number of layers - the more layers, the &ldquo;deeper&rdquo; the network. The parameters $\theta$ of our model are comprised of <strong>weights</strong> and <strong>biases</strong>, which are denoted using $W^{[l]}$ and $b^{[l]}$ respectively, for each layer $l$. For our MNIST classification problem, we will use a network with a single hidden layer of size 128. The output of this first layer, also known as a <strong>hidden</strong> layer, is:</p>
+<p>$$h(x) = \sigma (W^{[1]} x + b^{[1]}),$$</p>
+<p>where $W^{[1]} \in \mathbb{R}^{n_h \times n_x}$, $b^{[1]} \in \mathbb{R}^{n_h}$, $n_h = 128$ is the hidden layer size, and $\sigma$ is the sigmoid activation function. To output class probabilities, we’ll apply a softmax function to the final layer, providing a normalized probability distribution across the classes, making it ideal for classification. The softmax function is defined as</p>
+<!-- Note that the dimensions of each matrix and vector become quite important during implementation - shape errors tend to be where I spend much of my debugging time in the early stages of development.
+
+For classification problems where a single label is predicted, it is typical to use the softmax function to convert the final layer outputs into a probability distribution: -->
+<p>$$\text{softmax}(z) = \frac{e^{z}}{\sum_{k=1}^{C} e^{z}_{k}} \space,$$</p>
+<p>where $K = n_y$ is the number of classes. With this, the final output of our neural network becomes:</p>
+<p>$$f_k(x; \theta) = \text{softmax} (W^{[2]} h(x) + b^{[2]}),$$</p>
+<p>where $W^{[2]} \in \mathbb{R}^{n_y \times n_h}$ and $b^{[2]} \in \mathbb{R}^{n_y}$. Notice that our input $x$ is passed through the hidden layer to produce $h(x)$, which is then passed through the output layer to produce the final class probabilities.</p>
+<!-- Fully expanded, the output of our network can be written in a single line as
+$$
+\begin{equation*}
+    f_k(x; \theta) = \text{softmax} \bigl( W^{[2]} \sigma (W^{[1]} x + b^{[1]}) + b^{[2]} \bigr) \space.
+\end{equation*}
+$$ -->
+<p>Pictorally, our neural network can be visualized as follows:</p>
+<figure class="center">
+  <img src="images/full_network_base.png" alt="" />
+  <figcaption>
+A simple fully-connected neural network with a single hidden layer.
+</figcaption>
+</figure>
+<!-- Our neural network will consist of a single hidden layer, where each node in the hidden layer applies an activation function to a weighted sum of the inputs. The choice of activation function is crucial, as it introduces non-linearity to the model, enabling it to learn complex patterns. -->
+<!-- ## Defining the Loss Function -->
+<!-- For our classification task, we’ll use the **cross-entropy loss**, which is a common choice for multi-class classification problems. It measures the difference between the predicted probability distribution and the true distribution (one-hot encoded labels for MNIST). The cross-entropy loss for a batch of samples is defined as:
+
+$$
+L = - \frac{1}{N} \sum_{n=1}^{N} \sum_{i=1}^{K} y_i^{(n)} \log(\hat{y}_i^{(n)})
+$$
+
+### Python Code for Cross-Entropy Loss:
+```python
+def cross_entropy_loss(y, y_hat):
+    # Small epsilon added to avoid log(0)
+    epsilon = 1e-12
+    y_hat = np.clip(y_hat, epsilon, 1. - epsilon)  # Ensure y_hat is within (0, 1) to prevent log(0)
+    
+    # Average over the batch
+    return -np.sum(y * np.log(y_hat)) / y.shape[0]
+```
+
+In this function, we first clip the predicted values y_hat to avoid undefined values from log(0) and then compute the average loss over the batch of examples. -->
+<h2 id="gradient-descent-with-backpropagation">Gradient Descent with Backpropagation</h2>
+<p>We now have a parameterized model that is capable of representing a variety of functions. Our goal is to find the function which provides the best fit with respect to our dataset $\mathcal{D}$. To accomplish this, we will introduce a <strong>loss function</strong> $\mathcal{L}(\hat{y}, y)$ as a measure of fit, and then <em>minimize</em> this function to find the optimal parameters of the model:</p>
+<p>$$\theta_* = \arg\min_{\theta} \mathcal{L}(\hat{y}, y).$$</p>
+<p>For multi-class classification problems, cross-entropy is a common loss function which measures the distance between the distribution produced by our model, and the true distribution $P(y|x)$. The cross-entropy loss for a tuple $(x, y)$ is defined as:</p>
+<p>$$
+\begin{equation}
+\label{eq:loss}
+\mathcal{L}(\hat{y}, y) = - \sum_{k=1}^{K} y_k \log \hat{y}_k \space.
+\end{equation}
+$$</p>
+<!-- where $K = n_y$ is the number of classes. -->
+<p>To solve this optimization problem, we will use <strong>gradient descent</strong> with the <strong>backpropagation</strong> algorithm. At a high level, backpropagation allows us to efficiently compute the derivatives needed to perform gradient updates using the chain rule in calculus. During this process, derivatives from later layers in the network get passed back through previous layers, hence the name!</p>
+<h2 id="deriving-the-backprop-learning-updates">Deriving the Backprop Learning Updates</h2>
+<p>At this point, the fastest way forward would be to use an automatic differentiation library like <a href="https://pytorch.org/">PyTorch</a> to handle all the gradient computations and not muddle ourselves in all the mathematical details. But where would be the fun in that? Let&rsquo;s go ahead and derive the gradient descent updates ourselves.</p>
+<p>Updating parameters $\theta$ at each iteration of gradient descent is a matter of taking a step in the direction of steepest descent in the loss function, with step size $\alpha$:</p>
+<p>$$ \theta \leftarrow \theta - \alpha \nabla \mathcal{L}(\theta).$$</p>
+<p>Breaking down the gradient by each set of weights and biases in our network, we arrive at the following four update expressions:</p>
+<p>$$
+\begin{align*}
+W^{[1]} &amp; \leftarrow W^{[1]} - \alpha \frac{\partial \mathcal{L}}{\partial W^{[1]}} \\\
+b^{[1]} &amp; \leftarrow b^{[1]} - \alpha \frac{\partial \mathcal{L}}{\partial b^{[1]}} \\\
+W^{[2]} &amp; \leftarrow W^{[2]} - \alpha \frac{\partial \mathcal{L}}{\partial W^{[2]}} \\\
+b^{[2]} &amp; \leftarrow b^{[2]} - \alpha \frac{\partial \mathcal{L}}{\partial b^{[2]}}\space.
+\end{align*}
+$$</p>
+<p>It&rsquo;s important to remember that $W^{[l]}$ is a <em>matrix</em> and $b^{[l]}$ is a <em>vector</em>, so the result of the gradients here will be either a matrix or vector as well. The components of these gradient objects are the partial derivative with respect to <em>each individual weight</em>. That is,</p>
+<p>$$
+\begin{equation*}
+\label{eq:jacobian}
+\frac{\partial \mathcal{L}}{\partial W^{[l]}} =
+\begin{bmatrix}
+\frac{\partial \mathcal{L}}{\partial W_{1,1}^{[l]}} &amp; \frac{\partial \mathcal{L}}{\partial W_{1,2}^{[l]}} &amp; \cdots &amp; \frac{\partial \mathcal{L}}{\partial W_{1,n_{l-1}}^{[l]}} \\\
+\frac{\partial \mathcal{L}}{\partial W_{2,1}^{[l]}} &amp; \frac{\partial \mathcal{L}}{\partial W_{2,2}^{[l]}} &amp; \cdots &amp; \frac{\partial \mathcal{L}}{\partial W_{2,n_{l-1}}^{[l]}} \\\
+\vdots &amp; \vdots &amp; \ddots &amp; \vdots \\\
+\frac{\partial \mathcal{L}}{\partial W_{n_l,1}^{[l]}} &amp; \frac{\partial \mathcal{L}}{\partial W_{n_l,2}^{[l]}} &amp; \cdots &amp; \frac{\partial \mathcal{L}}{\partial W_{n_l,n_{l-1}}^{[l]}} \\\
+\end{bmatrix},
+\end{equation*}
+$$</p>
+<p>where $n_l$ and $n_{l-1}$ are the number of neurons in layers $l$ and $l-1$, respectively.</p>
+<!-- $$
+    W_{11}^{[1]} + W_{12}^{[1]}
+$$ -->
+<!-- Because of several factors, namely the non-convexity of the loss function, the large number of parameters, and non-linear activations, it is typically infeasible to find the global minima of $\mathcal{L}(x, \theta)$ by simply solving for $\nabla \mathcal{L} = 0$. Instead, we can estimate the minima using **gradient descent**, which is an iterative algorithm that I'm sure you've heard of if you've reached this point in the article. How does **backpropagation** fit into this? -->
+<h3 id="forward-pass">Forward Pass</h3>
+<p>To begin with an iteration of backpropogation, we first do a <strong>forward pass</strong>, where we pass an input $x$ through the network. During the forward pass, we compute outputs at each layer of the network, and store some which will be used later during the backward pass. We introduce the variable $z^{[l]}$ as well, to aid us during the backward pass:</p>
+<p>$$
+\begin{align*}
+z^{[1]} &amp;= W^{[1]} x + b^{[1]} \\\
+h &amp;= \sigma(z^{[1]}) \\\
+z^{[2]} &amp;= W^{[2]} h + b^{[2]} \\\
+\hat{y} &amp;= \text{softmax}(z^{[2]}).
+\end{align*}
+$$</p>
+<p>At this stage, it is helpful if we visualize how all of these outputs and parameters fit together. For simplicity, we&rsquo;ll consider a network with just a few neurons:</p>
+<!-- ![Output Layer](images/output_layer_base.png#center) -->
+<!-- ![Output Layer](images/output_layer_base.png)
+{width=500 alt="Gravel Calls" class="center"} -->
+<h3 id="backward-pass">Backward Pass</h3>
+<p>For our <strong>backward pass</strong>, we will compute the partial derivatives needed for our learning update. Conceptually, we can think of this as figuring out how much a change in each weight contributes to a change in the overall loss. To determine derivatives for weights in earlier layers in the network, we use the <a href="https://en.wikipedia.org/wiki/Chain_rule">chain rule</a> to decompose the derivatives into parts, which enables re-use of derivatives that were computed for later layers; this is essentially dynamic programming. Let&rsquo;s start by computing derivatives $\frac{\partial \mathcal{L}}{\partial W_{j,i}^{[l]}}$ for weights in the output layer, and then move on to the hidden layer.</p>
+<h3 id="output-layer-derivatives">Output Layer Derivatives</h3>
+<p>It is helpful to start by visualizing the output layer of our network, to understand how the weights and biases connect with the loss function. We will be using $j$ to index neurons in the output layer, and $i$ to index neurons in the hidden layer. So $W_{2,1}^{[2]}$ indicates the weight connecting neuron $1$ in $h$ and neuron $2$ in $z^{[2]}$:</p>
+<figure class="center"><img src="/posts/understanding-the-math-behind-backpropagation/images/output_layer_base.png"
+    alt="Output layer of our simplified neural network."><figcaption>
+      <p>Output layer of our simplified neural network.</p>
+    </figcaption>
+</figure>
+
+<p>We first notice that $\mathcal{L}$ is a function of $z_j^{[l]}$ and use the chain rule to re-express our derivative:</p>
+<p>$$
+\frac{\partial \mathcal{L}}{\partial W_{j,i}^{[2]}} = \frac{\partial \mathcal{L}}{\partial z_j^{[2]}} \frac{\partial z_j^{[2]}}{\partial W_{j,i}^{[2]}}.
+$$</p>
+<p>This $\frac{\partial \mathcal{L}}{\partial z_j^{[2]}}$ term is important, as we&rsquo;ll be re-using it later to compute derivatives in the earlier hidden layer. To solve for this quantity, you might think (as I did) that the same pattern could be applied when decomposing by $\hat{y}$, but interestingly, this is not the case:</p>
+<p>$$
+\frac{\partial \mathcal{L}}{\partial z_j^{[2]}} \neq \frac{\partial \mathcal{L}}{\partial \hat{y_j}} \frac{\partial \hat{y_j}}{\partial z_j^{[2]}} \space.
+$$</p>
+<p>The reason for this is related to our usage of the $\text{softmax}$ function over our outputs $z_j^{[l]}$. Because $\text{softmax}$ causes $z_j^{[l]}$ to have an effect on both $\hat{y}_1$ and $\hat{y}_2$, we need to take both of these &ldquo;paths&rdquo; into account when applying the chain rule.</p>
+<!-- <figure class="center"><img src="/posts/understanding-the-math-behind-backpropagation/images/output_layer_highlighted.png"
+    alt="The path that W_{1,1}^{[2]} takes through to $\mathcal{L}$."><figcaption>
+      <p>The path that W_{1,1}^{[2]} takes through to $\mathcal{L}$.</p>
+    </figcaption>
+</figure>
+ -->
+<figure class="center">
+  <img src="images/output_layer_highlighted.png" alt="" />
+  <figcaption>
+The path that $W_{1,1}^{[2]}$ takes to reach $\mathcal{L}$. Notice that the computation flows through all nodes in $\hat{y}$.
+</figcaption>
+</figure>
+<p>So in this case, we need to apply the <strong>multivariable chain rule</strong> by <em>summing</em> the derivatives of each path:</p>
+<p>$$
+\frac{\partial \mathcal{L}}{\partial z_j^{[2]}} = \sum_{k=1}^{K} \frac{\partial \mathcal{L}}{\partial \hat{y_k}} \frac{\partial \hat{y_k}}{\partial z_j^{[2]}} \space.
+$$</p>
+<p>As we&rsquo;ll see, it is also useful to split this expression into cases where $j=k$ and $j \neq k$:</p>
+<p>$$
+\begin{equation}
+\label{eq:dldz2_expanded}
+\frac{\partial \mathcal{L}}{\partial z_j^{[2]}} = \frac{\partial \mathcal{L}}{\partial \hat{y_k}} \frac{\partial \hat{y_k}}{\partial z_k^{[2]}} + \sum_{k \neq j} \frac{\partial \mathcal{L}}{\partial \hat{y_k}} \frac{\partial \hat{y_k}}{\partial z_j^{[2]}}\space.
+\end{equation}
+$$</p>
+<p>Our final expression for the derivative of the loss with respect to a single weight in the output layer then becomes</p>
+<!-- $$
+\begin{equation}
+\label{eq:dldw2}
+    \frac{\partial \mathcal{L}}{\partial W_{j,i}^{[2]}} = \sum_{k=1}^K \frac{\partial \mathcal{L}}{\partial \hat{y_k}} \frac{\partial \hat{y_k}}{\partial z_j^{[2]}} \frac{\partial z_j^{[2]}}{\partial W_{j,i}^{[2]}}\space.
+\end{equation}
+$$
+
+As we'll see, it is also useful to split this expression into cases where $j=k$ and $j \neq k$: -->
+<p>$$
+\begin{equation}
+\label{eq:dldw2_expanded}
+\frac{\partial \mathcal{L}}{\partial W_{j,i}^{[2]}} = \frac{\partial \mathcal{L}}{\partial \hat{y_k}} \frac{\partial \hat{y_k}}{\partial z_k^{[2]}} \frac{\partial z_k^{[2]}}{\partial W_{j,i}^{[2]}} + \sum_{k \neq j} \frac{\partial \mathcal{L}}{\partial \hat{y_k}} \frac{\partial \hat{y_k}}{\partial z_j^{[2]}} \frac{\partial z_j^{[2]}}{\partial W_{j,i}^{[2]}}\space.
+\end{equation}
+$$</p>
+<p>Let&rsquo;s go ahead and solve this expression, one term at a time.</p>
+<h4 id="solving-individual-derivatives">Solving Individual Derivatives</h4>
+<p>For the first derivative term in Equation \ref{eq:dldw2_expanded}, we can take the derivative of the loss with respect to $\hat{y}_k$ by noting that the derivative is zero for each term in the sum, save for the case where $u=k$:</p>
+<p>$$
+\begin{align}
+\frac{\partial \mathcal{L}}{\partial \hat{y_k}} &amp;= \frac{\partial}{\partial \hat{y_k}} \bigl( - \sum_{u=1}^{K} y_u \log \hat{y}_u \bigr) \nonumber \\\
+&amp;= -y_k \frac{\partial}{\partial \hat{y_k}} \log \hat{y_k} \nonumber \\\
+&amp;= -\frac{y_k}{\hat{y}_k}\space.
+\end{align}
+$$</p>
+<p>Solving the $\frac{\partial \hat{y}_k}{\partial z_j^{[2]}}$ term is a bit more involved, and so we&rsquo;ll leave out an in-depth derivation here. If you&rsquo;d like to dig into the nitty gritty here, a full derivation is provided in <a href="#softmax-gradient-derivation">Appendix: Softmax Gradient Derivation</a>. For now, just note that you can use the <a href="https://en.wikipedia.org/wiki/Quotient_rule">quotient rule</a>, along with splitting into different cases to solve. In the end, we find the solution to be the following piecewise function:</p>
+<p>$$
+\begin{equation}
+\frac{\partial \hat{y}_k}{\partial z_j^{[2]}} =
+\begin{cases}
+\hat{y}_k \left( 1 - \hat{y}_k \right), &amp; \text{if } j = k \\\
+-\hat{y}_j \hat{y}_k, &amp; \text{if } j \neq k \space.
+\end{cases}
+\end{equation}
+$$</p>
+<p>For the third term, again we note that the derivative is zero for each term in $W^{[2]} h$, except for $W_{j,i}^{[2]} h_i$:</p>
+<p>$$
+\begin{align}
+\frac{\partial z_j^{[2]}}{\partial W_{j,i}^{[2]}} &amp;= \frac{\partial }{\partial W_{j,i}^{[2]}} \bigl( W^{[2]} h + b^{[2]} \bigr) \nonumber \\\
+&amp;= \frac{\partial }{\partial W_{j,i}^{[2]}} W_{j,i}^{[2]} h_i \nonumber \\\
+&amp;= h_i \space.
+\end{align}
+$$</p>
+<h4 id="putting-it-together">Putting it Together</h4>
+<p>Plugging each of these results first into Equation \ref{eq:dldz2_expanded} we get</p>
+<p>$$
+\begin{align}
+\frac{\partial \mathcal{L}}{\partial z_j^{[2]}} &amp;= \biggl(-\frac{y_j}{\hat{y_j}} \biggr) \biggl( \hat{y_j} (1 - \hat{y_j}) \biggr) + \sum_{k \neq j} \biggl(-\frac{y_k}{\hat{y_k}} \biggr) \biggl( -\hat{y_j} \hat{y_k} \biggr) \nonumber \\\
+&amp;= -y_j + y_j \hat{y_j} + \hat{y_j} \sum_{k \neq j} y_k  \nonumber \\\
+&amp;= -y_j + \hat{y_j} \underbrace{\biggl(y_j + \sum_{k \neq j} y_k \biggr)}_{=1} \nonumber \\\
+&amp;= \hat{y_j} - y_j \space. \label{eq:dl_dz2_final}
+\end{align}
+$$</p>
+<p>Now solving for $\frac{\partial \mathcal{L}}{\partial W_{j,i}^{[2]}}$ by plugging in the results above, we get</p>
+<p>$$
+\begin{align}
+\frac{\partial \mathcal{L}}{\partial W_{j,i}^{[2]}} &amp;= \frac{\partial \mathcal{L}}{\partial z_j^{[2]}} \frac{\partial z_k^{[2]}}{\partial W_{j,i}^{[2]}} \nonumber \\\
+&amp;= \bigl(\hat{y_j} - y_j \bigr) h_i \space.
+\end{align}
+$$</p>
+<p>That took a bit of work, but we now see that the derivative of the loss with respect to a single weight in the output layer is equal to the value of the input neuron $h_i$ times the difference between the predicted output $\hat{y_j}$ and ground truth $y_j$. Pretty cool!</p>
+<h4 id="the-bias-term">The Bias Term</h4>
+<p>We&rsquo;re almost done with the output layer, but we still need to solve for the derivative of the loss with respect to the bias term. Again we can use the chain rule to decompose the derivative:</p>
+<p>$$
+\begin{equation*}
+\frac{\partial \mathcal{L}}{\partial b_{j,i}^{[2]}} = \frac{\partial \mathcal{L}}{\partial z_j^{[2]}} \frac{\partial z_j^{[2]}}{\partial b_{j,i}^{[2]}}\space.
+\end{equation*}
+$$</p>
+<p>We already know the solution for the first term here. Solving for the second term,</p>
+<p>$$
+\begin{align*}
+\frac{\partial z_j^{[2]}}{\partial b_{j,i}^{[2]}} &amp;= \frac{\partial }{\partial b_{j,i}^{[2]}} \bigl( W^{[2]} h + b^{[2]} \bigr) \nonumber \\\
+&amp;= \frac{\partial }{\partial b_{j,i}^{[2]}} b_{j,i}^{[2]} \nonumber \\\
+&amp;= 1 \space,
+\end{align*}
+$$</p>
+<p>such that
+$$
+\begin{align}
+\frac{\partial \mathcal{L}}{\partial b_{j,i}^{[2]}} &amp;= \hat{y_j} - y_j \space.
+\end{align}
+$$</p>
+<h3 id="hidden-layer-derivatives">Hidden Layer Derivatives</h3>
+<p>Now that we&rsquo;ve solved for the output layer, we can move on to the hidden layer. The process is similar, except we&rsquo;ll now be passing derivatives computed in the output layer back to the hidden layer - finally some backpropagation! Looking at the full network, we can see how the effect of the hidden layer&rsquo;s weights flow through the network:</p>
+<figure class="center">
+  <img src="images/full_network_highlighted.png" alt="" />
+  <figcaption>
+The path that $W_{1,1}^{[1]}$ takes to reach $\mathcal{L}$.
+</figcaption>
+</figure>
+<p>We can start by decomposing the derivative of the loss with respect to the weights in the hidden layer, using the chain rule once again:</p>
+<!-- $$
+\begin{align}
+    \frac{\partial \mathcal{L}}{\partial W_{j,i}^{[1]}} &= \frac{\partial \mathcal{L}}{\partial h_j} \frac{\partial h_j}{\partial z_j^{[1]}} \frac{\partial z_j^{[1]}}{\partial W_{j,i}^{[1]}} \nonumber \\\\\\
+    &= \frac{\partial \mathcal{L}}{\partial z_j^{[2]}} \frac{\partial z_j^{[2]}}{\partial h_j} \frac{\partial h_j}{\partial z_j^{[1]}} \frac{\partial z_j^{[1]}}{\partial W_{j,i}^{[1]}} \space.
+\end{align}
+$$ -->
+<p>$$
+\begin{align}
+\frac{\partial \mathcal{L}}{\partial W_{j,i}^{[1]}} &amp;= \frac{\partial \mathcal{L}}{\partial h_j} \frac{\partial h_j}{\partial z_j^{[1]}} \frac{\partial z_j^{[1]}}{\partial W_{j,i}^{[1]}} \space. \nonumber
+\end{align}
+$$</p>
+<p>Here we use $i$ to index neurons in the input and $j$ to index neurons in the hidden layer, and we can solve for each of these derivatives in a similar manner to the output layer.</p>
+<h4 id="solving-individual-terms">Solving Individual Terms</h4>
+<p>For the first term, notice that we need to sum over all paths from $h_j$ to $\mathcal{L}$,</p>
+<p>$$
+\frac{\partial \mathcal{L}}{\partial h_j} = \sum_{k=1}^{K} \frac{\partial \mathcal{L}}{\partial z_k^{[2]}} \frac{\partial z_k^{[2]}}{\partial h_j} \space.
+$$</p>
+<p>Since $z_k^{[2]} = \sum_{j=1}^{n_h} W_{k,j}^{[2]} h_j + b_k^{[2]}$, we have</p>
+<p>$$
+\frac{\partial z_k^{[2]}}{\partial h_j} = W_{k,j}^{[2]}.
+$$</p>
+<p>Here we notice that the $\frac{\partial \mathcal{L}}{\partial z_k^{[2]}}$ term is exactly the result we computed in Equation \ref{eq:dl_dz2_final} for the output layer. <em>Propagating</em> this derivative <em>backwards</em> through the network to the hidden layer, we find that</p>
+<p>$$
+\begin{equation}
+\frac{\partial \mathcal{L}}{\partial h_j} = \sum_{k=1}^{K} (\hat{y_k} - y_k) W_{k,j}^{[2]} \space.
+\end{equation}
+$$</p>
+<p>Solving for the second term $\frac{\partial h_j}{\partial z_j^{[1]}}$ is straightforward, as the derivative of the sigmoid function $\sigma$ is simply $\sigma(1 - \sigma)$. Thus,</p>
+<p>$$
+\begin{align}
+\frac{\partial h_j}{\partial z_j^{[1]}} &amp;= \sigma(z_j^{[1]}) (1 - \sigma(z_j^{[1]})) \nonumber \\\
+&amp;= h_j (1 - h_j) \space.
+\end{align}
+$$</p>
+<p>Finally, the third term is the same as before, where the derivative is zero for all terms except for $W_{j,i}^{[1]} x_i$:</p>
+<p>$$
+\begin{align}
+\frac{\partial z_j^{[1]}}{\partial W_{j,i}^{[1]}} &amp;= \frac{\partial }{\partial W_{j,i}^{[1]}} \bigl( W^{[1]} x + b^{[1]} \bigr) \nonumber \\\
+&amp;= \frac{\partial }{\partial W_{j,i}^{[1]}} W_{j,i}^{[1]} x_i \nonumber \\\
+&amp;= x_i \space.
+\end{align}
+$$</p>
+<h4 id="putting-it-together-1">Putting it Together</h4>
+<p>Plugging these results back into our original expression, we find that the derivative of the loss with respect to a single weight in the hidden layer is</p>
+<p>$$
+\begin{align}
+\frac{\partial \mathcal{L}}{\partial W_{j,i}^{[1]}} &amp;= \biggl[ \sum_{k=1}^{K} (\hat{y_k} - y_k) W_{k,j}^{[2]} \biggr] h_j (1 - h_j) x_i \space.
+\end{align}
+$$</p>
+<p>And similarly for the bias terms, we find that</p>
+<p>$$
+\begin{align}
+\frac{\partial \mathcal{L}}{\partial b_{j,i}^{[1]}} &amp;= \biggl[ \sum_{k=1}^{K} (\hat{y_k} - y_k) W_{k,j}^{[2]} \biggr] h_j (1 - h_j) \space.
+\end{align}
+$$</p>
+<h3 id="summary">Summary</h3>
+<p>We&rsquo;ve now solved for the derivatives of the loss with respect to each weight and bias in our network. We can now use these results to update the parameters of our model using gradient descent! Collecting the derivatives for each set of parameters, we have</p>
+<p>$$
+\begin{align*}
+\frac{\partial \mathcal{L}}{\partial W_{j,i}^{[1]}} &amp;= \biggl[ \sum_{k=1}^{K} (\hat{y_k} - y_k) W_{k,j}^{[2]} \biggr] h_j (1 - h_j) x_i \\\
+\frac{\partial \mathcal{L}}{\partial b_{j,i}^{[1]}} &amp;= \biggl[ \sum_{k=1}^{K} (\hat{y_k} - y_k) W_{k,j}^{[2]} \biggr] h_j (1 - h_j) \\\
+\frac{\partial \mathcal{L}}{\partial W_{j,i}^{[2]}} &amp;= (\hat{y_j} - y_j) h_i \\\
+\frac{\partial \mathcal{L}}{\partial b_{j,i}^{[2]}} &amp;= \hat{y_j} - y_j \space.
+\end{align*}
+$$</p>
+<p>In vectorized form, we can express these individual parameter derivatives over the full gradient objects:</p>
+<p>$$
+\begin{align*}
+\frac{\partial \mathcal{L}}{\partial W^{[1]}} &amp;= x^T \bigl[ \bigl( (\hat{y} - y) W^{[2]} \bigr) \odot h \odot (1 - h) \bigr] \\\
+\frac{\partial \mathcal{L}}{\partial b^{[1]}} &amp;= (\hat{y} - y) W^{[2]} \odot h \odot (1 - h) \\\
+\frac{\partial \mathcal{L}}{\partial W^{[2]}} &amp;= h^T (\hat{y} - y) \\\
+\frac{\partial \mathcal{L}}{\partial b^{[2]}} &amp;= \hat{y} - y \space,
+\end{align*}
+$$</p>
+<p>where the hadamard product $\odot$ allows us to vectorize the expression using element-wise multiplication.</p>
+<!-- Finally, since gradient descent is typically performed over mini-batches[^1], we can average these gradients over the batch size to get the final gradient updates:
+
+$$
+\begin{align*}
+    \frac{\partial \mathcal{L}}{\partial W^{[1]}} &= \frac{1}{N} X^T \bigl[ \bigl( (\hat{y} - y) W^{[2]} \bigr) \odot h \odot (1 - h) \bigr] \\\\\\
+    \frac{\partial \mathcal{L}}{\partial b^{[1]}} &= \frac{1}{N} \sum \bigl( (\hat{y} - y) W^{[2]} \bigr) \odot h \odot (1 - h) \\\\\\
+    \frac{\partial \mathcal{L}}{\partial W^{[2]}} &= \frac{1}{N} h^T (\hat{y} - y) \\\\\\
+    \frac{\partial \mathcal{L}}{\partial b^{[2]}} &= \frac{1}{N} \sum (\hat{y} - y) \space.
+\end{align*}
+$$ -->
+<p>You might be suspecting this, but given the repetitive structure of neural networks, the gradients that we computed here can be expressed in a general form for any layer $l$ in a network. We&rsquo;ll leave this as an exercise for the reader, but suffice to say that the derivations we&rsquo;ve done here provide the foundation for training neural networks of any depth.</p>
+<h2 id="python-implementation">Python Implementation</h2>
+<p>Okay enough math, let&rsquo;s get back to the task we set out to tackle: training a neural network on the MNIST dataset. For this purpose, we&rsquo;ll implement a simple feedforward neural network with a single hidden layer, using the sigmoid activation function and softmax output layer. Here&rsquo;s the Python code for our network:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">import</span> numpy <span style="color:#66d9ef">as</span> np
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">sigmoid</span>(z):
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">1</span> <span style="color:#f92672">/</span> (<span style="color:#ae81ff">1</span> <span style="color:#f92672">+</span> np<span style="color:#f92672">.</span>exp(<span style="color:#f92672">-</span>z))
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">sigmoid_derivative</span>(z):
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> sigmoid(z) <span style="color:#f92672">*</span> (<span style="color:#ae81ff">1</span> <span style="color:#f92672">-</span> sigmoid(z))
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">softmax</span>(z):
+</span></span><span style="display:flex;"><span>    exp_z <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>exp(z <span style="color:#f92672">-</span> np<span style="color:#f92672">.</span>max(z, axis<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>, keepdims<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>))  <span style="color:#75715e"># Subtract max(z) for numerical stability</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> exp_z <span style="color:#f92672">/</span> exp_z<span style="color:#f92672">.</span>sum(axis<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>, keepdims<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">FCNetwork</span>():
+</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">&#34;&#34;&#34;Single hidden layer network&#34;&#34;&#34;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> __init__(self, input_dim, hidden_dim, output_dim, activation<span style="color:#f92672">=</span>sigmoid):
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>w1 <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>random<span style="color:#f92672">.</span>randn(input_dim, hidden_dim) <span style="color:#f92672">*</span> np<span style="color:#f92672">.</span>sqrt(<span style="color:#ae81ff">1.</span> <span style="color:#f92672">/</span> input_dim) <span style="color:#75715e"># d x h</span>
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>w2 <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>random<span style="color:#f92672">.</span>randn(hidden_dim, output_dim) <span style="color:#f92672">*</span> np<span style="color:#f92672">.</span>sqrt(<span style="color:#ae81ff">1.</span> <span style="color:#f92672">/</span> hidden_dim) <span style="color:#75715e"># h x 10</span>
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>b1 <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>random<span style="color:#f92672">.</span>rand(<span style="color:#ae81ff">1</span>, hidden_dim) <span style="color:#75715e"># 1 x h</span>
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>b2 <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>random<span style="color:#f92672">.</span>rand(<span style="color:#ae81ff">1</span>, output_dim) <span style="color:#75715e"># 1 x 10</span>
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>activation <span style="color:#f92672">=</span> activation
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">forward</span>(self, X):
+</span></span><span style="display:flex;"><span>        batch_size <span style="color:#f92672">=</span> X<span style="color:#f92672">.</span>shape[<span style="color:#ae81ff">0</span>]
+</span></span><span style="display:flex;"><span>        X <span style="color:#f92672">=</span> X<span style="color:#f92672">.</span>reshape((batch_size, <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>))
+</span></span><span style="display:flex;"><span>        z1 <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>dot(X, self<span style="color:#f92672">.</span>w1) <span style="color:#f92672">+</span> self<span style="color:#f92672">.</span>b1
+</span></span><span style="display:flex;"><span>        h <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>activation(z1)
+</span></span><span style="display:flex;"><span>        z2 <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>dot(h, self<span style="color:#f92672">.</span>w2) <span style="color:#f92672">+</span> self<span style="color:#f92672">.</span>b2
+</span></span><span style="display:flex;"><span>        f_k <span style="color:#f92672">=</span> softmax(z2)
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> z1, h, z2, f_k
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">predict</span>(self, X):
+</span></span><span style="display:flex;"><span>        _, _, _, f_k <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>forward(X)
+</span></span><span style="display:flex;"><span>        y_hat <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>argmax(f_k, axis<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>)
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> y_hat
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">compute_grad</span>(self, X, y, y_hat, z1, a1, z2):
+</span></span><span style="display:flex;"><span>        batch_size <span style="color:#f92672">=</span> X<span style="color:#f92672">.</span>shape[<span style="color:#ae81ff">0</span>]
+</span></span><span style="display:flex;"><span>        X <span style="color:#f92672">=</span> X<span style="color:#f92672">.</span>reshape((batch_size, <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>))
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># Output layer grads</span>
+</span></span><span style="display:flex;"><span>        dz2 <span style="color:#f92672">=</span> y_hat <span style="color:#f92672">-</span> y
+</span></span><span style="display:flex;"><span>        dw2 <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>dot(a1<span style="color:#f92672">.</span>T, dz2)
+</span></span><span style="display:flex;"><span>        db2 <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>sum(dz2, axis<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>, keepdims<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>) <span style="color:#f92672">/</span> batch_size <span style="color:#75715e"># sum over sammples</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># Hidden layer grads </span>
+</span></span><span style="display:flex;"><span>        dz1 <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>dot(dz2, self<span style="color:#f92672">.</span>w2<span style="color:#f92672">.</span>T) <span style="color:#f92672">*</span> sigmoid_derivative(z1)
+</span></span><span style="display:flex;"><span>        dw1 <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>dot(X<span style="color:#f92672">.</span>T, dz1)
+</span></span><span style="display:flex;"><span>        db1 <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>sum(dz1, axis<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>, keepdims<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>) <span style="color:#f92672">/</span> batch_size <span style="color:#75715e"># sum over sammples</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> dw1, db1, dw2, db2
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">update_weights</span>(self, dw1, db1, dw2, db2, lr):
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>w1 <span style="color:#f92672">-=</span> lr <span style="color:#f92672">*</span> dw1
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>b1 <span style="color:#f92672">-=</span> lr <span style="color:#f92672">*</span> db1
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>w2 <span style="color:#f92672">-=</span> lr <span style="color:#f92672">*</span> dw2
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>b2 <span style="color:#f92672">-=</span> lr <span style="color:#f92672">*</span> db2
+</span></span></code></pre></div><p>The gradients computed in the <code>compute_grad</code> method are the same as the ones we derived, but modified slightly to work with mini-batches<sup id="fnref:1"><a href="#fn:1" class="footnote-ref" role="doc-noteref">1</a></sup> of dataset tuples. These batch updates are accomplished by averaging the gradients over each mini-batch, which helps to stabilize the learning process.</p>
+<p>Also note the initialization scheme used for the weights, which is known as <a href="http://proceedings.mlr.press/v9/glorot10a/glorot10a.pdf">Xavier initialization</a>. This initialization scheme helps to prevent the gradients from vanishing or exploding during training, which can be a common issue in deep networks. In practice, I found that a basic initialization which sampled from a Gaussian with mean 0 and standard deviation of 1 caused learning to fail, but using Xavier initialization fixed the issue.</p>
+<h3 id="evaluating-performance">Evaluating Performance</h3>
+<p>After training the model, we want to evaluate how well it generalizes to unseen data (our validation/test set). We can accomplish this using the <strong>accuracy</strong> metric, which is the percentage of correctly predicted examples. We&rsquo;ll also track the <em>training loss</em> to monitor the model&rsquo;s learning progress:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">cross_entropy_loss</span>(y, y_hat):
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Small epsilon added to avoid log(0)</span>
+</span></span><span style="display:flex;"><span>    epsilon <span style="color:#f92672">=</span> <span style="color:#ae81ff">1e-12</span>
+</span></span><span style="display:flex;"><span>    y_hat <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>clip(y_hat, epsilon, <span style="color:#ae81ff">1.</span> <span style="color:#f92672">-</span> epsilon)  <span style="color:#75715e"># Ensure y_hat is within (0, 1) to prevent log(0)</span>
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Compute cross-entropy</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#f92672">-</span>np<span style="color:#f92672">.</span>sum(y <span style="color:#f92672">*</span> np<span style="color:#f92672">.</span>log(y_hat)) <span style="color:#f92672">/</span> y<span style="color:#f92672">.</span>shape[<span style="color:#ae81ff">0</span>]  <span style="color:#75715e"># Average over the batch</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">evaluate</span>(model, data_loader):
+</span></span><span style="display:flex;"><span>    total_loss <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>
+</span></span><span style="display:flex;"><span>    correct <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">for</span> X_val, y_val <span style="color:#f92672">in</span> data_loader:
+</span></span><span style="display:flex;"><span>        _, _, _, y_pred <span style="color:#f92672">=</span> model<span style="color:#f92672">.</span>forward(X_val)
+</span></span><span style="display:flex;"><span>        y_onehot <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>eye(<span style="color:#ae81ff">10</span>)[y_val]
+</span></span><span style="display:flex;"><span>        loss <span style="color:#f92672">=</span> cross_entropy_loss(y_onehot, y_pred)
+</span></span><span style="display:flex;"><span>        total_loss <span style="color:#f92672">+=</span> loss
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        y_pred_classes <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>argmax(y_pred, axis<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>)
+</span></span><span style="display:flex;"><span>        y_true <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>argmax(y_onehot, axis<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>)
+</span></span><span style="display:flex;"><span>        correct <span style="color:#f92672">+=</span> np<span style="color:#f92672">.</span>sum(y_pred_classes <span style="color:#f92672">==</span> y_true)
+</span></span><span style="display:flex;"><span>   
+</span></span><span style="display:flex;"><span>    accuracy <span style="color:#f92672">=</span> correct <span style="color:#f92672">/</span> len(data_loader<span style="color:#f92672">.</span>dataset)
+</span></span><span style="display:flex;"><span>    avg_loss <span style="color:#f92672">=</span> total_loss <span style="color:#f92672">/</span> len(data_loader)
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> accuracy, avg_loss
+</span></span></code></pre></div><p>Here, we convert the one-hot encoded labels and predictions into their respective class indices using <code>np.argmax</code>, and then compute the percentage of correctly predicted examples.</p>
+<h3 id="training-the-model">Training the Model</h3>
+<p>We can now tie everything together in a training loop. The model will iterate over the training data, compute the loss, backpropagate the errors, and update its parameters. After each epoch, we evaluate the model on the test set to monitor its performance:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">train</span>(train_loader: DataLoader, test_loader: DataLoader):
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Initialize the weights</span>
+</span></span><span style="display:flex;"><span>    lr <span style="color:#f92672">=</span> <span style="color:#ae81ff">0.01</span>
+</span></span><span style="display:flex;"><span>    input_dim <span style="color:#f92672">=</span> <span style="color:#ae81ff">28</span> <span style="color:#f92672">*</span> <span style="color:#ae81ff">28</span>
+</span></span><span style="display:flex;"><span>    hidden_dim <span style="color:#f92672">=</span> <span style="color:#ae81ff">256</span>
+</span></span><span style="display:flex;"><span>    output_dim <span style="color:#f92672">=</span> <span style="color:#ae81ff">10</span>
+</span></span><span style="display:flex;"><span>    model <span style="color:#f92672">=</span> FCNetwork(input_dim, hidden_dim, output_dim)
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    NUM_EPOCHS <span style="color:#f92672">=</span> <span style="color:#ae81ff">20</span>
+</span></span><span style="display:flex;"><span>    VAL_INTERVAL <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">for</span> epoch <span style="color:#f92672">in</span> range(NUM_EPOCHS):
+</span></span><span style="display:flex;"><span>        train_loss <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">for</span> batch_idx, (x, y) <span style="color:#f92672">in</span> enumerate(train_loader):
+</span></span><span style="display:flex;"><span>            y_onehot <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>eye(output_dim)[y]
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>            <span style="color:#75715e"># Forward pass</span>
+</span></span><span style="display:flex;"><span>            z1, h, z2, f_k <span style="color:#f92672">=</span> model<span style="color:#f92672">.</span>forward(x)
+</span></span><span style="display:flex;"><span>            loss <span style="color:#f92672">=</span> cross_entropy_loss(y_onehot, f_k)
+</span></span><span style="display:flex;"><span>            train_loss <span style="color:#f92672">+=</span> loss 
+</span></span><span style="display:flex;"><span>            
+</span></span><span style="display:flex;"><span>            <span style="color:#75715e"># Backward pass</span>
+</span></span><span style="display:flex;"><span>            dw1, db1, dw2, db2 <span style="color:#f92672">=</span> model<span style="color:#f92672">.</span>compute_grad(x, y_onehot, f_k, z1, h, z2)
+</span></span><span style="display:flex;"><span>            model<span style="color:#f92672">.</span>update_weights(dw1, db1, dw2, db2, lr)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># Compute average training loss across minibatches</span>
+</span></span><span style="display:flex;"><span>        avg_train_loss <span style="color:#f92672">=</span> train_loss <span style="color:#f92672">/</span> len(train_loader)
+</span></span><span style="display:flex;"><span>        
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># Evaluate on validation set every VAL_INTERVAL epochs</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> (epoch <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>) <span style="color:#f92672">%</span> VAL_INTERVAL <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>:
+</span></span><span style="display:flex;"><span>            val_acc, val_loss <span style="color:#f92672">=</span> evaluate(model, test_loader)
+</span></span><span style="display:flex;"><span>            print(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;Epoch </span><span style="color:#e6db74">{</span>epoch<span style="color:#e6db74">}</span><span style="color:#e6db74">, Train Loss: </span><span style="color:#e6db74">{</span>avg_train_loss<span style="color:#e6db74">:</span><span style="color:#e6db74">.4f</span><span style="color:#e6db74">}</span><span style="color:#e6db74">, Validation Accuracy: </span><span style="color:#e6db74">{</span>val_acc<span style="color:#e6db74">:</span><span style="color:#e6db74">.4f</span><span style="color:#e6db74">}</span><span style="color:#e6db74">, Validation Loss: </span><span style="color:#e6db74">{</span>val_loss<span style="color:#e6db74">:</span><span style="color:#e6db74">.4f</span><span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>)
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">else</span>:
+</span></span><span style="display:flex;"><span>            print(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;Epoch </span><span style="color:#e6db74">{</span>epoch<span style="color:#e6db74">}</span><span style="color:#e6db74">, Training Loss: </span><span style="color:#e6db74">{</span>avg_train_loss<span style="color:#e6db74">:</span><span style="color:#e6db74">.4f</span><span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> model
+</span></span></code></pre></div><p>Now, it&rsquo;s simply a matter of loading the MNIST dataset, and calling the <code>train</code> function to train the model:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">from</span> torch.utils.data <span style="color:#f92672">import</span> DataLoader
+</span></span><span style="display:flex;"><span><span style="color:#f92672">from</span> torchvision <span style="color:#f92672">import</span> datasets, transforms
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>transform <span style="color:#f92672">=</span> transforms<span style="color:#f92672">.</span>Compose([
+</span></span><span style="display:flex;"><span>    transforms<span style="color:#f92672">.</span>Resize((<span style="color:#ae81ff">28</span>, <span style="color:#ae81ff">28</span>)),
+</span></span><span style="display:flex;"><span>    transforms<span style="color:#f92672">.</span>ToTensor(),  <span style="color:#75715e"># Ensure fast so no action is needed</span>
+</span></span><span style="display:flex;"><span>])
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># Fetch the dataset</span>
+</span></span><span style="display:flex;"><span>train_dataset <span style="color:#f92672">=</span> datasets<span style="color:#f92672">.</span>MNIST(root<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;./data&#39;</span>, train<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>, transform<span style="color:#f92672">=</span>transform, download<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>)
+</span></span><span style="display:flex;"><span>test_dataset <span style="color:#f92672">=</span> datasets<span style="color:#f92672">.</span>MNIST(root<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;./data&#39;</span>, train<span style="color:#f92672">=</span><span style="color:#66d9ef">False</span>, transform<span style="color:#f92672">=</span>transform, download<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>train_loader <span style="color:#f92672">=</span> DataLoader(train_dataset, batch_size<span style="color:#f92672">=</span><span style="color:#ae81ff">64</span>, shuffle<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>)
+</span></span><span style="display:flex;"><span>test_loader <span style="color:#f92672">=</span> DataLoader(test_dataset, batch_size<span style="color:#f92672">=</span><span style="color:#ae81ff">1000</span>, shuffle<span style="color:#f92672">=</span><span style="color:#66d9ef">False</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>train(train_loader, test_loader)
+</span></span></code></pre></div><p>And that&rsquo;s it! We&rsquo;ve implemented a feedforward neural network from scratch and trained it on the MNIST dataset. The model should achieve an accuracy of roughly 98% on the test set after 20 epochs, which is quite impressive for such a simple model.</p>
+<!-- ## Debugging
+
+Training a neural network from scratch can often result in a few hiccups along the way, including issues like vanishing gradients, slow convergence, or poor generalization. A few debugging tips:
+
+Check the learning rate: If the model is not improving, the learning rate may be too high or too low.
+Inspect gradients: If the weights are not updating properly, inspect the gradients and make sure they are neither too large nor vanishingly small.
+Try different activations: Sigmoid can suffer from saturation in deep networks. Experiment with ReLU or Leaky ReLU if needed. -->
+<h2 id="conclusion">Conclusion</h2>
+<p>In this post, we&rsquo;ve covered the basics of implementing a neural network from scratch. We carefully calculated the gradients for a simple feedforward neural network with a single hidden layer, and implemented the model in Python using NumPy. We then trained the model on the MNIST dataset and achieved 98% accuracy using the gradients we manually derived. For a more intuitive, visual walkthrough of backpropagation, I highly recommend the <a href="https://youtu.be/Ilg3gGewQ5U?si=RtR800MxuAhM5gn-">What is backpropagation really doing?</a> video by 3Blue1Brown.</p>
+<p>Hopefully this post has given you a better understanding of how neural networks work under the hood. Stay tuned for more posts on foundations of machine learning, or maybe pictures of my latest sourdough loaf. Until next time!</p>
+<h2 id="appendix">Appendix</h2>
+<h3 id="softmax-gradient-derivation">Softmax Gradient Derivation</h3>
+<p>To solve for $\frac{\partial \hat{y_k}}{\partial z_j^{[2]}}$, we need to consider both cases where $j=k$ and where $j \neq k$.</p>
+<p>For the case when $j = k$:</p>
+<p>$$
+\frac{\partial \hat{y_k}}{\partial z_j^{[2]}} = \frac{\partial}{\partial z_j^{[2]}} \biggl( \frac{e^{z_k^{[2]}}}{\sum_{t=1}^{K} e^{z_t^{[2]}}} \biggr)
+$$</p>
+<p>Using the <a href="https://en.wikipedia.org/wiki/Quotient_rule">quotient rule</a>, where $u = e^{z_k^{[2]}}$ and $v = \sum_{t=1}^{K} e^{z_t^{[2]}}$:</p>
+<p>$$
+\frac{\partial \hat{y}_k}{\partial z_j^{[2]}} = \frac{(v \cdot \frac{\partial u}{\partial z_j^{[2]}} - u \cdot \frac{\partial v}{\partial z_j^{[2]}})}{v^2}
+$$</p>
+<p>Since $u = e^{z_k^{[2]}}$, we have:</p>
+<p>$$
+\frac{\partial u}{\partial z_j^{[2]}} = \frac{\partial e^{z_k^{[2]}}}{\partial z_j^{[2]}} =
+\begin{cases}
+e^{z_k^{[2]}}, &amp; \text{if } j = k \\\
+0, &amp; \text{if } j \neq k
+\end{cases}
+$$</p>
+<p>Also, since $v = \sum_{t=1}^{K} e^{z_t^{[2]}}$, we have:</p>
+<p>$$
+\frac{\partial v}{\partial z_j^{[2]}} = \frac{\partial}{\partial z_j^{[2]}} \sum_{t=1}^{n} e^{z_t^{[2]}} = e^{z_j^{[2]}}
+$$</p>
+<p>Substituting these into the quotient rule:</p>
+<!-- $$
+\frac{\partial \hat{y_k}}{\partial z_j^{[2]}} = \frac{(\sum_{j=1}^{n} e^{z_j} \cdot e^{z_i} ) - e^{z_i} \cdot e^{z_j^{[2]}}}{(\sum_{j=1}^{n} e^{z_j})^2}
+$$ -->
+<p>$$
+\frac{\partial \hat{y_k}}{\partial z_j^{[2]}} = \frac{\Bigl(\sum_{t=1}^{n} e^{z_t^{[2]}}  \cdot e^{z_k^{[2]}} \Bigr) - e^{z_k^{[2]}} \cdot e^{z_j^{[2]}}} {\Bigl(\sum_{t=1}^{n} e^{z_t^{[2]}} \Bigr)^2},
+$$</p>
+<p>which simplifies to</p>
+<p>$$
+\begin{equation*}
+\frac{\partial \hat{y_k}}{\partial z_j^{[2]}} = \hat{y}_k \left( 1 - \hat{y}_k \right)
+\end{equation*}
+$$</p>
+<p>When $j \neq k$, the derivation is similar, but in this case, the term $ \frac{\partial u}{\partial z_j^{[2]}} = 0 $, because $u = e^{z_k^{[2]}}$ and $j \neq k$. We still have</p>
+<p>$$
+\frac{\partial \hat{y_k}}{\partial z_j^{[2]}} = \frac{- e^{z_k^{[2]}} \cdot e^{z_j^{[2]}}} {\Bigl(\sum_{t=1}^{n} e^{z_t^{[2]}} \Bigr)^2},
+$$</p>
+<p>which simplifies to</p>
+<p>$$
+\begin{equation*}
+\frac{\partial \hat{y}_k}{\partial z_j^{[2]}} = -\hat{y}_j \hat{y}_k
+\end{equation*}
+$$</p>
+<p>Thus, we can express the derivative of the softmax output $\hat{y}_k$ with respect to $z_j^{[2]}$ with</p>
+<p>$$
+\begin{equation*}
+\frac{\partial \hat{y}_k}{\partial z_j^{[2]}} =
+\begin{cases}
+\hat{y}_k \left( 1 - \hat{y}_k \right), &amp; \text{if } j = k \\\
+-\hat{y}_j \hat{y}_k, &amp; \text{if } j \neq k
+\end{cases}
+\end{equation*}
+$$</p>
+<p>Text with footnote .<sup id="fnref1:1"><a href="#fn:1" class="footnote-ref" role="doc-noteref">1</a></sup></p>
+<div class="footnotes" role="doc-endnotes">
+<hr>
+<ol>
+<li id="fn:1">
+<p><a href="https://d2l.ai/chapter_optimization/minibatch-sgd.html">Minibatch Stochastic Gradient Descent</a>&#160;<a href="#fnref:1" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a>&#160;<a href="#fnref1:1" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+</ol>
+</div>
+</section>
+
+  
+  
+
+  
+  
+  
+  
+  
+
+  
+  
+  <div class="mt-24" id="disqus_thread"></div>
+  <script>
+    const disqusShortname = 'https-jordancoblin-github-io';
+    const script = document.createElement('script');
+    script.src = 'https://' + disqusShortname + '.disqus.com/embed.js';
+    script.setAttribute('data-timestamp', +new Date());
+    document.head.appendChild(script);
+  </script>
+  
+
+  
+  
+
+  
+
+
+  
+</article>
+
+
+    </main>
+
+    <footer
+  class="mx-auto flex h-[4.5rem] max-w-[--w] items-center px-8 text-xs uppercase tracking-wider opacity-60"
+>
+  <div class="mr-auto">
+  
+    &copy; 2024
+    <a class="link" href="/">AI Meanderings</a>
+  
+  </div>
+  <a class="link mx-6" href="https://gohugo.io/" rel="noopener" target="_blank"
+    >powered by hugo️️</a
+  >️
+  <a
+    class="link"
+    href="https://github.com/nanxiaobei/hugo-paper"
+    rel="noopener"
+    target="_blank"
+    >hugo-paper</a
+  >
+</footer>
+
+  </body>
+</html>
