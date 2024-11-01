@@ -751,6 +751,4 @@ $$
 \end{equation*}
 $$
 
-Text with footnote .[^1]
-
 [^1]: [Minibatch Stochastic Gradient Descent](https://d2l.ai/chapter_optimization/minibatch-sgd.html)
