@@ -8,6 +8,7 @@ publishDir='../docs'
     shortname = 'https-jordancoblin-github-io'     # use disqus comments
 
 [params]
+    monoDarkIcon = true
     # header social icons
     # twitter = 'YOUR_TWITTER_ID'               # twitter.com/YOUR_TWITTER_ID
     github = 'jordancoblin'                 # github.com/YOUR_GITHUB_ID
