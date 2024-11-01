@@ -5,7 +5,7 @@ publishDir='../docs'
 
 [services]
   [services.disqus]
-    # shortname = 'https-jordancoblin-github-io'     # use disqus comments
+    shortname = 'https-jordancoblin-github-io'     # use disqus comments
 
 [params]
     monoDarkIcon = true
