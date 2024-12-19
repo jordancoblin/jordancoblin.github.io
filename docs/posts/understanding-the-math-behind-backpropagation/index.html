@@ -129,7 +129,7 @@ While a variety of powerful libraries, such as PyTorch, TensorFlow, and JAX, hav
 While a variety of powerful libraries, such as PyTorch, TensorFlow, and JAX, have simplified the process of training and deploying neural networks, developing an understanding of their underlying principles remains invaluable. In this post, I’ll guide you through the mathematical underpinnings of backpropagation, a key algorithm for training neural networks, and demonstrate how to implement it from scratch using Python with NumPy. We’ll apply this knowledge to train a simple fully connected neural network for classifying images in the MNIST dataset.">
   <meta itemprop="datePublished" content="2024-11-01T00:00:00+00:00">
   <meta itemprop="dateModified" content="2024-11-01T00:00:00+00:00">
-  <meta itemprop="wordCount" content="4226">
+  <meta itemprop="wordCount" content="4225">
   
   <meta property="og:url" content="/posts/understanding-the-math-behind-backpropagation/">
   <meta property="og:site_name" content="AI Meanderings">
@@ -350,7 +350,7 @@ test_loader = DataLoader(test_dataset, batch_size=1000, shuffle=False)
 <p>$$\mathcal{D} = \bigl\lbrace (x^{(i)}, y^{(i)}) \bigr\rbrace_{i=1}^m \space,$$</p>
 <p>where $m$ is the number of samples in our dataset. The standard MNIST dataset consists of 60,000 training images and 10,000 test images, which we will call $\mathcal{D_{\text{train}}}$ and $\mathcal{D_{\text{test}}}$. An image can be represented as a column vector:</p>
 <p>$$x^{(i)} = [x_1^{(i)}, x_2^{(i)}, &hellip;, x_{n_x}^{(i)}]^T \space,$$</p>
-<p>where $n_x = 28 \times 28$ is the number of pixels in each image. Each image has a real-valued label $y^{(i)} \in [0, 9]$ that indicates which digit, or class, the image corresponds to. To help us perform classification, we will represent this as a one-hot encoded vector:</p>
+<p>where $n_x = 28 \times 28$ is the number of pixels in each image. Each image has a real-valued label $y^{(i)} \in [0..9]$ that indicates which digit, or class, the image corresponds to. To help us perform classification, we will represent this as a one-hot encoded vector:</p>
 <p>$$y^{(i)} = [y_1^{(i)}, y_2^{(i)}, &hellip;, y_{n_y}^{(i)}]^T \space,$$ where $n_y = 10$ is the number of digits or classes to choose from and</p>
 <p>$$
 y_k^{(i)} = \begin{cases}
