@@ -26,11 +26,24 @@ publishDir = '../docs'
 
 ## Creating a New Post
 
-To create a new blog post, create a new Markdown file in the `content/posts` directory, run the following command:
+To create a new blog post, run:
 
 ```bash
 hugo new posts/your-post-title.md
 ```
+
+Then add a `categories` field to the front matter to specify whether it's a personal or technical post:
+
+```toml
++++
+title = 'Your Post Title'
+date = 2025-11-27T22:10:23-07:00
+draft = false
+categories = ['technical']  # or ['personal']
++++
+```
+
+Posts will be automatically grouped by category on the Posts page, with separate sections for Technical and Personal posts.
 
 ## Deployment
 

@@ -2,6 +2,7 @@
 title = 'Flu Season'
 date = 2025-11-27T22:10:23-07:00
 draft = false
+categories = ['personal']
 +++
 
 Every other month is flu season for my immune system, it appears. I had gone two good, productive years with minimal sickness - which I attribute primarily to being able to sleep without an alarm during grad school. Now, this has to be the fifth or sixth time this year. Absolute circus of an immune system, if you ask me.

@@ -4,6 +4,7 @@ slug = 'understanding-the-math-behind-backpropagation'
 date = 2024-11-01T00:00:00
 draft = false
 featured_image = 'full_network_base.png'
+categories = ['technical']
 +++
 
 The past decade has marked a heyday for neural networks, driving innovations from deep learning advancements to the rise of transformer models that power tools like ChatGPT, Claude, and other large language models. Recently, Geoffrey Hinton was even [awarded the Nobel Prize in Physics](https://www.utoronto.ca/news/geoffrey-hinton-wins-nobel-prize#:~:text=Geoffrey%20Hinton%2C%20a%20University%20Professor,2024%20Nobel%20Prize%20in%20Physics) for his pioneering contributions to neural networks - a testament to the profound impact of these models on both AI and society.

@@ -5,13 +5,22 @@
     <loc>/</loc>
     <lastmod>2025-11-27T22:10:23-07:00</lastmod>
   </url><url>
+    <loc>/categories/</loc>
+    <lastmod>2025-11-27T22:10:23-07:00</lastmod>
+  </url><url>
     <loc>/posts/flu_szn/</loc>
+    <lastmod>2025-11-27T22:10:23-07:00</lastmod>
+  </url><url>
+    <loc>/categories/personal/</loc>
     <lastmod>2025-11-27T22:10:23-07:00</lastmod>
   </url><url>
     <loc>/posts/</loc>
     <lastmod>2025-11-27T22:10:23-07:00</lastmod>
   </url><url>
     <loc>/posts/understanding-the-math-behind-backpropagation/</loc>
+    <lastmod>2024-11-01T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>/categories/technical/</loc>
     <lastmod>2024-11-01T00:00:00+00:00</lastmod>
   </url><url>
     <loc>/about/</loc>
@@ -21,8 +30,6 @@
     <lastmod>2019-05-28T00:00:00+00:00</lastmod>
   </url><url>
     <loc>/homepage/</loc>
-  </url><url>
-    <loc>/categories/</loc>
   </url><url>
     <loc>/tags/</loc>
   </url>
